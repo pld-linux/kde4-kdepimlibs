@@ -4,7 +4,7 @@
 					# & '--fvisibility-inlines-hidden'
 					# to g++
 
-%define		_state		unstable
+%define		_state		stable
 %define		_minlibsevr	9:%{version}
 %define		_minbaseevr	9:%{version}
 
@@ -15,12 +15,12 @@ Summary(ru.UTF-8):	Персональный планировщик (PIM) для 
 Summary(uk.UTF-8):	Персональный планувальник (PIM) для KDE
 %define orgname kdepimlibs
 Name:		kdepimlibs4
-Version:	3.97.0
+Version:	4.0.0
 Release:	0.1
 License:	GPL
 Group:		X11/Applications
-Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/latest/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	222faa48a948af7c8c4540a282c2995e
+Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
+# Source0-md5:	1a68662230fcd4ec8cea90bb780f920e
 BuildRequires:	Qt3Support-devel
 BuildRequires:	QtCore-devel >= 4.2.0
 BuildRequires:	QtDBus-devel
@@ -87,7 +87,7 @@ Summary(ru.UTF-8):	Файлы разработки для kdepim
 Summary(uk.UTF-8):	Файли розробки для kdepim
 Group:		X11/Development/Libraries
 Requires:	%{name} = %{epoch}:%{version}-%{release}
-Requires:	kdelibs-devel >= %{_minlibsevr}
+Requires:	kdelibs4-devel >= %{_minlibsevr}
 Obsoletes:	indexlib-devel
 Obsoletes:	kdepim-libkcal-devel
 Conflicts:	kdenetwork-devel < 10:3.1.90
