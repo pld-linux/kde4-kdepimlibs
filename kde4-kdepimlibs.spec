@@ -1,18 +1,13 @@
+#
 # Conditional build:
 %bcond_without	apidocs		# do not prepare API documentation
-%bcond_without	hidden_visibility	# pass '--fvisibility=hidden'
-					# & '--fvisibility-inlines-hidden'
-					# to g++
-
+#
 %define		_state		stable
 %define		_minlibsevr	9:%{version}
 %define		_minbaseevr	9:%{version}
 
-Summary:	Personal Information Management (PIM) for KDE
-Summary(ko.UTF-8):	K 데스크탑 환경 - PIM (개인 정보 관리)
-Summary(pl.UTF-8):	Manadżer informacji osobistej (PIM) dla KDE
-Summary(ru.UTF-8):	Персональный планировщик (PIM) для KDE
-Summary(uk.UTF-8):	Персональный планувальник (PIM) для KDE
+Summary:	Personal Information Management (PIM) libraries for KDE
+Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 %define orgname kdepimlibs
 Name:		kdepimlibs4
 Version:	4.0.0
@@ -36,7 +31,6 @@ BuildRequires:	docbook-dtd42-xml
 %{?with_apidocs:BuildRequires:	doxygen}
 BuildRequires:	ed
 BuildRequires:	flex
-%{?with_hidden_visibility:BuildRequires:	gcc-c++ >= 5:4.1.0-0.20051206r108118.1}
 BuildRequires:	gpgme-devel
 %{?with_apidocs:BuildRequires:	graphviz}
 BuildRequires:	kdelibs4-devel >= %{_minlibsevr}
@@ -65,26 +59,15 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define         _noautoreq      libtool(.*)
 
 %description
-kdepim is a collection of Personal Information Management (PIM) tools
-for the K Desktop Environment (KDE).
+kdepimlibs is a collection of Personal Information Management (PIM)
+libraries for the K Desktop Environment (KDE).
 
 %description -l pl.UTF-8
-kdepim jest jest zestawem aplikacji PIM dla K Desktop Environment
-(KDE).
-
-%description -l ru.UTF-8
-kdepim - это набор утилит для управления персональной информацией для
-K Desktop Environment (KDE).
-
-%description -l uk.UTF-8
-kdepim - це набір утиліт для керування персональною информацією для K
-Desktop Environment (KDE).
+kdepimlibs to zestaw bibliotek PIM dla K Desktop Environment (KDE).
 
 %package devel
-Summary:	Development files for KDE pim
-Summary(pl.UTF-8):	Pliki nagłówkowe do KDE pim
-Summary(ru.UTF-8):	Файлы разработки для kdepim
-Summary(uk.UTF-8):	Файли розробки для kdepim
+Summary:	Development files for KDE PIM libraries
+Summary(pl.UTF-8):	Pliki nagłówkowe bibliotek KDE PIM
 Group:		X11/Development/Libraries
 Requires:	%{name} = %{epoch}:%{version}-%{release}
 Requires:	kdelibs4-devel >= %{_minlibsevr}
@@ -94,19 +77,11 @@ Conflicts:	kdenetwork-devel < 10:3.1.90
 
 %description devel
 This package contains header files needed if you wish to build
-applications based on kdepim.
+applications based on kdepimlibs.
 
 %description devel -l pl.UTF-8
 Pakiet ten zawiera pliki nagłówkowe potrzebne do budowy aplikacji
-bazujących na kdepim.
-
-%description devel -l uk.UTF-8
-Цей пакет містить файли заголовків необхідні для побудови програм,
-базованих на kdepim.
-
-%description devel -l ru.UTF-8
-Этот пакет содержит файлы заголовков необходимые для построения
-программ, основанных на kdepim.
+opartych na kdepimlibs.
 
 %prep
 %setup -q -n %{orgname}-%{version}
@@ -231,10 +206,10 @@ rm -rf $RPM_BUILD_ROOT
 
 %{_datadir}/kde4/servicetypes/kresources_manager.desktop
 %{_datadir}/kde4/servicetypes/kresources_plugin.desktop
-                                                                                       
 
 %files devel
 %defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/*.so
 #%{_includedir}/emailfunctions
 %{_includedir}/kabc
 %{_includedir}/kcal
@@ -255,4 +230,3 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/cmake/modules/*.cmake
                   
 %{_datadir}/apps/libical
-%{_libdir}/*.so
