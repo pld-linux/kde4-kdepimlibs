@@ -25,6 +25,7 @@ BuildRequires:	QtXml-devel
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	bison
+BuildRequires:	cmake
 BuildRequires:	boost-devel
 BuildRequires:	cyrus-sasl-devel
 BuildRequires:	docbook-dtd42-xml
@@ -41,7 +42,7 @@ BuildRequires:	pth-devel
 BuildRequires:	qt4-build
 %{?with_apidocs:BuildRequires:	qt4-doc}
 BuildRequires:	qt4-qmake
-BuildRequires:	rpmbuild(macros) >= 1.129
+BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	zlib-devel
 BuildConflicts:	indexlib
 BuildConflicts:	kdepim-kontact-libs
