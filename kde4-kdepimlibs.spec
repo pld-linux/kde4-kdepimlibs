@@ -9,7 +9,7 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 %define orgname kdepimlibs
-Name:		kdepimlibs4
+Name:		kde4-kdepimlibs
 Version:	4.0.0
 Release:	0.1
 License:	GPL
@@ -34,7 +34,7 @@ BuildRequires:	ed
 BuildRequires:	flex
 BuildRequires:	gpgme-devel
 %{?with_apidocs:BuildRequires:	graphviz}
-BuildRequires:	kdelibs4-devel >= %{_minlibsevr}
+BuildRequires:	kde4-kdelibs-devel >= %{_minlibsevr}
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	pth-devel
@@ -48,13 +48,8 @@ BuildConflicts:	indexlib
 BuildConflicts:	kdepim-kontact-libs
 BuildConflicts:	kdepim-libkmailprivate
 Requires:	%{name} = %{epoch}:%{version}-%{release}
-Obsoletes:	akregator
-Obsoletes:	kdeaddons-kontact
-Obsoletes:	kdepim-kontact
-Obsoletes:	kdepim-korganizer
-Obsoletes:	kdepim-kresources
-Obsoletes:	kdepim-ksync
-#Obsoletes:	kdepim-libkcal
+Obsoletes:	kdepimlibs4
+Conflicts:	kdepimlibs4
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define         _noautoreq      libtool(.*)
