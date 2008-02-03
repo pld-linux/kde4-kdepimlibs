@@ -3,8 +3,6 @@
 %bcond_without	apidocs		# do not prepare API documentation
 #
 %define		_state		stable
-%define		_minlibsevr	9:%{version}
-%define		_minbaseevr	9:%{version}
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
@@ -34,7 +32,7 @@ BuildRequires:	ed
 BuildRequires:	flex
 BuildRequires:	gpgme-devel
 %{?with_apidocs:BuildRequires:	graphviz}
-BuildRequires:	kde4-kdelibs-devel >= %{_minlibsevr}
+BuildRequires:	kde4-kdelibs-devel
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	pth-devel
@@ -66,7 +64,7 @@ Summary:	Development files for KDE PIM libraries
 Summary(pl.UTF-8):	Pliki nagłówkowe bibliotek KDE PIM
 Group:		X11/Development/Libraries
 Requires:	%{name} = %{epoch}:%{version}-%{release}
-Requires:	kde4-kdelibs-devel >= %{_minlibsevr}
+Requires:	kde4-kdelibs-devel
 Obsoletes:	indexlib-devel
 Obsoletes:	kdepim-libkcal-devel
 Conflicts:	kdenetwork-devel < 10:3.1.90
