@@ -2,18 +2,18 @@
 # Conditional build:
 %bcond_without	apidocs		# do not prepare API documentation
 #
-%define		_state		stable
+%define		_state		unstable
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 %define orgname kdepimlibs
 Name:		kde4-kdepimlibs
-Version:	4.0.0
+Version:	4.0.60
 Release:	0.1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	1a68662230fcd4ec8cea90bb780f920e
+# Source0-md5:	ae5c708e6428a5a0fb677cd3a5464871
 BuildRequires:	Qt3Support-devel
 BuildRequires:	QtCore-devel >= 4.2.0
 BuildRequires:	QtDBus-devel
@@ -32,7 +32,7 @@ BuildRequires:	ed
 BuildRequires:	flex
 BuildRequires:	gpgme-devel
 %{?with_apidocs:BuildRequires:	graphviz}
-BuildRequires:	kde4-kdelibs-devel
+BuildRequires:	kde4-kdelibs-devel >= %{version}
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	pth-devel
