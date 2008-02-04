@@ -45,7 +45,7 @@ BuildRequires:	zlib-devel
 BuildConflicts:	indexlib
 BuildConflicts:	kdepim-kontact-libs
 BuildConflicts:	kdepim-libkmailprivate
-Requires:	%{name} = %{epoch}:%{version}-%{release}
+Requires:	%{name} = %{version}-%{release}
 Obsoletes:	kdepimlibs4
 Conflicts:	kdepimlibs4
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -63,7 +63,7 @@ kdepimlibs to zestaw bibliotek PIM dla K Desktop Environment (KDE).
 Summary:	Development files for KDE PIM libraries
 Summary(pl.UTF-8):	Pliki nagłówkowe bibliotek KDE PIM
 Group:		X11/Development/Libraries
-Requires:	%{name} = %{epoch}:%{version}-%{release}
+Requires:	%{name} = %{version}-%{release}
 Requires:	kde4-kdelibs-devel
 Obsoletes:	indexlib-devel
 Obsoletes:	kdepim-libkcal-devel
