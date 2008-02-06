@@ -4,9 +4,9 @@
 #
 %define		_state		unstable
 
+%define orgname kdepimlibs
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
-%define orgname kdepimlibs
 Name:		kde4-kdepimlibs
 Version:	4.0.60
 Release:	0.1
@@ -23,8 +23,8 @@ BuildRequires:	QtXml-devel
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	bison
-BuildRequires:	cmake
 BuildRequires:	boost-devel
+BuildRequires:	cmake
 BuildRequires:	cyrus-sasl-devel
 BuildRequires:	docbook-dtd42-xml
 %{?with_apidocs:BuildRequires:	doxygen}
@@ -156,7 +156,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/kde4/kio_pop3.so
 %attr(755,root,root) %{_libdir}/kde4/kio_sieve.so
 %attr(755,root,root) %{_libdir}/kde4/kio_smtp.so
-                                                       
+
 %dir %{_datadir}/apps/kabc
 %{_datadir}/apps/kabc/countrytransl.map
 %dir %{_datadir}/apps/kabc/formats
@@ -222,5 +222,5 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/qgpgme
 
 %{_datadir}/apps/cmake/modules/*.cmake
-                  
+
 %{_datadir}/apps/libical
