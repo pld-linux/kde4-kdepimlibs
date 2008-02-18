@@ -3,8 +3,7 @@
 %bcond_without	apidocs		# do not prepare API documentation
 #
 %define		_state		unstable
-
-%define orgname kdepimlibs
+%define		orgname		kdepimlibs
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
@@ -20,15 +19,12 @@ BuildRequires:	QtDBus-devel
 BuildRequires:	QtGui-devel
 BuildRequires:	QtSvg-devel
 BuildRequires:	QtXml-devel
-BuildRequires:	autoconf
-BuildRequires:	automake
 BuildRequires:	bison
 BuildRequires:	boost-devel
 BuildRequires:	cmake
 BuildRequires:	cyrus-sasl-devel
 BuildRequires:	docbook-dtd42-xml
 %{?with_apidocs:BuildRequires:	doxygen}
-BuildRequires:	ed
 BuildRequires:	flex
 BuildRequires:	gpgme-devel
 %{?with_apidocs:BuildRequires:	graphviz}
@@ -49,8 +45,6 @@ Requires:	%{name} = %{version}-%{release}
 Obsoletes:	kdepimlibs4
 Conflicts:	kdepimlibs4
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
-
-%define         _noautoreq      libtool(.*)
 
 %description
 kdepimlibs is a collection of Personal Information Management (PIM)
@@ -101,44 +95,43 @@ rm -rf $RPM_BUILD_ROOT
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post		-p /sbin/ldconfig
-%postun		-p /sbin/ldconfig
+%post	-p /sbin/ldconfig
+%postun	-p /sbin/ldconfig
 
 %files
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libkabc.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkabc.so.4
 %attr(755,root,root) %{_libdir}/libkabc_file_core.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkabc_file_core.so.4
 %attr(755,root,root) %{_libdir}/libkcal.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkcal.so.4
 %attr(755,root,root) %{_libdir}/libkldap.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkldap.so.4
 %attr(755,root,root) %{_libdir}/libkresources.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkresources.so.4
 %attr(755,root,root) %{_libdir}/libktnef.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libktnef.so.4
 %attr(755,root,root) %{_libdir}/libkxmlrpcclient.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkxmlrpcclient.so.4
 %attr(755,root,root) %{_libdir}/libgpgme++-pthread.so.1.*.*
 %attr(755,root,root) %{_libdir}/libgpgme++.so.1.*.*
 %attr(755,root,root) %{_libdir}/libkblog.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkblog.so.4
 %attr(755,root,root) %{_libdir}/libkimap.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkimap.so.4
 %attr(755,root,root) %{_libdir}/libkmime.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkmime.so.4
 %attr(755,root,root) %{_libdir}/libkpimidentities.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkpimidentities.so.4
 %attr(755,root,root) %{_libdir}/libkpimutils.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkpimutils.so.4
 %attr(755,root,root) %{_libdir}/libmailtransport.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libmailtransport.so.4
 %attr(755,root,root) %{_libdir}/libqgpgme.so.1.*.*
 %attr(755,root,root) %{_libdir}/libgpgme++-pth.so.1.*.*
 %attr(755,root,root) %{_libdir}/libsyndication.so.4.*.*
-
-%attr(755,root,root) %{_libdir}/libkabc.so.4
-%attr(755,root,root) %{_libdir}/libkabc_file_core.so.4
-%attr(755,root,root) %{_libdir}/libkcal.so.4
-%attr(755,root,root) %{_libdir}/libkldap.so.4
-%attr(755,root,root) %{_libdir}/libkresources.so.4
-%attr(755,root,root) %{_libdir}/libktnef.so.4
-%attr(755,root,root) %{_libdir}/libkxmlrpcclient.so.4
-%attr(755,root,root) %{_libdir}/libkblog.so.4
-%attr(755,root,root) %{_libdir}/libkimap.so.4
-%attr(755,root,root) %{_libdir}/libkmime.so.4
-%attr(755,root,root) %{_libdir}/libkpimidentities.so.4
-%attr(755,root,root) %{_libdir}/libkpimutils.so.4
-%attr(755,root,root) %{_libdir}/libmailtransport.so.4
-%attr(755,root,root) %{_libdir}/libsyndication.so.4
+%attr(755,root,root) %ghost %{_libdir}/libsyndication.so.4
 
 %attr(755,root,root) %{_libdir}/kde4/kabc_directory.so
 %attr(755,root,root) %{_libdir}/kde4/kabc_file.so
