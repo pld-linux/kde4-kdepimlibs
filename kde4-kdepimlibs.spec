@@ -7,18 +7,18 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.0.62
+Version:	4.0.64
 Release:	0.1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	75a3a06eb7f18a09f048e8d8f0e3ec0b
+# Source0-md5:	4e223a2e4b2f6ea9c54b0b342f80e5f4
 BuildRequires:	Qt3Support-devel
-BuildRequires:	QtCore-devel >= 4.2.0
-BuildRequires:	QtDBus-devel
-BuildRequires:	QtGui-devel
-BuildRequires:	QtSvg-devel
-BuildRequires:	QtXml-devel
+BuildRequires:	QtCore-devel >= 4.4.0
+BuildRequires:	QtDBus-devel >= 4.4.0
+BuildRequires:	QtGui-devel >= 4.4.0
+BuildRequires:	QtSvg-devel >= 4.4.0
+BuildRequires:	QtXml-devel >= 4.4.0
 BuildRequires:	bison
 BuildRequires:	boost-devel
 BuildRequires:	cmake
@@ -33,9 +33,9 @@ BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	pth-devel
 #BuildRequires:	qt-designer-libs
-BuildRequires:	qt4-build
-%{?with_apidocs:BuildRequires:	qt4-doc}
-BuildRequires:	qt4-qmake
+BuildRequires:	qt4-build >= 4.4.0
+%{?with_apidocs:BuildRequires:	qt4-doc >= 4.4.0}
+BuildRequires:	qt4-qmake >= 4.4.0
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	zlib-devel
 BuildConflicts:	indexlib
