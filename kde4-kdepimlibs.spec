@@ -1,3 +1,6 @@
+# TODO:
+#  plik /usr/share/apps/kabc/countrytransl.map z instalacji kde4-kdepimlibs-4.0.64-0.1.x86_64 jest w konflikcie z plikiem z pakietu kdelibs-3.5.9-5.x86_64
+#  plik /usr/share/apps/kabc/formats/binary.desktop z instalacji kde4-kdepimlibs-4.0.64-0.1.x86_64 jest w konflikcie z plikiem z pakietu kdelibs-3.5.9-5.x86_64
 #
 # Conditional build:
 %bcond_without	apidocs		# do not prepare API documentation
