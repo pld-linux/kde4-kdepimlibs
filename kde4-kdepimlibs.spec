@@ -1,6 +1,3 @@
-# TODO:
-#  plik /usr/share/apps/kabc/countrytransl.map z instalacji kde4-kdepimlibs-4.0.64-0.1.x86_64 jest w konflikcie z plikiem z pakietu kdelibs-3.5.9-5.x86_64
-#  plik /usr/share/apps/kabc/formats/binary.desktop z instalacji kde4-kdepimlibs-4.0.64-0.1.x86_64 jest w konflikcie z plikiem z pakietu kdelibs-3.5.9-5.x86_64
 #
 # Conditional build:
 %bcond_without	apidocs		# do not prepare API documentation
@@ -10,12 +7,13 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.0.65
+Version:	4.0.66
 Release:	0.1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	17161dadf895ff1af8f36cbb79c5110f
+# Source0-md5:	4d5b263af1af96cddf86eb65544267d0
+Patch0:		%{name}-kde3.patch
 BuildRequires:	Qt3Support-devel
 BuildRequires:	QtCore-devel >= 4.4.0
 BuildRequires:	QtDBus-devel >= 4.4.0
@@ -35,7 +33,6 @@ BuildRequires:	kde4-kdelibs-devel >= %{version}
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	pth-devel
-#BuildRequires:	qt-designer-libs
 BuildRequires:	qt4-build >= 4.4.0
 %{?with_apidocs:BuildRequires:	qt4-doc >= 4.4.0}
 BuildRequires:	qt4-qmake >= 4.4.0
@@ -76,6 +73,7 @@ opartych na kdepimlibs.
 
 %prep
 %setup -q -n %{orgname}-%{version}
+%patch0 -p0
 
 %build
 export QTDIR=%{_prefix}
@@ -154,9 +152,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/kde4/kio_smtp.so
 
 %dir %{_datadir}/apps/kabc
-%{_datadir}/apps/kabc/countrytransl.map
+%{_datadir}/apps/kabc/*countrytransl.map
 %dir %{_datadir}/apps/kabc/formats
-%{_datadir}/apps/kabc/formats/binary.desktop
+%{_datadir}/apps/kabc/formats/*binary.desktop
 
 %{_datadir}/apps/kconf_update/mailtransports.upd
 %{_datadir}/apps/kconf_update/migrate-transports.pl
@@ -217,6 +215,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/mailtransport
 %{_includedir}/qgpgme
 
+%dir %{_libdir}/gpgmepp
+%{_libdir}/gpgmepp/*.cmake
 %{_datadir}/apps/cmake/modules/*.cmake
 
 %{_datadir}/apps/libical
