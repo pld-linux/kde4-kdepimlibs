@@ -7,12 +7,12 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.0.66
+Version:	4.0.67
 Release:	0.1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	4d5b263af1af96cddf86eb65544267d0
+# Source0-md5:	556beb54a4ded27d479f0d8ab986a9d1
 Patch0:		%{name}-kde3.patch
 BuildRequires:	Qt3Support-devel
 BuildRequires:	QtCore-devel >= 4.4.0
@@ -133,6 +133,13 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libgpgme++-pth.so.1.*.*
 %attr(755,root,root) %{_libdir}/libsyndication.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libsyndication.so.4
+%attr(755,root,root) %ghost %{_libdir}/libakonadi-kde.so.4
+%attr(755,root,root) %{_libdir}/libakonadi-kde.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libakonadi-kmime.so.4
+%attr(755,root,root) %{_libdir}/libakonadi-kmime.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libakonadiprotocolinternals.so.4
+%attr(755,root,root) %{_libdir}/libakonadiprotocolinternals.so.4.*.*
+
 
 %attr(755,root,root) %{_libdir}/kde4/kabc_directory.so
 %attr(755,root,root) %{_libdir}/kde4/kabc_file.so
@@ -155,6 +162,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kabc/*countrytransl.map
 %dir %{_datadir}/apps/kabc/formats
 %{_datadir}/apps/kabc/formats/*binary.desktop
+%dir %{_datadir}/apps/akonadi-kde
+%{_datadir}/apps/akonadi-kde/kcfg2dbus.xsl
 
 %{_datadir}/apps/kconf_update/mailtransports.upd
 %{_datadir}/apps/kconf_update/migrate-transports.pl
@@ -164,6 +173,11 @@ rm -rf $RPM_BUILD_ROOT
 
 %{_datadir}/dbus-1/interfaces/org.kde.KResourcesManager.xml
 %{_datadir}/dbus-1/interfaces/org.kde.pim.IdentityManager.xml
+%{_datadir}/dbus-1/interfaces/org.kde.Akonadi.Agent.xml
+%{_datadir}/dbus-1/interfaces/org.kde.Akonadi.AgentManager.xml
+%{_datadir}/dbus-1/interfaces/org.kde.Akonadi.NotificationManager.xml
+%{_datadir}/dbus-1/interfaces/org.kde.Akonadi.Resource.xml
+%{_datadir}/dbus-1/interfaces/org.kde.Akonadi.Tracer.xml
 
 %{_datadir}/kde4/services/imap4.protocol
 %{_datadir}/kde4/services/imaps.protocol
@@ -199,6 +213,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/*.so
 #%{_includedir}/emailfunctions
+%{_includedir}/akonadi
 %{_includedir}/kabc
 %{_includedir}/kcal
 %{_includedir}/kldap
