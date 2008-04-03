@@ -7,12 +7,12 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.0.67
+Version:	4.0.68
 Release:	0.1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	556beb54a4ded27d479f0d8ab986a9d1
+# Source0-md5:	50d021e7214a9208a51e0fc29f10e8c7
 Patch0:		%{name}-kde3.patch
 BuildRequires:	Qt3Support-devel
 BuildRequires:	QtCore-devel >= 4.4.0
@@ -173,7 +173,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %{_datadir}/dbus-1/interfaces/org.kde.KResourcesManager.xml
 %{_datadir}/dbus-1/interfaces/org.kde.pim.IdentityManager.xml
-%{_datadir}/dbus-1/interfaces/org.kde.Akonadi.Agent.xml
+%{_datadir}/dbus-1/interfaces/org.kde.Akonadi.Agent.Control.xml
+%{_datadir}/dbus-1/interfaces/org.kde.Akonadi.Agent.Status.xml
 %{_datadir}/dbus-1/interfaces/org.kde.Akonadi.AgentManager.xml
 %{_datadir}/dbus-1/interfaces/org.kde.Akonadi.NotificationManager.xml
 %{_datadir}/dbus-1/interfaces/org.kde.Akonadi.Resource.xml
