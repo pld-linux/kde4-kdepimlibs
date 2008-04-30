@@ -7,12 +7,12 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.0.70
+Version:	4.0.72
 Release:	0.1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	10388cd952e5b54d102f69f3c110a42c
+# Source0-md5:	b93ac42c77a5b540fabd7d173c7d5d1f
 Patch0:		%{name}-kde3.patch
 BuildRequires:	Qt3Support-devel
 BuildRequires:	QtCore-devel >= 4.4.0
@@ -137,9 +137,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libakonadi-kde.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kmime.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-kmime.so.4.*.*
-%attr(755,root,root) %ghost %{_libdir}/libakonadiprotocolinternals.so.4
-%attr(755,root,root) %{_libdir}/libakonadiprotocolinternals.so.4.*.*
-
 
 %attr(755,root,root) %{_libdir}/kde4/kabc_directory.so
 %attr(755,root,root) %{_libdir}/kde4/kabc_file.so
@@ -173,12 +170,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %{_datadir}/dbus-1/interfaces/org.kde.KResourcesManager.xml
 %{_datadir}/dbus-1/interfaces/org.kde.pim.IdentityManager.xml
-%{_datadir}/dbus-1/interfaces/org.kde.Akonadi.Agent.Control.xml
-%{_datadir}/dbus-1/interfaces/org.kde.Akonadi.Agent.Status.xml
-%{_datadir}/dbus-1/interfaces/org.kde.Akonadi.AgentManager.xml
-%{_datadir}/dbus-1/interfaces/org.kde.Akonadi.NotificationManager.xml
-%{_datadir}/dbus-1/interfaces/org.kde.Akonadi.Resource.xml
-%{_datadir}/dbus-1/interfaces/org.kde.Akonadi.Tracer.xml
 
 %{_datadir}/kde4/services/imap4.protocol
 %{_datadir}/kde4/services/imaps.protocol
