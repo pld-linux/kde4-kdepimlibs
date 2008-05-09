@@ -80,7 +80,7 @@ opartych na kdepimlibs.
 
 %build
 export QTDIR=%{_prefix}
-mkdir build
+install -d build
 cd build
 %cmake \
 	-DCMAKE_INSTALL_PREFIX=%{_prefix} \
