@@ -14,12 +14,14 @@ Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 # Source0-md5:	6bd2ce63eb69516f67193607f0edd6a5
 Patch0:		%{name}-kde3.patch
+Patch1:		%{name}-akonadi.patch
 BuildRequires:	Qt3Support-devel
 BuildRequires:	QtCore-devel >= 4.4.0
 BuildRequires:	QtDBus-devel >= 4.4.0
 BuildRequires:	QtGui-devel >= 4.4.0
 BuildRequires:	QtSvg-devel >= 4.4.0
 BuildRequires:	QtXml-devel >= 4.4.0
+BuildRequires:	akonadi-devel >= 0.80.0
 BuildRequires:	bison
 BuildRequires:	boost-devel
 BuildRequires:	cmake
@@ -74,6 +76,7 @@ opartych na kdepimlibs.
 %prep
 %setup -q -n %{orgname}-%{version}
 %patch0 -p0
+%patch1 -p0
 
 %build
 export QTDIR=%{_prefix}
