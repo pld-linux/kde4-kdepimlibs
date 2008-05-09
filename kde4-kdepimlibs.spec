@@ -61,9 +61,6 @@ Summary(pl.UTF-8):	Pliki nagłówkowe bibliotek KDE PIM
 Group:		X11/Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 Requires:	kde4-kdelibs-devel >= %{version}
-Obsoletes:	indexlib-devel
-Obsoletes:	kdepim-libkcal-devel
-Conflicts:	kdenetwork-devel < 10:3.1.90
 
 %description devel
 This package contains header files needed if you wish to build
