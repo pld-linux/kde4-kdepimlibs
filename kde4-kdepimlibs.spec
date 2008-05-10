@@ -23,7 +23,7 @@ BuildRequires:	QtSvg-devel >= 4.4.0
 BuildRequires:	QtXml-devel >= 4.4.0
 BuildRequires:	akonadi-devel >= 0.80.0
 BuildRequires:	bison
-BuildRequires:	boost-devel
+BuildRequires:	boost-devel >= 1.35.0
 BuildRequires:	cmake
 BuildRequires:	cyrus-sasl-devel
 BuildRequires:	docbook-dtd42-xml
