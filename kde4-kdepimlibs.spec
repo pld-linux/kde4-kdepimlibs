@@ -2,6 +2,7 @@
 # Conditional build:
 %bcond_without	apidocs		# do not prepare API documentation
 #
+%define		qtver		4.4.0
 %define		_state		unstable
 %define		orgname		kdepimlibs
 Summary:	Personal Information Management (PIM) libraries for KDE
@@ -16,11 +17,11 @@ Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version
 Patch0:		%{name}-kde3.patch
 Patch1:		%{name}-akonadi.patch
 BuildRequires:	Qt3Support-devel
-BuildRequires:	QtCore-devel >= 4.4.0
-BuildRequires:	QtDBus-devel >= 4.4.0
-BuildRequires:	QtGui-devel >= 4.4.0
-BuildRequires:	QtSvg-devel >= 4.4.0
-BuildRequires:	QtXml-devel >= 4.4.0
+BuildRequires:	QtCore-devel >= %{qtver}
+BuildRequires:	QtDBus-devel >= %{qtver}
+BuildRequires:	QtGui-devel >= %{qtver}
+BuildRequires:	QtSvg-devel >= %{qtver}
+BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	akonadi-devel >= 0.80.0
 BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
@@ -35,9 +36,9 @@ BuildRequires:	kde4-kdelibs-devel >= %{version}
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	pth-devel
-BuildRequires:	qt4-build >= 4.4.0
-%{?with_apidocs:BuildRequires:	qt4-doc >= 4.4.0}
-BuildRequires:	qt4-qmake >= 4.4.0
+BuildRequires:	qt4-build >= %{qtver}
+%{?with_apidocs:BuildRequires:	qt4-doc >= %{qtver}}
+BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	zlib-devel
 BuildConflicts:	indexlib
