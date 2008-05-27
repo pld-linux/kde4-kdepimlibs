@@ -8,12 +8,12 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.0.74
+Version:	4.0.80
 Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	5d5609672024a4f8032d6966d2ee3432
+# Source0-md5:	5fee4da26fbb77b3a668e2e5b5b76bea
 Patch0:		%{name}-kde3.patch
 BuildRequires:	Qt3Support-devel
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -21,7 +21,8 @@ BuildRequires:	QtDBus-devel >= %{qtver}
 BuildRequires:	QtGui-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
-BuildRequires:	akonadi-devel >= 0.80.0-1.809880.1
+# also in kde4-kdesupport-akonadi-devel
+#BuildRequires:	akonadi-devel >= 0.81.0
 BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
 BuildRequires:	cmake
@@ -32,6 +33,7 @@ BuildRequires:	flex
 BuildRequires:	gpgme-devel
 %{?with_apidocs:BuildRequires:	graphviz}
 BuildRequires:	kde4-kdelibs-devel >= %{version}
+BuildRequires:	kde4-kdesupport-akonadi-devel
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	pth-devel
@@ -165,7 +167,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kconf_update/migrate-transports.pl
 
 %{_datadir}/config.kcfg/mailtransport.kcfg
-%{_datadir}/config.kcfg/pimemoticons.kcfg
 
 %{_datadir}/dbus-1/interfaces/org.kde.KResourcesManager.xml
 %{_datadir}/dbus-1/interfaces/org.kde.pim.IdentityManager.xml
