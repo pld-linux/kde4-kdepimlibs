@@ -22,7 +22,7 @@ BuildRequires:	QtGui-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
 # also in kde4-kdesupport-akonadi-devel
-#BuildRequires:	akonadi-devel >= 0.81.0
+BuildRequires:	akonadi-devel >= 0.81.0
 BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
 BuildRequires:	cmake
@@ -33,7 +33,6 @@ BuildRequires:	flex
 BuildRequires:	gpgme-devel
 %{?with_apidocs:BuildRequires:	graphviz}
 BuildRequires:	kde4-kdelibs-devel >= %{version}
-BuildRequires:	kde4-kdesupport-akonadi-devel
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	pth-devel
