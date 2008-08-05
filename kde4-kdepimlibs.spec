@@ -24,7 +24,7 @@ BuildRequires:	akonadi-devel >= 1.0.0
 BuildRequires:	automoc4 >= 0.9.83
 BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
-BuildRequires:	cmake
+BuildRequires:	cmake >= 2.6.0
 BuildRequires:	cyrus-sasl-devel
 BuildRequires:	docbook-dtd42-xml
 %{?with_apidocs:BuildRequires:	doxygen}
