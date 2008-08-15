@@ -24,7 +24,7 @@ BuildRequires:	akonadi-devel >= 1.0.0
 BuildRequires:	automoc4 >= 0.9.83
 BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
-BuildRequires:	cmake >= 2.6.0
+BuildRequires:	cmake >= 2.6.1-2
 BuildRequires:	cyrus-sasl-devel
 BuildRequires:	docbook-dtd42-xml
 %{?with_apidocs:BuildRequires:	doxygen}
@@ -80,7 +80,6 @@ cd build
 %cmake \
 	-DCMAKE_INSTALL_PREFIX=%{_prefix} \
 	-DSYSCONF_INSTALL_DIR=%{_sysconfdir} \
-	-DCMAKE_AR=/usr/bin/ar \
 %if "%{_lib}" == "lib64"
 	-DLIB_SUFFIX=64 \
 %endif
