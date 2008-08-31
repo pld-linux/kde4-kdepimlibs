@@ -34,7 +34,6 @@ BuildRequires:	gpgme-devel
 BuildRequires:	kde4-kdelibs-devel >= %{version}
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
-BuildRequires:	pth-devel
 BuildRequires:	qt4-build >= %{qtver}
 %{?with_apidocs:BuildRequires:	qt4-doc >= %{qtver}}
 BuildRequires:	qt4-qmake >= %{qtver}
