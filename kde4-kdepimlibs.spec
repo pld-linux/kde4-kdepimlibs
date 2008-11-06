@@ -32,6 +32,7 @@ BuildRequires:	flex
 BuildRequires:	gpgme-devel
 %{?with_apidocs:BuildRequires:	graphviz}
 BuildRequires:	kde4-kdelibs-devel >= %{version}
+BuildRequires:	libical-devel >= 0.33
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	qt4-build >= %{qtver}
