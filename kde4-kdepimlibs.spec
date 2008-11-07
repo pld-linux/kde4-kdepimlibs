@@ -44,6 +44,7 @@ BuildConflicts:	indexlib
 BuildConflicts:	kdepim-kontact-libs
 BuildConflicts:	kdepim-libkmailprivate
 Requires:	%{name} = %{version}-%{release}
+Requires(post,postun):	/sbin/ldconfig
 Obsoletes:	kdepimlibs4
 Conflicts:	kdelibs
 Conflicts:	kdepimlibs4
@@ -132,8 +133,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libmailtransport.so.4
 %attr(755,root,root) %{_libdir}/libqgpgme.so.1.*.*
 %attr(755,root,root) %{_libdir}/libgpgme++-pth.so.2.*.*
-%attr(755,root,root) %{_libdir}/libsyndication.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libsyndication.so.4
+%attr(755,root,root) %{_libdir}/libsyndication.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kde.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-kde.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kmime.so.4
@@ -205,7 +206,6 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/*.so
-%attr(755,root,root) %{_libdir}/*.so.*
 #%{_includedir}/emailfunctions
 %{_includedir}/akonadi
 %{_includedir}/kabc
