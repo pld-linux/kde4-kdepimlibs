@@ -9,7 +9,7 @@ Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
 Version:	4.1.72
-Release:	1
+Release:	2
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -118,7 +118,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkxmlrpcclient.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkxmlrpcclient.so.4
 %attr(755,root,root) %{_libdir}/libgpgme++-pthread.so.2.*.*
+%attr(755,root,root) %ghost %{_libdir}/libgpgme++-pthread.so.2
 %attr(755,root,root) %{_libdir}/libgpgme++.so.2.*.*
+%attr(755,root,root) %ghost %{_libdir}/libgpgme++.so.2
 %attr(755,root,root) %{_libdir}/libkblog.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkblog.so.4
 %attr(755,root,root) %{_libdir}/libkimap.so.4.*.*
@@ -132,13 +134,17 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libmailtransport.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libmailtransport.so.4
 %attr(755,root,root) %{_libdir}/libqgpgme.so.1.*.*
+%attr(755,root,root) %ghost %{_libdir}/libqgpgme.so.1
 %attr(755,root,root) %{_libdir}/libgpgme++-pth.so.2.*.*
+%attr(755,root,root) %ghost %{_libdir}/libgpgme++-pth.so.2
 %attr(755,root,root) %ghost %{_libdir}/libsyndication.so.4
 %attr(755,root,root) %{_libdir}/libsyndication.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kde.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-kde.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kmime.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-kmime.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libakonadi-kabc.so.4
+%attr(755,root,root) %{_libdir}/libakonadi-kabc.so.4.*.*
 
 %attr(755,root,root) %{_libdir}/kde4/kabc_directory.so
 %attr(755,root,root) %{_libdir}/kde4/kabc_file.so
