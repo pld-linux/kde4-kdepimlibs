@@ -46,7 +46,6 @@ BuildConflicts:	kdepim-libkmailprivate
 Requires:	%{name} = %{version}-%{release}
 Requires(post,postun):	/sbin/ldconfig
 Obsoletes:	kdepimlibs4
-Conflicts:	kdelibs
 Conflicts:	kdepimlibs4
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
