@@ -8,12 +8,12 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.1.85
+Version:	4.1.87
 Release:	1
 License:	GPL
 Group:		X11/Applications
-Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	fd82b2b05cece9d02ae3228bc715b0e3
+Source0:	ftp://ftp.pbone.net/mirror/ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
+# Source0-md5:	014484b89ca1ec78f135d376d8913d28
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
 BuildRequires:	QtDBus-devel >= %{qtver}
@@ -217,7 +217,6 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/*.so
-#%{_includedir}/emailfunctions
 %{_includedir}/akonadi
 %{_includedir}/kabc
 %{_includedir}/kcal
@@ -237,5 +236,5 @@ rm -rf $RPM_BUILD_ROOT
 
 %dir %{_libdir}/gpgmepp
 %{_libdir}/gpgmepp/*.cmake
-%{_libdir}/KdepimLibs
+%{_libdir}/KdepimLibs-4.2.0
 %{_datadir}/apps/cmake/modules/*.cmake
