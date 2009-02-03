@@ -2,29 +2,30 @@
 # Conditional build:
 %bcond_without	apidocs		# do not prepare API documentation
 #
-%define		qtver		4.4.0
+%define		qtver		4.4.3
 %define		_state		stable
 %define		orgname		kdepimlibs
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.1.1
-Release:	1
+Version:	4.2.0
+Release:	3
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	36316f5fc5b2e0ec123a8e00a522dd80
-BuildRequires:	Qt3Support-devel
+# Source0-md5:	8a91677e2dca7d4db26b33c78e239e5e
+Patch100:	%{name}-branch.diff
+BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
 BuildRequires:	QtDBus-devel >= %{qtver}
 BuildRequires:	QtGui-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
-BuildRequires:	akonadi-devel >= 1.0.0
-BuildRequires:	automoc4 >= 0.9.83
+BuildRequires:	akonadi-devel >= 1.1.1
+BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
-BuildRequires:	cmake
+BuildRequires:	cmake >= 2.6.2
 BuildRequires:	cyrus-sasl-devel
 BuildRequires:	docbook-dtd42-xml
 %{?with_apidocs:BuildRequires:	doxygen}
@@ -32,9 +33,9 @@ BuildRequires:	flex
 BuildRequires:	gpgme-devel
 %{?with_apidocs:BuildRequires:	graphviz}
 BuildRequires:	kde4-kdelibs-devel >= %{version}
+BuildRequires:	libical-devel >= 0.33
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
-BuildRequires:	pth-devel
 BuildRequires:	qt4-build >= %{qtver}
 %{?with_apidocs:BuildRequires:	qt4-doc >= %{qtver}}
 BuildRequires:	qt4-qmake >= %{qtver}
@@ -44,6 +45,7 @@ BuildConflicts:	indexlib
 BuildConflicts:	kdepim-kontact-libs
 BuildConflicts:	kdepim-libkmailprivate
 Requires:	%{name} = %{version}-%{release}
+Requires(post,postun):	/sbin/ldconfig
 Obsoletes:	kdepimlibs4
 Conflicts:	kdelibs
 Conflicts:	kdepimlibs4
@@ -73,6 +75,7 @@ opartych na kdepimlibs.
 
 %prep
 %setup -q -n %{orgname}-%{version}
+%patch100 -p0
 
 %build
 install -d build
@@ -117,7 +120,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkxmlrpcclient.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkxmlrpcclient.so.4
 %attr(755,root,root) %{_libdir}/libgpgme++-pthread.so.2.*.*
+%attr(755,root,root) %ghost %{_libdir}/libgpgme++-pthread.so.2
 %attr(755,root,root) %{_libdir}/libgpgme++.so.2.*.*
+%attr(755,root,root) %ghost %{_libdir}/libgpgme++.so.2
 %attr(755,root,root) %{_libdir}/libkblog.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkblog.so.4
 %attr(755,root,root) %{_libdir}/libkimap.so.4.*.*
@@ -131,13 +136,17 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libmailtransport.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libmailtransport.so.4
 %attr(755,root,root) %{_libdir}/libqgpgme.so.1.*.*
+%attr(755,root,root) %ghost %{_libdir}/libqgpgme.so.1
 %attr(755,root,root) %{_libdir}/libgpgme++-pth.so.2.*.*
-%attr(755,root,root) %{_libdir}/libsyndication.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libgpgme++-pth.so.2
 %attr(755,root,root) %ghost %{_libdir}/libsyndication.so.4
+%attr(755,root,root) %{_libdir}/libsyndication.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kde.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-kde.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kmime.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-kmime.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libakonadi-kabc.so.4
+%attr(755,root,root) %{_libdir}/libakonadi-kabc.so.4.*.*
 
 %attr(755,root,root) %{_libdir}/kde4/kabc_directory.so
 %attr(755,root,root) %{_libdir}/kde4/kabc_file.so
@@ -200,12 +209,16 @@ rm -rf $RPM_BUILD_ROOT
 
 %{_datadir}/kde4/servicetypes/kresources_manager.desktop
 %{_datadir}/kde4/servicetypes/kresources_plugin.desktop
+%lang(en) %{_kdedocdir}/en/kcontrol/kresources
+%lang(en) %{_kdedocdir}/en/kioslave/imap
+%lang(en) %{_kdedocdir}/en/kioslave/ldap
+%lang(en) %{_kdedocdir}/en/kioslave/nntp
+%lang(en) %{_kdedocdir}/en/kioslave/pop3
+%lang(en) %{_kdedocdir}/en/kioslave/smtp
 
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/*.so
-%attr(755,root,root) %{_libdir}/*.so.*
-#%{_includedir}/emailfunctions
 %{_includedir}/akonadi
 %{_includedir}/kabc
 %{_includedir}/kcal
@@ -225,6 +238,5 @@ rm -rf $RPM_BUILD_ROOT
 
 %dir %{_libdir}/gpgmepp
 %{_libdir}/gpgmepp/*.cmake
+%{_libdir}/KdepimLibs-4.2.0
 %{_datadir}/apps/cmake/modules/*.cmake
-
-%{_datadir}/apps/libical
