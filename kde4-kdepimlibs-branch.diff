@@ -1,0 +1,246 @@
+Index: syndication/mapper/itemrdfimpl.cpp
+===================================================================
+--- syndication/mapper/itemrdfimpl.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
++++ syndication/mapper/itemrdfimpl.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+@@ -71,12 +71,12 @@
+ QList<PersonPtr> ItemRDFImpl::authors() const
+ {
+     QList<PersonPtr> list;
+-    
++
+     QStringList people = m_item.dc().creators();
+     people += m_item.dc().contributors();
+     QStringList::ConstIterator it = people.constBegin();
+     QStringList::ConstIterator end = people.constEnd();
+-    
++
+     for ( ; it != end; ++it)
+     {
+         PersonPtr ptr = personFromString(*it);
+@@ -99,15 +99,15 @@
+     if (!m_item.resource()->isAnon())
+         return m_item.resource()->uri();
+     else
+-        return "hash:" + calcMD5Sum(title() + description() + content());
++        return "hash:" + calcMD5Sum(title() + description() + link() + content());
+ }
+ 
+-time_t ItemRDFImpl::datePublished() const 
++time_t ItemRDFImpl::datePublished() const
+ {
+     return m_item.dc().date();
+ }
+ 
+-time_t ItemRDFImpl::dateUpdated() const 
++time_t ItemRDFImpl::dateUpdated() const
+ {
+     return m_item.dc().date();
+ }
+Index: syndication/mapper/itemrss2impl.cpp
+===================================================================
+--- syndication/mapper/itemrss2impl.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
++++ syndication/mapper/itemrss2impl.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+@@ -72,14 +72,14 @@
+ QList<PersonPtr> ItemRSS2Impl::authors() const
+ {
+     QList<PersonPtr> list;
+-    
++
+     PersonPtr ptr = personFromString(m_item.author());
+-    
++
+     if (!ptr->isNull())
+     {
+         list.append(ptr);
+     }
+-    
++
+     return list;
+ }
+ 
+@@ -93,9 +93,9 @@
+     QString guid = m_item.guid();
+     if (!guid.isEmpty())
+         return guid;
+-    
+-    return QString("hash:%1").arg(calcMD5Sum(title() 
+-            + description() + content()));
++
++    return QString("hash:%1").arg(calcMD5Sum(title()
++            + description() + link() + content()));
+ }
+ 
+ time_t ItemRSS2Impl::datePublished() const
+@@ -111,33 +111,33 @@
+ QList<Syndication::EnclosurePtr> ItemRSS2Impl::enclosures() const
+ {
+     QList<Syndication::EnclosurePtr> list;
+-    
++
+     QList<Syndication::RSS2::Enclosure> encs = m_item.enclosures();
+-    
++
+     for (QList<Syndication::RSS2::Enclosure>::ConstIterator it = encs.constBegin();
+          it != encs.constEnd(); ++it)
+     {
+         EnclosureRSS2ImplPtr impl(new EnclosureRSS2Impl(m_item, *it));
+         list.append(impl);
+     }
+-    
++
+     return list;
+ }
+ 
+ QList<Syndication::CategoryPtr> ItemRSS2Impl::categories() const
+ {
+     QList<Syndication::CategoryPtr> list;
+-    
++
+     QList<Syndication::RSS2::Category> cats = m_item.categories();
+     QList<Syndication::RSS2::Category>::ConstIterator it = cats.constBegin();
+     QList<Syndication::RSS2::Category>::ConstIterator end = cats.constEnd();
+-    
++
+     for ( ; it != end; ++it)
+     {
+         CategoryRSS2ImplPtr impl(new CategoryRSS2Impl(*it));
+         list.append(impl);
+     }
+-    
++
+     return list;
+ }
+ 
+@@ -175,12 +175,12 @@
+ QMultiMap<QString, QDomElement> ItemRSS2Impl::additionalProperties() const
+ {
+     QMultiMap<QString, QDomElement> ret;
+-    
++
+     foreach (const QDomElement &i, m_item.unhandledElements())
+     {
+-        ret.insert(i.namespaceURI() + i.localName(), i); 
++        ret.insert(i.namespaceURI() + i.localName(), i);
+     }
+-    
++
+     return ret;
+ }
+ 
+Index: kcal/localdir.desktop
+===================================================================
+--- kcal/localdir.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
++++ kcal/localdir.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+@@ -24,7 +24,7 @@
+ Name[pa]=ਲੋਕਲ ਡਾਇਰੈਕਟਰੀ 'ਚ ਕੈਲੰਡਰ
+ Name[pl]=Kalendarz w katalogu lokalnym
+ Name[pt]=Calendário numa Pasta Local
+-Name[pt_BR]=Calendário em uma pasta local
++Name[pt_BR]=Calendário em pasta local
+ Name[ro]=Calendar în director local
+ Name[ru]=Календарь в локальной папке
+ Name[sl]=Koledar v krajevnem imeniku
+Index: kcal/local.desktop
+===================================================================
+--- kcal/local.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
++++ kcal/local.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+@@ -24,7 +24,7 @@
+ Name[pa]=ਲੋਕਲ ਫਾਇਲ 'ਚ ਕੈਲੰਡਰ
+ Name[pl]=Kalendarz w pliku lokalnym
+ Name[pt]=Calendário num Ficheiro Local
+-Name[pt_BR]=Calendário em um arquivo local
++Name[pt_BR]=Calendário em arquivo local
+ Name[ro]=Calendar în fișier local
+ Name[ru]=Календарь в локальном файле
+ Name[sl]=Koledar v krajevni datoteki
+Index: kcal/calendarresources.cpp
+===================================================================
+--- kcal/calendarresources.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
++++ kcal/calendarresources.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+@@ -448,6 +448,9 @@
+       status = (*it)->deleteEvent( event ) || status;
+     }
+   }
++  if ( status ) {
++    notifyIncidenceDeleted( event );
++  }
+ 
+   setModified( status );
+   return status;
+Index: kcal/event.cpp
+===================================================================
+--- kcal/event.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
++++ kcal/event.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+@@ -121,8 +121,18 @@
+   if ( hasEndDate() ) {
+     return d->mDtEnd;
+   }
++
+   if ( hasDuration() ) {
+-    return duration().end( dtStart() );
++    if ( allDay() ) {
++      // For all day events, dtEnd is always inclusive
++      KDateTime end = duration().end( dtStart() ).addDays( -1 );
++
++      if ( end < dtStart() ) {
++        end = dtStart();
++      }
++    } else {
++      return duration().end( dtStart() );
++    }
+   }
+ 
+   kDebug() << "Warning! Event '" << summary()
+Index: kcal/icalformat.cpp
+===================================================================
+--- kcal/icalformat.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
++++ kcal/icalformat.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+@@ -131,7 +131,7 @@
+ 
+   // Convert to UTF8 and save
+   QByteArray textUtf8 = text.toUtf8();
+-  file.write( textUtf8.data(), textUtf8.size() - 1 );
++  file.write( textUtf8.data(), textUtf8.size() );
+ 
+   if ( !file.finalize() ) {
+     kDebug() << "err:" << file.errorString();
+Index: CMakeLists.txt
+===================================================================
+--- CMakeLists.txt	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
++++ CMakeLists.txt	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+@@ -9,8 +9,7 @@
+ set(KDEPIMLIBS_VERSION ${KDEPIMLIBS_VERSION_MAJOR}.${KDEPIMLIBS_VERSION_MINOR}.${KDEPIMLIBS_VERSION_PATCH} )
+ 
+ # search packages used by KDE
+-# Adjust the version of kdelibs which is required as needed (should be 4.2.0 once KDE 4.2 is released), Alex
+-find_package(KDE4  4.1.80  REQUIRED)
++find_package(KDE4  4.2.0  REQUIRED)
+ 
+ include (KDE4Defaults)
+ include (MacroLibrary)
+Index: kabc/scripts/addressee.src.cpp
+===================================================================
+--- kabc/scripts/addressee.src.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
++++ kabc/scripts/addressee.src.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+@@ -398,6 +398,7 @@
+     d->mEmails.removeAll( email );
+     d->mEmails.prepend( email );
+   } else {
++    d->mEmpty = false;
+     if ( preferred ) {
+       d->mEmails.prepend( email );
+     } else {
+Index: kabc/stdaddressbook.cpp
+===================================================================
+--- kabc/stdaddressbook.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
++++ kabc/stdaddressbook.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+@@ -166,8 +166,8 @@
+   Resource *res = mParent->standardResource();
+   if ( !res ) {
+     res = manager->createResource( "file" );
+-    res->setResourceName( i18n( "Default Addressbook" ) );
+     if ( res ) {
++      res->setResourceName( i18n( "Default Addressbook" ) );
+       mParent->addResource( res );
+     } else {
+       kDebug() << "No resource available!!!";
