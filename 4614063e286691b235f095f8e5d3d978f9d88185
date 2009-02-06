@@ -1,0 +1,2 @@
+- R: ldconfig
+- don't package already ghosted files!
