@@ -1,7 +1,40 @@
+Index: cmake/modules/FindLibical.cmake
+===================================================================
+--- cmake/modules/FindLibical.cmake	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ cmake/modules/FindLibical.cmake	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -52,7 +52,7 @@
+ 
+ if(LIBICAL_INCLUDE_DIRS AND LIBICAL_LIBRARIES)
+   set(FIND_LIBICAL_VERSION_SOURCE
+-    "#include <ical.h>\n int main()\n {\n printf(\"%s\",ICAL_VERSION);return 1;\n }\n")
++    "#include <libical/ical.h>\n int main()\n {\n printf(\"%s\",ICAL_VERSION);return 1;\n }\n")
+   set(FIND_LIBICAL_VERSION_SOURCE_FILE ${CMAKE_BINARY_DIR}/CMakeTmp/FindLIBICAL.cxx)
+   file(WRITE "${FIND_LIBICAL_VERSION_SOURCE_FILE}" "${FIND_LIBICAL_VERSION_SOURCE}")
+ 
+Index: kpimidentities/identitymanager.cpp
+===================================================================
+--- kpimidentities/identitymanager.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kpimidentities/identitymanager.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -27,6 +27,7 @@
+ 
+ #include <kemailsettings.h> // for IdentityEntry::fromControlCenter()
+ #include <klocale.h>
++#include <kglobal.h>
+ #include <kdebug.h>
+ #include <kconfig.h>
+ #include <kuser.h>
+@@ -59,6 +60,7 @@
+     : QObject( parent )
+ {
+   setObjectName( name );
++  KGlobal::locale()->insertCatalog("libkpimidentities");
+   new IdentityManagerAdaptor( this );
+   QDBusConnection dbus = QDBusConnection::sessionBus();
+   const QString dbusPath = newDBusObjectName();
 Index: syndication/mapper/itemrdfimpl.cpp
 ===================================================================
---- syndication/mapper/itemrdfimpl.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
-+++ syndication/mapper/itemrdfimpl.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+--- syndication/mapper/itemrdfimpl.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ syndication/mapper/itemrdfimpl.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
 @@ -71,12 +71,12 @@
  QList<PersonPtr> ItemRDFImpl::authors() const
  {
@@ -38,8 +71,8 @@ Index: syndication/mapper/itemrdfimpl.cpp
  }
 Index: syndication/mapper/itemrss2impl.cpp
 ===================================================================
---- syndication/mapper/itemrss2impl.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
-+++ syndication/mapper/itemrss2impl.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+--- syndication/mapper/itemrss2impl.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ syndication/mapper/itemrss2impl.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
 @@ -72,14 +72,14 @@
  QList<PersonPtr> ItemRSS2Impl::authors() const
  {
@@ -127,11 +160,63 @@ Index: syndication/mapper/itemrss2impl.cpp
      return ret;
  }
  
+Index: kresources/kresources_manager.desktop
+===================================================================
+--- kresources/kresources_manager.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kresources/kresources_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -25,6 +25,7 @@
+ Name[pt_BR]=Gerenciador do KResource
+ Name[ro]=Gestionar KResurse
+ Name[ru]=Администратор KResources
++Name[se]=KResources-gieđahalli
+ Name[sl]=Upravnik KResources
+ Name[sr]=Менаџер к‑ресурса
+ Name[sr@latin]=Menadžer k‑resursa
+@@ -63,6 +64,7 @@
+ Comment[pt_BR]=Gerenciador do KResource
+ Comment[ro]=Gestionar KResurse
+ Comment[ru]=Администратор KResources
++Comment[se]=KResources-gieđahalli
+ Comment[sl]=Upravnik KResources
+ Comment[sr]=Менаџер к‑ресурса
+ Comment[sr@latin]=Menadžer k‑resursa
+Index: kresources/kresources.desktop
+===================================================================
+--- kresources/kresources.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kresources/kresources.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -36,6 +36,7 @@
+ Name[pt_BR]=Fontes de dados do KDE
+ Name[ro]=Resurse KDE
+ Name[ru]=Ресурсы KDE
++Name[se]=KDE-resurssat
+ Name[sl]=Viri KDE
+ Name[sr]=КДЕ ресурси
+ Name[sr@latin]=KDE resursi
+@@ -75,6 +76,7 @@
+ Comment[pt_BR]=Configurar as fontes de dados do KDE
+ Comment[ro]=Configurare resurse KDE
+ Comment[ru]=Настроить ресурсы KDE
++Comment[se]=Heivet KDE-resurssaid
+ Comment[sl]=Nastavi vire KDE
+ Comment[sr]=Подеси ресурсе КДЕ‑а
+ Comment[sr@latin]=Podesi resurse KDE‑a
+Index: kresources/kresources_plugin.desktop
+===================================================================
+--- kresources/kresources_plugin.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kresources/kresources_plugin.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -25,6 +25,7 @@
+ Name[pt_BR]=Plug-in do KResource
+ Name[ro]=Modul KResurse
+ Name[ru]=Модуль KResources
++Name[se]=KResources-lassemodula
+ Name[sl]=Vstavek KResources
+ Name[sr]=Прикључак радног оквира к‑ресурса
+ Name[sr@latin]=Priključak radnog okvira k‑resursa
 Index: kcal/localdir.desktop
 ===================================================================
---- kcal/localdir.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
-+++ kcal/localdir.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
-@@ -24,7 +24,7 @@
+--- kcal/localdir.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kcal/localdir.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -24,9 +24,10 @@
  Name[pa]=ਲੋਕਲ ਡਾਇਰੈਕਟਰੀ 'ਚ ਕੈਲੰਡਰ
  Name[pl]=Kalendarz w katalogu lokalnym
  Name[pt]=Calendário numa Pasta Local
@@ -139,12 +224,23 @@ Index: kcal/localdir.desktop
 +Name[pt_BR]=Calendário em pasta local
  Name[ro]=Calendar în director local
  Name[ru]=Календарь в локальной папке
++Name[se]=Kaleandar báikkálaš katalogas
  Name[sl]=Koledar v krajevnem imeniku
+ Name[sr]=Календар у локалној фасцикли
+ Name[sr@latin]=Kalendar u lokalnoj fascikli
+@@ -59,6 +60,7 @@
+ Comment[pt]=Oferece o acesso aos itens do calendário, estando cada um guardado num único ficheiro de uma dada pasta
+ Comment[pt_BR]=Fornece acesso aos itens do calendário, cada um armazenado em um único arquivo na pasta indicada
+ Comment[ro]=Oferă acces la elemente de calendar, fiecare stocat într-un singur fișier, într-un anumit director
++Comment[se]=Dáinna beasat kaleandarmerkošidda, vurkejuvvon okta fiilan, dihto katalogas
+ Comment[sl]=Nudi dostop do koledarskih vnosov, ki so shranjeni vsak posebej v svoji datoteki, v danem imeniku
+ Comment[sr]=Пружа приступ календарским ставкама, складиштеним у појединачним фајловима у датој фасцикли.
+ Comment[sr@latin]=Pruža pristup kalendarskim stavkama, skladištenim u pojedinačnim fajlovima u datoj fascikli.
 Index: kcal/local.desktop
 ===================================================================
---- kcal/local.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
-+++ kcal/local.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
-@@ -24,7 +24,7 @@
+--- kcal/local.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kcal/local.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -24,9 +24,10 @@
  Name[pa]=ਲੋਕਲ ਫਾਇਲ 'ਚ ਕੈਲੰਡਰ
  Name[pl]=Kalendarz w pliku lokalnym
  Name[pt]=Calendário num Ficheiro Local
@@ -152,12 +248,68 @@ Index: kcal/local.desktop
 +Name[pt_BR]=Calendário em arquivo local
  Name[ro]=Calendar în fișier local
  Name[ru]=Календарь в локальном файле
++Name[se]=Kaleandar báikkálaš fiillas
  Name[sl]=Koledar v krajevni datoteki
+ Name[sr]=Календар у локалном фајлу
+ Name[sr@latin]=Kalendar u lokalnom fajlu
+@@ -59,6 +60,7 @@
+ Comment[pt]=Oferece o acesso a um calendário guardado num único ficheiro local
+ Comment[pt_BR]=Fornece acesso a um calendário armazenado em um único arquivo local
+ Comment[ro]=Oferă acces la un calendar stocat într-un singur fișier local
++Comment[se]=Dáinna beasat kaleandarii vurkejuvvon okta báikásaš fiilan
+ Comment[sl]=Nudi dostop do koledarja, ki je shranjen v eni sami krajevni datoteki
+ Comment[sr]=Пружа приступ календару складиштеном у једном локалном фајлу
+ Comment[sr@latin]=Pruža pristup kalendaru skladištenom u jednom lokalnom fajlu
+Index: kcal/kcal_manager.desktop
+===================================================================
+--- kcal/kcal_manager.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kcal/kcal_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -28,6 +28,7 @@
+ Name[pt]=Calendário
+ Name[pt_BR]=Calendário
+ Name[ru]=Календарь
++Name[se]=Kaleandar
+ Name[sl]=Koledar
+ Name[sr]=Календар
+ Name[sr@latin]=Kalendar
 Index: kcal/calendarresources.cpp
 ===================================================================
---- kcal/calendarresources.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
-+++ kcal/calendarresources.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
-@@ -448,6 +448,9 @@
+--- kcal/calendarresources.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kcal/calendarresources.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -212,6 +212,7 @@
+   : Calendar( timeSpec ),
+     d( new KCal::CalendarResources::Private( family ) )
+ {
++  mPendingDeleteFromResourceMap = false;
+   d->mManager->addObserver( this );
+ }
+ 
+@@ -220,6 +221,7 @@
+   : Calendar( timeZoneId ),
+     d( new KCal::CalendarResources::Private( family ) )
+ {
++  mPendingDeleteFromResourceMap = false;
+   d->mManager->addObserver( this );
+ }
+ 
+@@ -287,6 +289,7 @@
+   }
+ 
+   d->mOpen = true;
++  emit calendarLoaded();
+ }
+ 
+ bool CalendarResources::reload()
+@@ -439,7 +442,7 @@
+   if ( d->mResourceMap.find( event ) != d->mResourceMap.end() ) {
+     status = d->mResourceMap[event]->deleteEvent( event );
+     if ( status ) {
+-      d->mResourceMap.remove( event );
++      mPendingDeleteFromResourceMap = true;
+     }
+   } else {
+     status = false;
+@@ -448,6 +451,9 @@
        status = (*it)->deleteEvent( event ) || status;
      }
    }
@@ -167,11 +319,61 @@ Index: kcal/calendarresources.cpp
  
    setModified( status );
    return status;
+@@ -492,7 +498,7 @@
+   if ( d->mResourceMap.find( todo ) != d->mResourceMap.end() ) {
+     status = d->mResourceMap[todo]->deleteTodo( todo );
+     if ( status ) {
+-      d->mResourceMap.remove( todo );
++      mPendingDeleteFromResourceMap = true;
+     }
+   } else {
+     CalendarResourceManager::ActiveIterator it;
+@@ -638,7 +644,7 @@
+   if ( d->mResourceMap.find( journal ) != d->mResourceMap.end() ) {
+     status = d->mResourceMap[journal]->deleteJournal( journal );
+     if ( status ) {
+-      d->mResourceMap.remove( journal );
++      mPendingDeleteFromResourceMap = true;
+     }
+   } else {
+     CalendarResourceManager::ActiveIterator it;
+@@ -839,6 +845,7 @@
+     }
+     d->mResourceMap[ incidence ] = r;
+   }
++  mPendingDeleteFromResourceMap = false;
+ 
+   int count = incrementChangeCount( r );
+   if ( count == 1 ) {
+@@ -864,6 +871,11 @@
+ 
+   int count = decrementChangeCount( r );
+ 
++  if ( mPendingDeleteFromResourceMap ) {
++    d->mResourceMap.remove( incidence );
++    mPendingDeleteFromResourceMap = false;
++  }
++
+   if ( count == 0 ) {
+     bool ok = save( d->mTickets[ r ], incidence );
+     if ( ok ) {
+Index: kcal/calendarresources.h
+===================================================================
+--- kcal/calendarresources.h	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kcal/calendarresources.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -721,6 +721,7 @@
+     Q_DISABLE_COPY( CalendarResources )
+     class Private;
+     Private *d;
++    bool mPendingDeleteFromResourceMap;
+     //@endcond
+ };
+ 
 Index: kcal/event.cpp
 ===================================================================
---- kcal/event.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
-+++ kcal/event.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
-@@ -121,8 +121,18 @@
+--- kcal/event.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kcal/event.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -121,8 +121,15 @@
    if ( hasEndDate() ) {
      return d->mDtEnd;
    }
@@ -181,20 +383,77 @@ Index: kcal/event.cpp
 +    if ( allDay() ) {
 +      // For all day events, dtEnd is always inclusive
 +      KDateTime end = duration().end( dtStart() ).addDays( -1 );
-+
-+      if ( end < dtStart() ) {
-+        end = dtStart();
-+      }
++      return end >= dtStart() ? end : dtStart();
 +    } else {
 +      return duration().end( dtStart() );
 +    }
    }
  
    kDebug() << "Warning! Event '" << summary()
+@@ -149,10 +156,10 @@
+       timeZone = ' ' + spec.timeZone().name();
+     }
+ 
+-    return KGlobal::locale()->formatTime( dtEnd().toTimeSpec( spec ).time(), shortfmt )
++    return KGlobal::locale()->formatTime( dtEnd().toTimeSpec( spec ).time(), !shortfmt )
+       + timeZone;
+   } else {
+-    return KGlobal::locale()->formatTime( dtEnd().time(), shortfmt );
++    return KGlobal::locale()->formatTime( dtEnd().time(), !shortfmt );
+   }
+ }
+ 
+Index: kcal/todo.cpp
+===================================================================
+--- kcal/todo.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kcal/todo.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -184,10 +184,10 @@
+       timeZone = ' ' + spec.timeZone().name();
+     }
+ 
+-    return KGlobal::locale()->formatTime( dtDue( !recurs() ).toTimeSpec( spec ).time(), shortfmt )
++    return KGlobal::locale()->formatTime( dtDue( !recurs() ).toTimeSpec( spec ).time(), !shortfmt )
+       + timeZone;
+   } else {
+-    return KGlobal::locale()->formatTime( dtDue( !recurs() ).time(), shortfmt );
++    return KGlobal::locale()->formatTime( dtDue( !recurs() ).time(), !shortfmt );
+   }
+ }
+ 
+@@ -308,10 +308,10 @@
+       timeZone = ' ' + spec.timeZone().name();
+     }
+ 
+-    return KGlobal::locale()->formatTime( dtStart( first ).toTimeSpec( spec ).time(), shortfmt )
++    return KGlobal::locale()->formatTime( dtStart( first ).toTimeSpec( spec ).time(), !shortfmt )
+       + timeZone;
+   } else {
+-    return KGlobal::locale()->formatTime( dtStart( first ).time(), shortfmt );
++    return KGlobal::locale()->formatTime( dtStart( first ).time(), !shortfmt );
+   }
+ }
+ 
+Index: kcal/incidencebase.cpp
+===================================================================
+--- kcal/incidencebase.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kcal/incidencebase.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -252,10 +252,10 @@
+       timeZone = ' ' + spec.timeZone().name();
+     }
+ 
+-    return KGlobal::locale()->formatTime( dtStart().toTimeSpec( spec ).time(), shortfmt )
++    return KGlobal::locale()->formatTime( dtStart().toTimeSpec( spec ).time(), !shortfmt )
+       + timeZone;
+   } else {
+-    return KGlobal::locale()->formatTime( dtStart().time(), shortfmt );
++    return KGlobal::locale()->formatTime( dtStart().time(), !shortfmt );
+   }
+ }
+ 
 Index: kcal/icalformat.cpp
 ===================================================================
---- kcal/icalformat.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
-+++ kcal/icalformat.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+--- kcal/icalformat.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kcal/icalformat.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
 @@ -131,7 +131,7 @@
  
    // Convert to UTF8 and save
@@ -204,10 +463,24 @@ Index: kcal/icalformat.cpp
  
    if ( !file.finalize() ) {
      kDebug() << "err:" << file.errorString();
+Index: kcal/resourcecalendar.cpp
+===================================================================
+--- kcal/resourcecalendar.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kcal/resourcecalendar.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -252,7 +252,8 @@
+ 
+ bool ResourceCalendar::doSave( bool syncCache, Incidence *incidence )
+ {
+-  return doSave( syncCache, incidence );
++  Q_UNUSED( incidence );
++  return doSave( syncCache );
+ }
+ 
+ void ResourceCalendar::saveError( const QString &err )
 Index: CMakeLists.txt
 ===================================================================
---- CMakeLists.txt	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
-+++ CMakeLists.txt	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+--- CMakeLists.txt	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ CMakeLists.txt	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
 @@ -9,8 +9,7 @@
  set(KDEPIMLIBS_VERSION ${KDEPIMLIBS_VERSION_MAJOR}.${KDEPIMLIBS_VERSION_MINOR}.${KDEPIMLIBS_VERSION_PATCH} )
  
@@ -218,10 +491,399 @@ Index: CMakeLists.txt
  
  include (KDE4Defaults)
  include (MacroLibrary)
+Index: kioslave/nntp/nntp.cpp
+===================================================================
+--- kioslave/nntp/nntp.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kioslave/nntp/nntp.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -154,6 +154,7 @@
+   while ( true ) {
+     if ( !waitForResponse( readTimeout() ) ) {
+       error( ERR_SERVER_TIMEOUT, mHost );
++      nntp_close();
+       return;
+     }
+     memset( tmp, 0, MAX_PACKET_LEN );
+@@ -380,6 +381,7 @@
+   while ( true ) {
+     if ( ! waitForResponse( readTimeout() ) ) {
+       error( ERR_SERVER_TIMEOUT, mHost );
++      nntp_close();
+       return;
+     }
+     memset( readBuffer, 0, MAX_PACKET_LEN );
+@@ -451,6 +453,7 @@
+     while ( true ) {
+       if ( ! waitForResponse( readTimeout() ) ) {
+         error( ERR_SERVER_TIMEOUT, mHost );
++        nntp_close();
+         return;
+       }
+       memset( readBuffer, 0, MAX_PACKET_LEN );
+@@ -603,6 +606,7 @@
+     while ( true ) {
+       if ( ! waitForResponse( readTimeout() ) ) {
+         error( ERR_SERVER_TIMEOUT, mHost );
++        nntp_close();
+         return false;
+       }
+       memset( readBuffer, 0, MAX_PACKET_LEN );
+@@ -636,6 +640,7 @@
+   while ( true ) {
+     if ( ! waitForResponse( readTimeout() ) ) {
+       error( ERR_SERVER_TIMEOUT, mHost );
++      nntp_close();
+       return false;
+     }
+     memset( readBuffer, 0, MAX_PACKET_LEN );
+@@ -716,7 +721,6 @@
+   if ( isConnected() ) {
+     write( "QUIT\r\n", 6 );
+     disconnectFromHost();
+-    opened = false;
+     isAuthenticated = false;
+   }
+   mCurrentGroup.clear();
+@@ -751,8 +755,6 @@
+     }
+ 
+     DBG << "  nntp_open -- greating was read res_code :" << res_code;
+-    // let local class know that we are connected
+-    opened = true;
+ 
+     res_code = sendCommand("MODE READER");
+ 
+@@ -790,7 +792,7 @@
+ {
+   int res_code = 0;
+ 
+-  if ( !opened ) {
++  if ( !nntp_open() ) {
+     ERR << "NOT CONNECTED, cannot send cmd" << cmd;
+     return 0;
+   }
+@@ -897,6 +899,7 @@
+ {
+   if ( !waitForResponse( responseTimeout() ) ) {
+     error( ERR_SERVER_TIMEOUT , mHost );
++    nntp_close();
+     return -1;
+   }
+   memset( data, 0, MAX_PACKET_LEN );
+Index: kioslave/nntp/nntp.h
+===================================================================
+--- kioslave/nntp/nntp.h	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kioslave/nntp/nntp.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -78,7 +78,7 @@
+  private:
+    QString mHost, mUser, mPass;
+    quint16 m_port, m_defaultPort;
+-   bool postingAllowed, opened, isAuthenticated;
++   bool postingAllowed, isAuthenticated;
+    char readBuffer[MAX_PACKET_LEN];
+    ssize_t readBufferLen;
+    /// Current selected newsgroup
+Index: kioslave/sieve/sieve.protocol
+===================================================================
+--- kioslave/sieve/sieve.protocol	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kioslave/sieve/sieve.protocol	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -35,6 +35,7 @@
+ Description[pt]=Um 'ioslave' para o protocolo de filtragem de correio Sieve
+ Description[pt_BR]=Um ioslave para o protocolo de filtragem de correio Sieve
+ Description[ro]=Un „ioslave” pentru protocolul de filtrare a poștei Sieve
++Description[se]=SO-šláva Sieve e-boastasillenprotokolla várás
+ Description[sl]=Ioslave za protokol poštnega filtriranja Sieve
+ Description[sr]=У/И‑захват за сито, протокол филтрирања поште
+ Description[sr@latin]=U/I‑zahvat za sito, protokol filtriranja pošte
+Index: mailtransport/smtpsettings.ui
+===================================================================
+--- mailtransport/smtpsettings.ui	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ mailtransport/smtpsettings.ui	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -1,8 +1,9 @@
+-<ui version="4.0" >
+- <author>Volker Krause &lt;vkrause@kde.org>, KovoKs &lt;tomalbers@kde.nl></author>
++<?xml version="1.0" encoding="UTF-8"?>
++<ui version="4.0">
++ <author>Volker Krause &lt;vkrause@kde.org&gt;, KovoKs &lt;tomalbers@kde.nl&gt;</author>
+  <class>SMTPSettings</class>
+- <widget class="QWidget" name="SMTPSettings" >
+-  <property name="geometry" >
++ <widget class="QWidget" name="SMTPSettings">
++  <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+@@ -147,21 +148,28 @@
+              </layout>
+             </item>
+             <item>
+-             <widget class="KPushButton" name="checkCapabilities" >
+-              <property name="text" >
++             <widget class="KPushButton" name="checkCapabilities">
++              <property name="text">
+                <string>Check &amp;What the Server Supports</string>
+               </property>
+              </widget>
+             </item>
++            <item>
++             <widget class="QProgressBar" name="checkCapabilitiesProgress">
++              <property name="visible">
++               <bool>false</bool>
++              </property>
++             </widget>
++            </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer>
+-           <property name="orientation" >
++           <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+-           <property name="sizeHint" stdset="0" >
++           <property name="sizeHint" stdset="0">
+             <size>
+              <width>166</width>
+              <height>81</height>
+@@ -349,36 +357,36 @@
+         </layout>
+        </item>
+        <item>
+-        <widget class="KSeparator" name="kseparator_3" />
++        <widget class="KSeparator" name="kseparator_3"/>
+        </item>
+        <item>
+-        <widget class="QCheckBox" name="kcfg_specifyHostname" >
+-         <property name="text" >
++        <widget class="QCheckBox" name="kcfg_specifyHostname">
++         <property name="text">
+           <string>Sen&amp;d custom hostname to server</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+-        <layout class="QHBoxLayout" >
++        <layout class="QHBoxLayout">
+          <item>
+-          <widget class="QLabel" name="hostnameLabel" >
+-           <property name="enabled" >
++          <widget class="QLabel" name="hostnameLabel">
++           <property name="enabled">
+             <bool>false</bool>
+            </property>
+-           <property name="text" >
++           <property name="text">
+             <string>Hos&amp;tname:</string>
+            </property>
+-           <property name="alignment" >
++           <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+-           <property name="buddy" >
++           <property name="buddy">
+             <cstring>kcfg_localHostname</cstring>
+            </property>
+           </widget>
+          </item>
+          <item>
+-          <widget class="KLineEdit" name="kcfg_localHostname" >
+-           <property name="enabled" >
++          <widget class="KLineEdit" name="kcfg_localHostname">
++           <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
+@@ -386,22 +394,22 @@
+         </layout>
+        </item>
+        <item>
+-        <widget class="KSeparator" name="kseparator_2" />
++        <widget class="KSeparator" name="kseparator_2"/>
+        </item>
+        <item>
+-        <layout class="QHBoxLayout" >
++        <layout class="QHBoxLayout">
+          <item>
+-          <widget class="QLabel" name="precommandLabel" >
+-           <property name="text" >
++          <widget class="QLabel" name="precommandLabel">
++           <property name="text">
+             <string>Precommand:</string>
+            </property>
+-           <property name="alignment" >
++           <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+-          <widget class="KLineEdit" name="kcfg_precommand" />
++          <widget class="KLineEdit" name="kcfg_precommand"/>
+          </item>
+         </layout>
+        </item>
+@@ -411,7 +419,7 @@
+    </item>
+   </layout>
+  </widget>
+- <layoutfunction spacing="KDialog::spacingHint" margin="KDialog::marginHint" />
++ <layoutfunction spacing="KDialog::spacingHint" margin="KDialog::marginHint"/>
+  <customwidgets>
+   <customwidget>
+    <class>KButtonGroup</class>
+@@ -454,11 +462,11 @@
+    <receiver>usernameLabel</receiver>
+    <slot>setEnabled(bool)</slot>
+    <hints>
+-    <hint type="sourcelabel" >
++    <hint type="sourcelabel">
+      <x>29</x>
+      <y>88</y>
+     </hint>
+-    <hint type="destinationlabel" >
++    <hint type="destinationlabel">
+      <x>112</x>
+      <y>117</y>
+     </hint>
+@@ -470,11 +478,11 @@
+    <receiver>kcfg_userName</receiver>
+    <slot>setEnabled(bool)</slot>
+    <hints>
+-    <hint type="sourcelabel" >
++    <hint type="sourcelabel">
+      <x>35</x>
+      <y>85</y>
+     </hint>
+-    <hint type="destinationlabel" >
++    <hint type="destinationlabel">
+      <x>186</x>
+      <y>115</y>
+     </hint>
+@@ -486,11 +494,11 @@
+    <receiver>passwordLabel</receiver>
+    <slot>setEnabled(bool)</slot>
+    <hints>
+-    <hint type="sourcelabel" >
++    <hint type="sourcelabel">
+      <x>49</x>
+      <y>88</y>
+     </hint>
+-    <hint type="destinationlabel" >
++    <hint type="destinationlabel">
+      <x>61</x>
+      <y>142</y>
+     </hint>
+@@ -502,11 +510,11 @@
+    <receiver>password</receiver>
+    <slot>setEnabled(bool)</slot>
+    <hints>
+-    <hint type="sourcelabel" >
++    <hint type="sourcelabel">
+      <x>43</x>
+      <y>89</y>
+     </hint>
+-    <hint type="destinationlabel" >
++    <hint type="destinationlabel">
+      <x>140</x>
+      <y>142</y>
+     </hint>
+@@ -518,11 +526,11 @@
+    <receiver>kcfg_storePassword</receiver>
+    <slot>setEnabled(bool)</slot>
+    <hints>
+-    <hint type="sourcelabel" >
++    <hint type="sourcelabel">
+      <x>75</x>
+      <y>86</y>
+     </hint>
+-    <hint type="destinationlabel" >
++    <hint type="destinationlabel">
+      <x>62</x>
+      <y>176</y>
+     </hint>
+@@ -534,11 +542,11 @@
+    <receiver>kcfg_authenticationType</receiver>
+    <slot>setEnabled(bool)</slot>
+    <hints>
+-    <hint type="sourcelabel" >
++    <hint type="sourcelabel">
+      <x>82</x>
+      <y>89</y>
+     </hint>
+-    <hint type="destinationlabel" >
++    <hint type="destinationlabel">
+      <x>78</x>
+      <y>202</y>
+     </hint>
+@@ -550,11 +558,11 @@
+    <receiver>hostnameLabel</receiver>
+    <slot>setEnabled(bool)</slot>
+    <hints>
+-    <hint type="sourcelabel" >
++    <hint type="sourcelabel">
+      <x>90</x>
+      <y>334</y>
+     </hint>
+-    <hint type="destinationlabel" >
++    <hint type="destinationlabel">
+      <x>81</x>
+      <y>357</y>
+     </hint>
+@@ -566,11 +574,11 @@
+    <receiver>kcfg_localHostname</receiver>
+    <slot>setEnabled(bool)</slot>
+    <hints>
+-    <hint type="sourcelabel" >
++    <hint type="sourcelabel">
+      <x>185</x>
+      <y>327</y>
+     </hint>
+-    <hint type="destinationlabel" >
++    <hint type="destinationlabel">
+      <x>179</x>
+      <y>360</y>
+     </hint>
+Index: mailtransport/configmodule.cpp
+===================================================================
+--- mailtransport/configmodule.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ mailtransport/configmodule.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -27,7 +27,7 @@
+ using namespace MailTransport;
+ 
+ K_PLUGIN_FACTORY( MailTransportConfigFactory, registerPlugin<ConfigModule>(); )
+-K_EXPORT_PLUGIN( MailTransportConfigFactory( "mailtransport" ) )
++K_EXPORT_PLUGIN( MailTransportConfigFactory( "mailtransport", "libmailtransport" ) )
+ 
+ ConfigModule::ConfigModule( QWidget * parent, const QVariantList & args ) :
+     KCModule( MailTransportConfigFactory::componentData(), parent, args )
+Index: mailtransport/kcm_mailtransport.desktop
+===================================================================
+--- mailtransport/kcm_mailtransport.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ mailtransport/kcm_mailtransport.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -38,6 +38,7 @@
+ Name[pt_BR]=Transporte de correio
+ Name[ro]=Transport poștal
+ Name[ru]=Метод отправки
++Name[se]=E-boastta fievrridanvuohki
+ Name[sl]=Prenos pošte
+ Name[sr]=Транспорт поште
+ Name[sr@latin]=Transport pošte
+Index: mailtransport/transportmanagementwidget.cpp
+===================================================================
+--- mailtransport/transportmanagementwidget.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ mailtransport/transportmanagementwidget.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -37,6 +37,7 @@
+ TransportManagementWidget::TransportManagementWidget( QWidget *parent )
+   : QWidget( parent ), d( new Private )
+ {
++  KGlobal::locale()->insertCatalog(QString::fromLatin1("libmailtransport"));
+   d->ui.setupUi( this );
+ 
+   d->ui.transportList->setHeaderLabels( QStringList()
 Index: kabc/scripts/addressee.src.cpp
 ===================================================================
---- kabc/scripts/addressee.src.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
-+++ kabc/scripts/addressee.src.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+--- kabc/scripts/addressee.src.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kabc/scripts/addressee.src.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
 @@ -398,6 +398,7 @@
      d->mEmails.removeAll( email );
      d->mEmails.prepend( email );
@@ -230,10 +892,46 @@ Index: kabc/scripts/addressee.src.cpp
      if ( preferred ) {
        d->mEmails.prepend( email );
      } else {
+Index: kabc/plugins/file/file.desktop
+===================================================================
+--- kabc/plugins/file/file.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kabc/plugins/file/file.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -27,6 +27,7 @@
+ Name[pt_BR]=Arquivo
+ Name[ro]=Fișier
+ Name[ru]=Файл
++Name[se]=Fiila
+ Name[sl]=Datoteka
+ Name[sr]=Фајл
+ Name[sr@latin]=Fajl
+Index: kabc/plugins/net/net.desktop
+===================================================================
+--- kabc/plugins/net/net.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kabc/plugins/net/net.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -28,6 +28,7 @@
+ Name[pt_BR]=Rede
+ Name[ro]=Rețea
+ Name[ru]=Сеть
++Name[se]=Fierbmi
+ Name[sl]=Omrežje
+ Name[sr]=Мрежа
+ Name[sr@latin]=Mreža
+Index: kabc/plugins/dir/dir.desktop
+===================================================================
+--- kabc/plugins/dir/dir.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kabc/plugins/dir/dir.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -28,6 +28,7 @@
+ Name[pt_BR]=Pasta
+ Name[ro]=Director
+ Name[ru]=Папка
++Name[se]=Kataloga
+ Name[sl]=Imenik
+ Name[sr]=Фасцикла
+ Name[sr@latin]=Fascikla
 Index: kabc/stdaddressbook.cpp
 ===================================================================
---- kabc/stdaddressbook.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 920563)
-+++ kabc/stdaddressbook.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 920563)
+--- kabc/stdaddressbook.cpp	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kabc/stdaddressbook.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
 @@ -166,8 +166,8 @@
    Resource *res = mParent->standardResource();
    if ( !res ) {
@@ -244,3 +942,27 @@ Index: kabc/stdaddressbook.cpp
        mParent->addResource( res );
      } else {
        kDebug() << "No resource available!!!";
+Index: kabc/kabc_manager.desktop
+===================================================================
+--- kabc/kabc_manager.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kabc/kabc_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -28,6 +28,7 @@
+ Name[pt_BR]=Contatos
+ Name[ro]=Contacte
+ Name[ru]=Контакт
++Name[se]=Oktavuođat
+ Name[sl]=Stiki
+ Name[sr]=Контакти
+ Name[sr@latin]=Kontakti
+Index: kabc/formats/binary.desktop
+===================================================================
+--- kabc/formats/binary.desktop	(.../tags/KDE/4.2.0/kdepimlibs)	(wersja 929214)
++++ kabc/formats/binary.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 929214)
+@@ -28,6 +28,7 @@
+ Name[pt_BR]=Binário
+ Name[ro]=Binar
+ Name[ru]=Двоичный
++Name[se]=Binára
+ Name[sl]=Dvojiško
+ Name[sr]=Бинарни
+ Name[sr@latin]=Binarni
