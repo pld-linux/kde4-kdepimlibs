@@ -1,7 +1,7 @@
 Index: cmake/modules/FindLibical.cmake
 ===================================================================
---- cmake/modules/FindLibical.cmake	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ cmake/modules/FindLibical.cmake	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- cmake/modules/FindLibical.cmake	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ cmake/modules/FindLibical.cmake	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -16,7 +16,6 @@
  
  if (WIN32)
@@ -44,8 +44,8 @@ Index: cmake/modules/FindLibical.cmake
  
 Index: kresources/kresources_manager.desktop
 ===================================================================
---- kresources/kresources_manager.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kresources/kresources_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kresources/kresources_manager.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kresources/kresources_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -10,6 +10,7 @@
  Name[fr]=Gestionnaire de ressources
  Name[ga]=Bainisteoir KResources
@@ -64,8 +64,8 @@ Index: kresources/kresources_manager.desktop
  Comment[ja]=KDE リソースマネージャ
 Index: kresources/kresources.desktop
 ===================================================================
---- kresources/kresources.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kresources/kresources.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kresources/kresources.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kresources/kresources.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -20,6 +20,7 @@
  Name[fr]=Ressources KDE
  Name[ga]=Acmhainní KDE
@@ -84,8 +84,8 @@ Index: kresources/kresources.desktop
  Comment[ja]=KDE リソースの設定
 Index: kresources/kresources_plugin.desktop
 ===================================================================
---- kresources/kresources_plugin.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kresources/kresources_plugin.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kresources/kresources_plugin.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kresources/kresources_plugin.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -10,6 +10,7 @@
  Name[fr]=Module externe de gestion de ressources
  Name[ga]=Breiseán KResources
@@ -104,8 +104,8 @@ Index: kresources/kresources_plugin.desktop
  Comment[ja]=KDE リソースフレームワークのプラグイン
 Index: doc/kcontrol/kresources/index.docbook
 ===================================================================
---- doc/kcontrol/kresources/index.docbook	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ doc/kcontrol/kresources/index.docbook	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- doc/kcontrol/kresources/index.docbook	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ doc/kcontrol/kresources/index.docbook	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -39,7 +39,7 @@
  
  <para>Use the buttons on the right side of the listbox to add, remove or edit resources.</para>
@@ -115,10 +115,98 @@ Index: doc/kcontrol/kresources/index.docbook
  
  <para>
  <table>
+Index: kcal/resourcelocaldir.cpp
+===================================================================
+--- kcal/resourcelocaldir.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/resourcelocaldir.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
+@@ -142,13 +142,13 @@
+   const QStringList entries = dir.entryList( QDir::Files | QDir::Readable );
+ 
+   bool success = true;
+-  QStringList::ConstIterator it;
+-  for ( it = entries.begin(); it != entries.end(); ++it ) {
+-    if ( (*it).endsWith( '~' ) ) { // is backup file, ignore it
+-      continue;
++  for ( int i = 0, count = entries.count(); i < count; ++i ) {
++    if ( entries[i].contains( QRegExp( "(~|\\.new|\\.tmp)$" ) ) ||
++         entries[i].startsWith( d->mURL.path() + "/qt_temp." ) ) {
++      continue;  // backup or temporary file, ignore it
+     }
+ 
+-    const QString fileName = dirName + '/' + *it;
++    const QString fileName = dirName + '/' + entries[i];
+     kDebug() << " read '" << fileName << "'";
+     CalendarLocal cal( calendar()->timeSpec() );
+     if ( !doFileLoad( cal, fileName ) ) {
+@@ -195,6 +195,11 @@
+ 
+ bool ResourceLocalDir::doSave( bool, Incidence *incidence )
+ {
++  if ( d->mDeletedIncidences.contains( incidence ) ) {
++    d->mDeletedIncidences.removeAll( incidence );
++    return true;
++  }
++
+   d->mDirWatch.stopScan();  // do prohibit the dirty() signal and a following reload()
+ 
+   QString fileName = d->mURL.path() + '/' + incidence->uid();
+@@ -218,7 +223,9 @@
+ {
+   kDebug();
+ 
+-  if ( !isOpen() ) {
++  if ( !isOpen() ||
++       file.contains( QRegExp( "(~|\\.new|\\.tmp)$" ) ) ||
++       file.startsWith( d->mURL.path() + "/qt_temp." ) ) {
+     return;
+   }
+ 
+@@ -234,7 +241,12 @@
+ {
+   kDebug();
+   if ( d->deleteIncidenceFile( event ) ) {
+-    return calendar()->deleteEvent( event );
++    if ( calendar()->deleteEvent( event ) ) {
++      d->mDeletedIncidences.append( event );
++      return true;
++    } else {
++      return false;
++    }
+   } else {
+     return false;
+   }
+@@ -248,7 +260,12 @@
+ bool ResourceLocalDir::deleteTodo( Todo *todo )
+ {
+   if ( d->deleteIncidenceFile( todo ) ) {
+-    return calendar()->deleteTodo( todo );
++    if ( calendar()->deleteTodo( todo ) ) {
++      d->mDeletedIncidences.append( todo );
++      return true;
++    } else {
++      return false;
++    }
+   } else {
+     return false;
+   }
+@@ -262,7 +279,12 @@
+ bool ResourceLocalDir::deleteJournal( Journal *journal )
+ {
+   if ( d->deleteIncidenceFile( journal ) ) {
+-    return calendar()->deleteJournal( journal );
++    if ( calendar()->deleteJournal( journal ) ) {
++      d->mDeletedIncidences.append( journal );
++      return true;
++    } else {
++      return false;
++    }
+   } else {
+     return false;
+   }
 Index: kcal/localdir.desktop
 ===================================================================
---- kcal/localdir.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/localdir.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/localdir.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/localdir.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -11,6 +11,7 @@
  Name[fr]=Calendrier dans un dossier local
  Name[ga]=Féilire i gComhadlann Logánta
@@ -129,8 +217,8 @@ Index: kcal/localdir.desktop
  Name[ja]=ローカルディレクトリのカレンダー
 Index: kcal/local.desktop
 ===================================================================
---- kcal/local.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/local.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/local.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/local.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -11,6 +11,7 @@
  Name[fr]=Calendrier dans un fichier local
  Name[ga]=Féilire i gComhad Logánta
@@ -141,8 +229,8 @@ Index: kcal/local.desktop
  Name[ja]=ローカルファイルのカレンダー
 Index: kcal/kcal_manager.desktop
 ===================================================================
---- kcal/kcal_manager.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/kcal_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/kcal_manager.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/kcal_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -12,6 +12,7 @@
  Name[fr]=Calendrier
  Name[ga]=Féilire
@@ -153,8 +241,8 @@ Index: kcal/kcal_manager.desktop
  Name[ja]=カレンダー
 Index: kcal/vcalformat.cpp
 ===================================================================
---- kcal/vcalformat.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/vcalformat.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/vcalformat.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/vcalformat.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -263,8 +263,10 @@
  
    // organizer stuff
@@ -201,8 +289,8 @@ Index: kcal/vcalformat.cpp
      QStringList::ConstIterator it;
 Index: kcal/icalformat_p.cpp
 ===================================================================
---- kcal/icalformat_p.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/icalformat_p.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/icalformat_p.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/icalformat_p.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -580,8 +580,10 @@
  
    // organizer stuff
@@ -277,8 +365,8 @@ Index: kcal/icalformat_p.cpp
        a, icalproperty_new_summary( alarm->mailSubject().toUtf8() ) );
 Index: kcal/tests/testtodo.cpp
 ===================================================================
---- kcal/tests/testtodo.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/tests/testtodo.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/tests/testtodo.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/tests/testtodo.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -98,3 +98,24 @@
    Todo todo2 = todo1;
    QVERIFY( todo1 == todo2 );
@@ -306,8 +394,8 @@ Index: kcal/tests/testtodo.cpp
 +}
 Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase12.ics
 ===================================================================
---- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase12.ics	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase12.ics	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase12.ics	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase12.ics	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -12,7 +12,7 @@
  SUMMARY:20. Mai 2005\, 13-14 Uhr\, alle 3 Tage\, bis 30. Juni 2005
  CLASS:PUBLIC
@@ -319,8 +407,8 @@ Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase12.ics
  TRANSP:OPAQUE
 Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase13.ics.vcal.ref
 ===================================================================
---- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase13.ics.vcal.ref	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase13.ics.vcal.ref	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase13.ics.vcal.ref	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase13.ics.vcal.ref	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -9,7 +9,7 @@
  SEQUENCE:1
  LAST-MODIFIED:20050520T105327Z
@@ -332,8 +420,8 @@ Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase13.ics.vcal.ref
  PRIORITY:5
 Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase05.ics.vcal.ref
 ===================================================================
---- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase05.ics.vcal.ref	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase05.ics.vcal.ref	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase05.ics.vcal.ref	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase05.ics.vcal.ref	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -9,7 +9,7 @@
  SEQUENCE:2
  LAST-MODIFIED:20050520T105740Z
@@ -345,8 +433,8 @@ Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase05.ics.vcal.ref
  PRIORITY:5
 Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase13.ics
 ===================================================================
---- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase13.ics	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase13.ics	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase13.ics	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase13.ics	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -13,7 +13,7 @@
    12. 2006
  CLASS:PUBLIC
@@ -358,8 +446,8 @@ Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase13.ics
  TRANSP:OPAQUE
 Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase12.ics.vcal.ref
 ===================================================================
---- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase12.ics.vcal.ref	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase12.ics.vcal.ref	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase12.ics.vcal.ref	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase12.ics.vcal.ref	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -9,7 +9,7 @@
  SEQUENCE:1
  LAST-MODIFIED:20050520T104819Z
@@ -371,8 +459,8 @@ Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase12.ics.vcal.ref
  PRIORITY:5
 Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase04.ics.vcal.ref
 ===================================================================
---- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase04.ics.vcal.ref	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase04.ics.vcal.ref	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase04.ics.vcal.ref	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase04.ics.vcal.ref	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -9,7 +9,7 @@
  SEQUENCE:4
  LAST-MODIFIED:20050520T105750Z
@@ -384,8 +472,8 @@ Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase04.ics.vcal.ref
  PRIORITY:5
 Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase04.ics
 ===================================================================
---- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase04.ics	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase04.ics	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase04.ics	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase04.ics	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -13,7 +13,7 @@
    2006
  CLASS:PUBLIC
@@ -397,8 +485,8 @@ Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase04.ics
  TRANSP:OPAQUE
 Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase05.ics
 ===================================================================
---- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase05.ics	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase05.ics	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/tests/data/vCalendar/KOrganizer_vCalTestCase05.ics	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/tests/data/vCalendar/KOrganizer_vCalTestCase05.ics	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -13,7 +13,7 @@
    Juni 2005
  CLASS:PUBLIC
@@ -410,8 +498,8 @@ Index: kcal/tests/data/vCalendar/KOrganizer_vCalTestCase05.ics
  TRANSP:OPAQUE
 Index: kcal/tests/testtodo.h
 ===================================================================
---- kcal/tests/testtodo.h	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/tests/testtodo.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/tests/testtodo.h	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/tests/testtodo.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -31,6 +31,7 @@
      void testCompare();
      void testClone();
@@ -420,10 +508,22 @@ Index: kcal/tests/testtodo.h
  };
  
  #endif
+Index: kcal/resourcelocaldir_p.h
+===================================================================
+--- kcal/resourcelocaldir_p.h	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/resourcelocaldir_p.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
+@@ -56,6 +56,7 @@
+     KABC::Lock *mLock;
+     KUrl mURL;
+     KDirWatch mDirWatch;
++    QList<Incidence *> mDeletedIncidences;
+ };
+ //@endcond
+ 
 Index: kcal/CMakeLists.txt
 ===================================================================
---- kcal/CMakeLists.txt	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/CMakeLists.txt	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/CMakeLists.txt	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/CMakeLists.txt	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -1,10 +1,7 @@
  project(kcal)
  
@@ -438,8 +538,8 @@ Index: kcal/CMakeLists.txt
  
 Index: kcal/todo.cpp
 ===================================================================
---- kcal/todo.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/todo.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/todo.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/todo.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -508,7 +508,9 @@
        while ( !todo->recursAt( nextDate ) ||
                nextDate <= KDateTime::currentUtcDateTime() ) {
@@ -453,8 +553,8 @@ Index: kcal/todo.cpp
  
 Index: kcal/versit/vobject.h
 ===================================================================
---- kcal/versit/vobject.h	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/versit/vobject.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/versit/vobject.h	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/versit/vobject.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -142,7 +142,7 @@
  #define VCEventProp				"VEVENT"
  #define VCEWorldProp			"EWORLD"
@@ -466,8 +566,8 @@ Index: kcal/versit/vobject.h
  #define VCFamilyNameProp		"F"
 Index: kcal/versit/vobject.c
 ===================================================================
---- kcal/versit/vobject.c	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/versit/vobject.c	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kcal/versit/vobject.c	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/versit/vobject.c	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -804,7 +804,7 @@
      { VCEventProp, 0, 0, PD_BEGIN },
      { VCEWorldProp, 0, 0, 0 },
@@ -479,34 +579,49 @@ Index: kcal/versit/vobject.c
      { VCFamilyNameProp, 0, 0, 0 },
 Index: kcal/alarm.cpp
 ===================================================================
---- kcal/alarm.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kcal/alarm.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
-@@ -412,12 +412,18 @@
+--- kcal/alarm.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kcal/alarm.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
+@@ -412,11 +412,13 @@
    if ( hasTime() ) {
      return d->mAlarmTime;
    } else if ( d->mParent ) {
-+    KDateTime end;
-+
-     if ( d->mParent->type() == "Todo" ) {
-       Todo *t = static_cast<Todo*>( d->mParent );
+-    if ( d->mParent->type() == "Todo" ) {
+-      Todo *t = static_cast<Todo*>( d->mParent );
 -      return d->mOffset.end( t->dtDue() );
 -    } else if ( d->mEndOffset ) {
 -      return d->mOffset.end( d->mParent->dtEnd() );
-+      end = t->dtDue();
-     } else {
-+      end = d->mParent->dtEnd();
-+    }
-+
 +    if ( d->mEndOffset ) {
-+      return d->mOffset.end( end );
-+    } else {
++      if ( d->mParent->type() == "Todo" ) {
++        Todo *t = static_cast<Todo*>( d->mParent );
++        return d->mOffset.end( t->dtDue() );
++      } else {
++        return d->mOffset.end( d->mParent->dtEnd() );
++      }
+     } else {
        return d->mOffset.end( d->mParent->dtStart() );
      }
-   } else {
+Index: CMakeLists.txt
+===================================================================
+--- CMakeLists.txt	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ CMakeLists.txt	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
+@@ -5,11 +5,11 @@
+ # Used e.g. in KdepimLibsConfig.cmake, Alex
+ set(KDEPIMLIBS_VERSION_MAJOR 4)
+ set(KDEPIMLIBS_VERSION_MINOR 2)
+-set(KDEPIMLIBS_VERSION_PATCH 0)
++set(KDEPIMLIBS_VERSION_PATCH 1)
+ set(KDEPIMLIBS_VERSION ${KDEPIMLIBS_VERSION_MAJOR}.${KDEPIMLIBS_VERSION_MINOR}.${KDEPIMLIBS_VERSION_PATCH} )
+ 
+ # search packages used by KDE
+-find_package(KDE4  4.2.0  REQUIRED)
++find_package(KDE4  4.2.1  REQUIRED)
+ 
+ include (KDE4Defaults)
+ include (MacroLibrary)
 Index: kioslave/imap4/imapparser.cpp
 ===================================================================
---- kioslave/imap4/imapparser.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kioslave/imap4/imapparser.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kioslave/imap4/imapparser.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kioslave/imap4/imapparser.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -80,8 +80,8 @@
    lastHandled = 0;
  }
@@ -593,8 +708,8 @@ Index: kioslave/imap4/imapparser.cpp
      case '*':
 Index: kioslave/imap4/imapparser.h
 ===================================================================
---- kioslave/imap4/imapparser.h	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kioslave/imap4/imapparser.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kioslave/imap4/imapparser.h	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kioslave/imap4/imapparser.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -205,13 +205,13 @@
     * @param aCmd The command to perform
     * @return The completed command
@@ -624,8 +739,8 @@ Index: kioslave/imap4/imapparser.h
     * everything we didn't handle, everything but the greeting is bogus
 Index: kioslave/imap4/imap4.cpp
 ===================================================================
---- kioslave/imap4/imap4.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kioslave/imap4/imap4.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kioslave/imap4/imap4.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kioslave/imap4/imap4.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -206,7 +206,7 @@
  
    if (aSequence == "0:0" && getState() == ISTATE_SELECT)
@@ -1096,8 +1211,8 @@ Index: kioslave/imap4/imap4.cpp
    {
 Index: kioslave/imap4/imapcommand.cpp
 ===================================================================
---- kioslave/imap4/imapcommand.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kioslave/imap4/imapcommand.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kioslave/imap4/imapcommand.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kioslave/imap4/imapcommand.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -156,19 +156,19 @@
      return id() + ' ' + command() + ' ' + parameter() + "\r\n";
  }
@@ -1407,8 +1522,8 @@ Index: kioslave/imap4/imapcommand.cpp
  
 Index: kioslave/imap4/imapcommand.h
 ===================================================================
---- kioslave/imap4/imapcommand.h	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kioslave/imap4/imapcommand.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kioslave/imap4/imapcommand.h	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kioslave/imap4/imapcommand.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -27,6 +27,11 @@
  #include <QString>
  #include <QMap>
@@ -1694,8 +1809,8 @@ Index: kioslave/imap4/imapcommand.h
    QString aCommand;
 Index: kioslave/imap4/CMakeLists.txt
 ===================================================================
---- kioslave/imap4/CMakeLists.txt	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kioslave/imap4/CMakeLists.txt	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kioslave/imap4/CMakeLists.txt	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kioslave/imap4/CMakeLists.txt	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -1,6 +1,7 @@
  
  set(imap4_optional_includes)
@@ -1715,8 +1830,8 @@ Index: kioslave/imap4/CMakeLists.txt
  
 Index: kioslave/sieve/sieve.protocol
 ===================================================================
---- kioslave/sieve/sieve.protocol	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kioslave/sieve/sieve.protocol	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kioslave/sieve/sieve.protocol	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kioslave/sieve/sieve.protocol	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -22,6 +22,7 @@
  Description[fr]=Un module d'entrée / sortie pour le protocole de filtrage de messagerie Sieve
  Description[ga]=ioslave le haghaidh prótacail scagtha ríomhphoist Sieve
@@ -1727,8 +1842,8 @@ Index: kioslave/sieve/sieve.protocol
  Description[ja]=Sieve メールフィルタリングプロトコルのための ioslave
 Index: mailtransport/kcm_mailtransport.desktop
 ===================================================================
---- mailtransport/kcm_mailtransport.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ mailtransport/kcm_mailtransport.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- mailtransport/kcm_mailtransport.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ mailtransport/kcm_mailtransport.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -23,6 +23,7 @@
  Name[fr]=Transport de courriel
  Name[ga]=Iompar Ríomhphoist
@@ -1739,8 +1854,8 @@ Index: mailtransport/kcm_mailtransport.desktop
  Name[ja]=メール送信手段
 Index: kabc/plugins/file/file.desktop
 ===================================================================
---- kabc/plugins/file/file.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kabc/plugins/file/file.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kabc/plugins/file/file.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kabc/plugins/file/file.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -11,6 +11,7 @@
  Name[fr]=Fichier
  Name[ga]=Comhad
@@ -1751,8 +1866,8 @@ Index: kabc/plugins/file/file.desktop
  Name[km]=ឯកសារ
 Index: kabc/plugins/ldapkio/ldapkio.desktop
 ===================================================================
---- kabc/plugins/ldapkio/ldapkio.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kabc/plugins/ldapkio/ldapkio.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kabc/plugins/ldapkio/ldapkio.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kabc/plugins/ldapkio/ldapkio.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -1,5 +1,6 @@
  [Desktop Entry]
  Name=LDAP
@@ -1760,10 +1875,30 @@ Index: kabc/plugins/ldapkio/ldapkio.desktop
  Name[sr]=ЛДАП
  Name[th]=ระบบ LDAP
  Name[x-test]=xxLDAPxx
+Index: kabc/plugins/net/resourcenet.cpp
+===================================================================
+--- kabc/plugins/net/resourcenet.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kabc/plugins/net/resourcenet.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
+@@ -241,6 +241,7 @@
+ 
+   if ( ok ) {
+     saveToFile( &tempFile );
++    tempFile.flush();
+   }
+ 
+   if ( !ok ) {
+@@ -273,6 +274,7 @@
+   bool ok = createLocalTempFile();
+   if ( ok ) {
+     saveToFile( mTempFile );
++    mTempFile->flush();
+   }
+ 
+   if ( !ok ) {
 Index: kabc/plugins/net/net.desktop
 ===================================================================
---- kabc/plugins/net/net.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kabc/plugins/net/net.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kabc/plugins/net/net.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kabc/plugins/net/net.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -11,6 +11,7 @@
  Name[fr]=Réseau
  Name[ga]=Líonra
@@ -1774,8 +1909,8 @@ Index: kabc/plugins/net/net.desktop
  Name[ja]=ネットワーク
 Index: kabc/plugins/dir/dir.desktop
 ===================================================================
---- kabc/plugins/dir/dir.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kabc/plugins/dir/dir.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kabc/plugins/dir/dir.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kabc/plugins/dir/dir.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -11,6 +11,7 @@
  Name[fr]=Dossier
  Name[ga]=Comhadlann
@@ -1786,8 +1921,8 @@ Index: kabc/plugins/dir/dir.desktop
  Name[ja]=ディレクトリ
 Index: kabc/kabc_manager.desktop
 ===================================================================
---- kabc/kabc_manager.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kabc/kabc_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kabc/kabc_manager.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kabc/kabc_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -11,6 +11,7 @@
  Name[et]=Kontaktid
  Name[ga]=Teagmhálacha
@@ -1798,8 +1933,8 @@ Index: kabc/kabc_manager.desktop
  Name[ja]=連絡先
 Index: kabc/formats/binary.desktop
 ===================================================================
---- kabc/formats/binary.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 938089)
-+++ kabc/formats/binary.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 938089)
+--- kabc/formats/binary.desktop	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ kabc/formats/binary.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
 @@ -11,6 +11,7 @@
  Name[fr]=Binaire
  Name[ga]=Dénártha
@@ -1808,3 +1943,17 @@ Index: kabc/formats/binary.desktop
  Name[hu]=Bináris
  Name[it]=Binario
  Name[ja]=バイナリ
+Index: akonadi/selftestdialog.cpp
+===================================================================
+--- akonadi/selftestdialog.cpp	(.../tags/KDE/4.2.1/kdepimlibs)	(wersja 940158)
++++ akonadi/selftestdialog.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 940158)
+@@ -541,6 +541,9 @@
+ void SelfTestDialog::saveReport()
+ {
+   const QString fileName =  KFileDialog::getSaveFileName( KUrl(), QString(), this, i18n("Save Test Report") );
++  if ( fileName.isEmpty() )
++    return;
++
+   QFile file( fileName );
+   if ( !file.open( QFile::ReadWrite ) ) {
+     KMessageBox::error( this, i18n( "Could not open file '%1'", fileName ) );
