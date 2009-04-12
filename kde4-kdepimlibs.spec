@@ -76,7 +76,7 @@ opartych na kdepimlibs.
 
 %prep
 %setup -q -n %{orgname}-%{version}
-#%patch100 -p0
+%patch100 -p0
 
 %build
 install -d build
