@@ -1,7 +1,7 @@
 Index: kresources/kresources_manager.desktop
 ===================================================================
---- kresources/kresources_manager.desktop	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 952918)
-+++ kresources/kresources_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 952918)
+--- kresources/kresources_manager.desktop	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kresources/kresources_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
 @@ -27,7 +27,7 @@
  Name[pt]=Gestor do KResources
  Name[pt_BR]=Gerenciador do KResource
@@ -22,8 +22,8 @@ Index: kresources/kresources_manager.desktop
  Comment[sr]=Менаџер к‑ресурса
 Index: kresources/kresources.desktop
 ===================================================================
---- kresources/kresources.desktop	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 952918)
-+++ kresources/kresources.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 952918)
+--- kresources/kresources.desktop	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kresources/kresources.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
 @@ -36,7 +36,7 @@
  Name[pt]=Recursos do KDE
  Name[pt_BR]=Fontes de dados do KDE
@@ -42,10 +42,98 @@ Index: kresources/kresources.desktop
  Comment[se]=Heivet KDE-resurssaid
  Comment[sl]=Nastavi vire KDE
  Comment[sr]=Подеси ресурсе КДЕ‑а
+Index: kmime/kmime_message.cpp
+===================================================================
+--- kmime/kmime_message.cpp	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kmime/kmime_message.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
+@@ -63,13 +63,17 @@
+ 
+   //From
+   h = from(); // "From" is mandatory
+-  newHead += h->as7BitString() + '\n';
+-  KMime::removeHeader( d->head, h->type() );
++  if ( !h->isEmpty() ) {
++    newHead += h->as7BitString() + '\n';
++    KMime::removeHeader( d->head, h->type() );
++  }
+ 
+   //Subject
+   h = subject(); // "Subject" is mandatory
+-  newHead += h->as7BitString() + '\n';
+-  KMime::removeHeader( d->head, h->type() );
++  if ( !h->isEmpty() ) {
++    newHead += h->as7BitString() + '\n';
++    KMime::removeHeader( d->head, h->type() );
++  }
+ 
+   //To
+   if ( ( h = to( false )) != 0 && !h->isEmpty() ) {
+@@ -91,8 +95,10 @@
+ 
+   //Date
+   h = date(); // "Date" is mandatory
+-  newHead += h->as7BitString() + '\n';
+-  KMime::removeHeader( d->head, h->type() );
++  if ( !h->isEmpty() ) {
++    newHead += h->as7BitString() + '\n';
++    KMime::removeHeader( d->head, h->type() );
++  }
+ 
+   //References
+   if ( ( h = references( false )) != 0 && !h->isEmpty() ) {
+Index: kmime/tests/kmime_message_test.cpp
+===================================================================
+--- kmime/tests/kmime_message_test.cpp	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kmime/tests/kmime_message_test.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
+@@ -143,3 +143,32 @@
+   delete msg;
+ }
+ 
++void MessageTest::missingHeadersTest()
++{
++  // Test that the message body is OK even though some headers are missing
++  KMime::Message msg;
++  QString body = "Hi Donald, look at those nice pictures I found!\n";
++  QString content = "From: georgebush@whitehouse.org\n"
++    "To: donaldrumsfeld@whitehouse.org\n"
++    "Subject: Cute Kittens\n"
++    "\n" + body;
++  msg.setContent( content.toAscii() );
++  msg.parse();
++  msg.assemble();
++
++  QCOMPARE( body, QString::fromAscii( msg.body() ) );
++
++  // Now create a new message, based on the content of the first one.
++  // The body of the new message should still be the same.
++  // (there was a bug that caused missing mandatory headers to be
++  //  added as a empty newline, which caused parts of the header to
++  //  leak into the body)
++  KMime::Message msg2;
++  qDebug() << msg.encodedContent();
++  msg2.setContent( msg.encodedContent() );
++  msg2.parse();
++  msg2.assemble();
++
++  QCOMPARE( body, QString::fromAscii( msg2.body() ) );
++}
++
+Index: kmime/tests/kmime_message_test.h
+===================================================================
+--- kmime/tests/kmime_message_test.h	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kmime/tests/kmime_message_test.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
+@@ -29,6 +29,7 @@
+     void testMainBodyPart();
+     void testBrunosMultiAssembleBug();
+     void testWillsAndTillsCrash();
++    void missingHeadersTest();
+ };
+ 
+ 
 Index: kcal/localdir.desktop
 ===================================================================
---- kcal/localdir.desktop	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 952918)
-+++ kcal/localdir.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 952918)
+--- kcal/localdir.desktop	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kcal/localdir.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
 @@ -69,6 +69,7 @@
  Comment[sr]=Пружа приступ календарским ставкама, складиштеним у појединачним фајловима у датој фасцикли.
  Comment[sr@latin]=Pruža pristup kalendarskim stavkama, skladištenim u pojedinačnim fajlovima u datoj fascikli.
@@ -56,8 +144,8 @@ Index: kcal/localdir.desktop
  Comment[zh_CN]=提供对被存储在给定目录下单独文件中的日历内容的访问支持
 Index: kcal/local.desktop
 ===================================================================
---- kcal/local.desktop	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 952918)
-+++ kcal/local.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 952918)
+--- kcal/local.desktop	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kcal/local.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
 @@ -69,6 +69,7 @@
  Comment[sr]=Пружа приступ календару складиштеном у једном локалном фајлу
  Comment[sr@latin]=Pruža pristup kalendaru skladištenom u jednom lokalnom fajlu
@@ -66,10 +154,23 @@ Index: kcal/local.desktop
  Comment[uk]=Надає доступ до календаря, що зберігається у окремому локальному файлі
  Comment[x-test]=xxProvides access to a calendar stored in a single local filexx
  Comment[zh_CN]=提供对被存储在单独的本地文件中的日历的访问支持
+Index: kcal/icalformat_p.cpp
+===================================================================
+--- kcal/icalformat_p.cpp	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kcal/icalformat_p.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
+@@ -202,7 +202,7 @@
+   }
+ 
+   // start time
+-  if ( todo->hasStartDate() || todo->recurs() ) {
++  if ( todo->hasStartDate() ) {
+     icaltimetype start;
+     if ( todo->allDay() ) {
+       start = writeICalDate( todo->dtStart( true ).date() );
 Index: kcal/incidenceformatter.cpp
 ===================================================================
---- kcal/incidenceformatter.cpp	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 952918)
-+++ kcal/incidenceformatter.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 952918)
+--- kcal/incidenceformatter.cpp	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kcal/incidenceformatter.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
 @@ -1476,8 +1476,7 @@
        html += "</td></tr><tr>";
      }
@@ -80,10 +181,593 @@ Index: kcal/incidenceformatter.cpp
        // Accept
        html += helper->makeLink( "accept", i18nc( "accept to-do request", "[Accept]" ) );
        html += "</td><td> &nbsp; </td><td>";
+Index: kblog/blogger1.cpp
+===================================================================
+--- kblog/blogger1.cpp	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kblog/blogger1.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
+@@ -345,6 +345,7 @@
+   kDebug () << "TOP:" << result[0].typeName();
+   if ( result[0].type() == QVariant::Map && readPostFromMap( post, result[0].toMap() ) ) {
+     kDebug() << "Emitting fetchedPost()";
++    post->setStatus( KBlog::BlogPost::Fetched );
+     emit q->fetchedPost( post );
+   } else {
+     kError() << "Could not fetch post out of the result from the server.";
+Index: kblog/gdata_p.h
+===================================================================
+--- kblog/gdata_p.h	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kblog/gdata_p.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
+@@ -44,17 +44,11 @@
+   public:
+     QString mAuthenticationString;
+     QDateTime mAuthenticationTime;
+-    QMap<KJob *,QByteArray> mCreatePostBuffer;
+     QMap<KJob *,KBlog::BlogPost*> mCreatePostMap;
+-    QMap<KJob *,QByteArray> mCreateCommentBuffer;
+     QMap<KJob *,QMap<KBlog::BlogPost *,KBlog::BlogComment *> > mCreateCommentMap;
+-    QMap<KJob *,QByteArray> mRemoveCommentBuffer;
+     QMap<KJob *,QMap<KBlog::BlogPost *,KBlog::BlogComment *> > mRemoveCommentMap;
+-    QMap<KJob *,QByteArray> mModifyPostBuffer;
+     QMap<KJob *,KBlog::BlogPost *> mModifyPostMap;
+-    QMap<KJob *,QByteArray> mRemovePostBuffer;
+     QMap<KJob *,KBlog::BlogPost *> mRemovePostMap;
+-    QMap<KJob *,QByteArray> mFetchProfileIdBuffer;
+     QMap<Syndication::Loader *,KBlog::BlogPost *> mFetchPostMap;
+     QMap<Syndication::Loader *,KBlog::BlogPost *> mListCommentsMap;
+     QMap<Syndication::Loader *,int> mListRecentPostsMap;
+@@ -63,7 +57,6 @@
+     GDataPrivate();
+     ~GDataPrivate();
+     bool authenticate();
+-    virtual void slotFetchProfileIdData( KIO::Job *, const QByteArray & );
+     virtual void slotFetchProfileId( KJob * );
+     virtual void slotListBlogs( Syndication::Loader *,
+                                 Syndication::FeedPtr, Syndication::ErrorCode );
+@@ -76,15 +69,10 @@
+     virtual void slotFetchPost( Syndication::Loader *,
+                                 Syndication::FeedPtr, Syndication::ErrorCode );
+     virtual void slotCreatePost( KJob * );
+-    virtual void slotCreatePostData( KIO::Job *, const QByteArray & );
+     virtual void slotModifyPost( KJob * );
+-    virtual void slotModifyPostData( KIO::Job *, const QByteArray & );
+     virtual void slotRemovePost( KJob * );
+-    virtual void slotRemovePostData( KIO::Job *, const QByteArray & );
+     virtual void slotCreateComment( KJob * );
+-    virtual void slotCreateCommentData( KIO::Job *, const QByteArray & );
+     virtual void slotRemoveComment( KJob * );
+-    virtual void slotRemoveCommentData( KIO::Job *, const QByteArray & );
+     Q_DECLARE_PUBLIC( GData )
+ };
+ 
+Index: kblog/tests/data.h
+===================================================================
+--- kblog/tests/data.h	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kblog/tests/data.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
+@@ -28,15 +28,10 @@
+ #include <ktimezone.h>
+ #include <QtCore/QDateTime>
+ 
+-//   KUrl mUrl( "http://soctest.wordpress.com/xmlrpc.php" );
+-//   QString mUsername( "socapitest" );
+-//   QString mPassword( "k0nt4ctbl0g" );
+-//   QString mBlogId( "1" );
+-
+-KUrl mUrl( "http://sandbox2.monkey-corp.com/xmlrpc.php" );
++KUrl mUrl( "http://soctest.wordpress.com/xmlrpc.php" );
+ QString mUsername( "socapitest" );
+ QString mPassword( "k0nt4ctbl0g" );
+-QString mBlogId( "blog" );
++QString mBlogId( "1" );
+ 
+ QDateTime mCreationDateTime( QDateTime::currentDateTime() );
+ QDateTime mModificationDateTime( QDateTime::currentDateTime() );
+Index: kblog/gdata.h
+===================================================================
+--- kblog/gdata.h	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kblog/gdata.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
+@@ -302,8 +302,6 @@
+     Q_PRIVATE_SLOT( d_func(),
+                     void slotFetchProfileId( KJob * ) )
+     Q_PRIVATE_SLOT( d_func(),
+-                    void slotFetchProfileIdData( KIO::Job *, const QByteArray & ) )
+-    Q_PRIVATE_SLOT( d_func(),
+                     void slotListBlogs( Syndication::Loader *,
+                                         Syndication::FeedPtr, Syndication::ErrorCode ) )
+     Q_PRIVATE_SLOT( d_func(),
+@@ -321,23 +319,13 @@
+     Q_PRIVATE_SLOT( d_func(),
+                     void slotCreatePost( KJob * ) )
+     Q_PRIVATE_SLOT( d_func(),
+-                    void slotCreatePostData( KIO::Job *, const QByteArray & ) )
+-    Q_PRIVATE_SLOT( d_func(),
+                     void slotModifyPost( KJob * ) )
+     Q_PRIVATE_SLOT( d_func(),
+-                    void slotModifyPostData( KIO::Job *, const QByteArray & ) )
+-    Q_PRIVATE_SLOT( d_func(),
+                     void slotRemovePost( KJob * ) )
+     Q_PRIVATE_SLOT( d_func(),
+-                    void slotRemovePostData( KIO::Job *, const QByteArray & ) )
+-    Q_PRIVATE_SLOT( d_func(),
+                     void slotCreateComment( KJob * ) )
+     Q_PRIVATE_SLOT( d_func(),
+-                    void slotCreateCommentData( KIO::Job *, const QByteArray & ) )
+-    Q_PRIVATE_SLOT( d_func(),
+                     void slotRemoveComment( KJob * ) )
+-    Q_PRIVATE_SLOT( d_func(),
+-                    void slotRemoveCommentData( KIO::Job *, const QByteArray & ) )
+ };
+ 
+ } //namespace KBlog
+Index: kblog/wordpressbuggy.cpp
+===================================================================
+--- kblog/wordpressbuggy.cpp	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kblog/wordpressbuggy.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
+@@ -122,7 +122,7 @@
+   QDataStream stream( &postData, QIODevice::WriteOnly );
+   stream.writeRawData( xmlMarkup.toUtf8(), xmlMarkup.toUtf8().length() );
+ 
+-  KIO::TransferJob *job = KIO::http_post( url(), postData, KIO::HideProgressInfo );
++  KIO::StoredTransferJob *job = KIO::storedHttpPost( postData, url(), KIO::HideProgressInfo );
+ 
+   d->mCreatePostMap[ job ] = post;
+ 
+@@ -137,8 +137,6 @@
+   job->addMetaData( "ConnectTimeout", "50" );
+   job->addMetaData( "UserAgent", userAgent() );
+ 
+-  connect( job, SIGNAL(data(KIO::Job *,const QByteArray &)),
+-           this, SLOT(slotCreatePostData(KIO::Job *,const QByteArray &)) );
+   connect( job, SIGNAL(result(KJob *)),
+            this, SLOT(slotCreatePost(KJob *)) );
+ }
+@@ -218,7 +216,7 @@
+   QDataStream stream( &postData, QIODevice::WriteOnly );
+   stream.writeRawData( xmlMarkup.toUtf8(), xmlMarkup.toUtf8().length() );
+ 
+-  KIO::TransferJob *job = KIO::http_post( url(), postData, KIO::HideProgressInfo );
++  KIO::StoredTransferJob *job = KIO::storedHttpPost( postData, url(), KIO::HideProgressInfo );
+ 
+   d->mModifyPostMap[ job ] = post;
+ 
+@@ -233,8 +231,6 @@
+   job->addMetaData( "ConnectTimeout", "50" );
+   job->addMetaData( "UserAgent", userAgent() );
+ 
+-  connect( job, SIGNAL(data(KIO::Job*,const QByteArray&)),
+-           this, SLOT(slotModifyPostData(KIO::Job*,const QByteArray&)) );
+   connect( job, SIGNAL(result(KJob*)),
+            this, SLOT(slotModifyPost(KJob*)) );
+ }
+@@ -265,21 +261,13 @@
+   return args;
+ }
+ 
+-void WordpressBuggyPrivate::slotCreatePostData( KIO::Job *job, const QByteArray &data )
+-{
+-  kDebug() << "slotCreatePostData()";
+-  unsigned int oldSize = mCreatePostBuffer[ job ].size();
+-  mCreatePostBuffer[ job ].resize( oldSize + data.size() );
+-  memcpy( mCreatePostBuffer[ job ].data() + oldSize, data.data(), data.size() );
+-}
+-
+ void WordpressBuggyPrivate::slotCreatePost( KJob *job )
+ {
+   kDebug() << "slotCreatePost()";
+-  const QString data = QString::fromUtf8( mCreatePostBuffer[ job ].data(),
+-                                          mCreatePostBuffer[ job ].size() );
+-  mCreatePostBuffer[ job ].resize( 0 );
+ 
++  KIO::StoredTransferJob *stj = qobject_cast<KIO::StoredTransferJob*>(job);
++  const QString data = QString::fromUtf8( stj->data(), stj->data().size() );
++
+   Q_Q( WordpressBuggy );
+ 
+   KBlog::BlogPost *post = mCreatePostMap[ job ];
+@@ -317,20 +305,12 @@
+   emit q->createdPost( post );
+ }
+ 
+-void WordpressBuggyPrivate::slotModifyPostData( KIO::Job *job, const QByteArray &data )
+-{
+-  kDebug() << "slotModifyPostData()";
+-  unsigned int oldSize = mModifyPostBuffer[ job ].size();
+-  mModifyPostBuffer[ job ].resize( oldSize + data.size() );
+-  memcpy( mModifyPostBuffer[ job ].data() + oldSize, data.data(), data.size() );
+-}
+-
+ void WordpressBuggyPrivate::slotModifyPost( KJob *job )
+ {
+   kDebug() << "slotModifyPost()";
+-  const QString data = QString::fromUtf8( mModifyPostBuffer[ job ].data(),
+-                                          mModifyPostBuffer[ job ].size() );
+-  mModifyPostBuffer[ job ].resize( 0 );
++  
++  KIO::StoredTransferJob *stj = qobject_cast<KIO::StoredTransferJob*>(job);
++  const QString data = QString::fromUtf8( stj->data(), stj->data().size() );
+ 
+   KBlog::BlogPost *post = mModifyPostMap[ job ];
+   mModifyPostMap.remove( job );
+Index: kblog/wordpressbuggy_p.h
+===================================================================
+--- kblog/wordpressbuggy_p.h	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kblog/wordpressbuggy_p.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
+@@ -41,18 +41,14 @@
+ class WordpressBuggyPrivate : public MovableTypePrivate
+ {
+   public:
+-    QMap<KJob *,QByteArray> mCreatePostBuffer;
+     QMap<KJob *,KBlog::BlogPost *> mCreatePostMap;
+-    QMap<KJob *,QByteArray> mModifyPostBuffer;
+     QMap<KJob *,KBlog::BlogPost *> mModifyPostMap;
+     WordpressBuggyPrivate();
+     virtual ~WordpressBuggyPrivate();
+     virtual QList<QVariant> defaultArgs( const QString &id = QString() );
+ 
+     virtual void slotCreatePost( KJob * );
+-    virtual void slotCreatePostData( KIO::Job *, const QByteArray & );
+     virtual void slotModifyPost( KJob * );
+-    virtual void slotModifyPostData( KIO::Job *, const QByteArray & );
+     Q_DECLARE_PUBLIC( WordpressBuggy )
+ };
+ 
+Index: kblog/gdata.cpp
+===================================================================
+--- kblog/gdata.cpp	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kblog/gdata.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
+@@ -90,10 +90,8 @@
+ {
+   kDebug();
+   QByteArray data;
+-  KIO::Job *job = KIO::get( url(), KIO::NoReload, KIO::HideProgressInfo );
++  KIO::StoredTransferJob *job = KIO::storedGet( url(), KIO::NoReload, KIO::HideProgressInfo );
+   KUrl blogUrl = url();
+-  connect( job, SIGNAL(data(KIO::Job*,const QByteArray&)),
+-           this, SLOT(slotFetchProfileIdData(KIO::Job*,const QByteArray&)) );
+   connect( job, SIGNAL(result(KJob*)),
+            this, SLOT(slotFetchProfileId(KJob*)) );
+ }
+@@ -230,6 +228,11 @@
+   atomMarkup += "<div xmlns='http://www.w3.org/1999/xhtml'>";
+   atomMarkup += post->content();
+   atomMarkup += "</div></content>";
++  QList<QString>::ConstIterator it = post->tags().constBegin();
++  QList<QString>::ConstIterator end = post->tags().constEnd();
++  for( ; it != end; ++it ){
++    atomMarkup += "<category scheme='http://www.blogger.com/atom/ns#' term='" + ( *it ) + "' />";
++  }
+   atomMarkup += "<author>";
+   if ( !fullName().isEmpty() ) {
+     atomMarkup += "<name>" + fullName() + "</name>";
+@@ -241,9 +244,9 @@
+   QDataStream stream( &postData, QIODevice::WriteOnly );
+   stream.writeRawData( atomMarkup.toUtf8(), atomMarkup.toUtf8().length() );
+ 
+-  KIO::TransferJob *job = KIO::http_post(
++  KIO::StoredTransferJob *job = KIO::storedHttpPost( postData,
+       KUrl( "http://www.blogger.com/feeds/" + blogId() + "/posts/default/" + post->postId() ),
+-      postData, KIO::HideProgressInfo );
++      KIO::HideProgressInfo );
+ 
+   Q_ASSERT( job );
+ 
+@@ -256,8 +259,6 @@
+                     "Authorization: GoogleLogin auth=" + d->mAuthenticationString +
+                     "\r\nX-HTTP-Method-Override: PUT" );
+ 
+-  connect( job, SIGNAL(data(KIO::Job*,const QByteArray&)),
+-           this, SLOT(slotModifyPostData(KIO::Job*,const QByteArray&)) );
+   connect( job, SIGNAL(result(KJob*)),
+            this, SLOT(slotModifyPost(KJob*)) );
+ }
+@@ -305,9 +306,9 @@
+   QDataStream stream( &postData, QIODevice::WriteOnly );
+   stream.writeRawData( atomMarkup.toUtf8(), atomMarkup.toUtf8().length() );
+ 
+-  KIO::TransferJob *job = KIO::http_post(
++  KIO::StoredTransferJob *job = KIO::storedHttpPost( postData,
+     KUrl( "http://www.blogger.com/feeds/" + blogId() + "/posts/default" ),
+-    postData, KIO::HideProgressInfo );
++    KIO::HideProgressInfo );
+ 
+   Q_ASSERT ( job );
+   d->mCreatePostMap[ job ] = post;
+@@ -318,8 +319,6 @@
+   job->addMetaData( "customHTTPHeader",
+                     "Authorization: GoogleLogin auth=" + d->mAuthenticationString );
+ 
+-  connect( job, SIGNAL(data(KIO::Job*,const QByteArray&)),
+-           this, SLOT(slotCreatePostData(KIO::Job*,const QByteArray&)) );
+   connect( job, SIGNAL(result(KJob*)),
+            this, SLOT(slotCreatePost(KJob*)) );
+ }
+@@ -342,9 +341,9 @@
+ 
+   QByteArray postData;
+ 
+-  KIO::TransferJob *job = KIO::http_post(
++  KIO::StoredTransferJob *job = KIO::storedHttpPost( postData,
+     KUrl( "http://www.blogger.com/feeds/" + blogId() + "/posts/default/" + post->postId() ),
+-    postData, KIO::HideProgressInfo );
++    KIO::HideProgressInfo );
+ 
+   d->mRemovePostMap[ job ] = post;
+ 
+@@ -359,8 +358,6 @@
+                     "Authorization: GoogleLogin auth=" + d->mAuthenticationString +
+                     "\r\nX-HTTP-Method-Override: DELETE" );
+ 
+-  connect( job, SIGNAL(data(KIO::Job*,const QByteArray&)),
+-           this, SLOT(slotRemovePostData(KIO::Job*,const QByteArray&)) );
+   connect( job, SIGNAL(result(KJob*)),
+            this, SLOT(slotRemovePost(KJob*)) );
+ }
+@@ -398,9 +395,9 @@
+   QDataStream stream( &postData, QIODevice::WriteOnly );
+   stream.writeRawData( atomMarkup.toUtf8(), atomMarkup.toUtf8().length() );
+ 
+-  KIO::TransferJob *job = KIO::http_post(
++  KIO::StoredTransferJob *job = KIO::storedHttpPost( postData,
+     KUrl( "http://www.blogger.com/feeds/" + blogId() + "/" + post->postId() + "/comments/default" ),
+-    postData, KIO::HideProgressInfo );
++    KIO::HideProgressInfo );
+ 
+   d->mCreateCommentMap[ job ][post] = comment;
+ 
+@@ -415,8 +412,6 @@
+                     "Authorization: GoogleLogin auth=" + d->mAuthenticationString );
+   job->addMetaData( "UserAgent", userAgent() );
+ 
+-  connect( job, SIGNAL(data(KIO::Job*,const QByteArray&)),
+-           this, SLOT(slotCreateCommentData(KIO::Job*,const QByteArray&)) );
+   connect( job, SIGNAL(result(KJob*)),
+            this, SLOT(slotCreateComment(KJob*)) );
+ }
+@@ -445,10 +440,9 @@
+ 
+   QByteArray postData;
+ 
+-  KIO::TransferJob *job = KIO::http_post(
++  KIO::StoredTransferJob *job = KIO::storedHttpPost(postData,
+     KUrl( "http://www.blogger.com/feeds/" + blogId() + "/" + post->postId() +
+-          "/comments/default/" + comment->commentId() ),
+-    postData, KIO::HideProgressInfo );
++          "/comments/default/" + comment->commentId() ), KIO::HideProgressInfo );
+   d->mRemoveCommentMap[ job ][ post ] = comment;
+ 
+   if ( !job ) {
+@@ -463,8 +457,6 @@
+                     "Authorization: GoogleLogin auth=" +
+                     d->mAuthenticationString + "\r\nX-HTTP-Method-Override: DELETE" );
+ 
+-  connect( job, SIGNAL(data(KIO::Job*,const QByteArray&)),
+-           this, SLOT(slotRemoveCommentData(KIO::Job*,const QByteArray&)) );
+   connect( job, SIGNAL(result(KJob*)),
+            this, SLOT(slotRemoveComment(KJob*)) );
+ }
+@@ -494,9 +486,6 @@
+        mAuthenticationString.isEmpty() ) {
+     KIO::Job *job = KIO::http_post( authGateway, QByteArray(), KIO::HideProgressInfo );
+     if ( KIO::NetAccess::synchronousRun( job, (QWidget*)0, &data, &authGateway ) ) {
+-      kDebug() << "Fetched authentication result for"
+-                   << authGateway.prettyUrl() << ".";
+-      kDebug() << "Authentication response:" << data;
+       QRegExp rx( "Auth=(.+)" );
+       if ( rx.indexIn( data ) != -1 ) {
+         kDebug() << "RegExp got authentication string:" << rx.cap(1);
+@@ -510,18 +499,6 @@
+   return true;
+ }
+ 
+-void GDataPrivate::slotFetchProfileIdData( KIO::Job *job, const QByteArray &data )
+-{
+-  kDebug();
+-  if( !job ){
+-    kError() << "job is a null pointer.";
+-    return;
+-  }
+-  unsigned int oldSize = mFetchProfileIdBuffer[ job ].size();
+-  mFetchProfileIdBuffer[ job ].resize( oldSize + data.size() );
+-  memcpy( mFetchProfileIdBuffer[ job ].data() + oldSize, data.data(), data.size() );
+-}
+-
+ void GDataPrivate::slotFetchProfileId( KJob *job )
+ {
+   kDebug();
+@@ -530,9 +507,11 @@
+     return;
+   }
+   Q_Q( GData );
++  KIO::StoredTransferJob *stj = qobject_cast<KIO::StoredTransferJob*>(job);
++  const QString data = QString::fromUtf8( stj->data(), stj->data().size() );
+   if ( !job->error() ) {
+     QRegExp pid( "http://www.blogger.com/profile/(\\d+)" );
+-    if ( pid.indexIn( mFetchProfileIdBuffer[ job ] ) != -1 ) {
++    if ( pid.indexIn( data ) != -1 ) {
+       q->setProfileId( pid.cap(1) );
+       kDebug() << "QRegExp bid( 'http://www.blogger.com/profile/(\\d+)' matches" << pid.cap(1);
+       emit q->fetchedProfileId( pid.cap(1) );
+@@ -547,8 +526,6 @@
+     emit q->error( GData::Other, i18n( "Could not fetch the homepage data." ) );
+     emit q->fetchedProfileId( QString() );
+   }
+-  mFetchProfileIdBuffer[ job ].resize( 0 );
+-  mFetchProfileIdBuffer.remove( job );
+ }
+ 
+ void GDataPrivate::slotListBlogs( Syndication::Loader *loader,
+@@ -792,18 +769,6 @@
+   mFetchPostMap.remove( loader );
+ }
+ 
+-void GDataPrivate::slotCreatePostData( KIO::Job *job, const QByteArray &data )
+-{
+-  kDebug();
+-  if( !job ) {
+-    kError() << "job is a null pointer.";
+-    return;
+-  }
+-  unsigned int oldSize = mCreatePostBuffer[ job ].size();
+-  mCreatePostBuffer[ job ].resize( oldSize + data.size() );
+-  memcpy( mCreatePostBuffer[ job ].data() + oldSize, data.data(), data.size() );
+-}
+-
+ void GDataPrivate::slotCreatePost( KJob *job )
+ {
+   kDebug();
+@@ -811,9 +776,8 @@
+     kError() << "job is a null pointer.";
+     return;
+   }
+-  const QString data = QString::fromUtf8( mCreatePostBuffer[ job ].data(),
+-                                          mCreatePostBuffer[ job ].size() );
+-  mCreatePostBuffer[ job ].resize( 0 );
++  KIO::StoredTransferJob *stj = qobject_cast<KIO::StoredTransferJob*>(job);
++  const QString data = QString::fromUtf8( stj->data(), stj->data().size() );
+ 
+   Q_Q( GData );
+ 
+@@ -861,18 +825,6 @@
+   emit q->createdPost( post );
+ }
+ 
+-void GDataPrivate::slotModifyPostData( KIO::Job *job, const QByteArray &data )
+-{
+-  kDebug();
+-  if( !job ) {
+-    kError() << "job is a null pointer.";
+-    return;
+-  }
+-  unsigned int oldSize = mModifyPostBuffer[ job ].size();
+-  mModifyPostBuffer[ job ].resize( oldSize + data.size() );
+-  memcpy( mModifyPostBuffer[ job ].data() + oldSize, data.data(), data.size() );
+-}
+-
+ void GDataPrivate::slotModifyPost( KJob *job )
+ {
+   kDebug();
+@@ -880,9 +832,8 @@
+     kError() << "job is a null pointer.";
+     return;
+   }
+-  const QString data = QString::fromUtf8( mModifyPostBuffer[ job ].data(),
+-                                          mModifyPostBuffer[ job ].size() );
+-  mModifyPostBuffer[ job ].resize( 0 );
++  KIO::StoredTransferJob *stj = qobject_cast<KIO::StoredTransferJob*>(job);
++  const QString data = QString::fromUtf8( stj->data(), stj->data().size() );
+ 
+   KBlog::BlogPost *post = mModifyPostMap[ job ];
+   mModifyPostMap.remove( job );
+@@ -926,18 +877,6 @@
+   emit q->modifiedPost( post );
+ }
+ 
+-void GDataPrivate::slotRemovePostData( KIO::Job *job, const QByteArray &data )
+-{
+-  kDebug();
+-  if( !job ) {
+-    kError() << "job is a null pointer.";
+-    return;
+-  }
+-  unsigned int oldSize = mRemovePostBuffer[ job ].size();
+-  mRemovePostBuffer[ job ].resize( oldSize + data.size() );
+-  memcpy( mRemovePostBuffer[ job ].data() + oldSize, data.data(), data.size() );
+-}
+-
+ void GDataPrivate::slotRemovePost( KJob *job )
+ {
+   kDebug();
+@@ -945,9 +884,8 @@
+     kError() << "job is a null pointer.";
+     return;
+   }
+-  const QString data = QString::fromUtf8( mRemovePostBuffer[ job ].data(),
+-                                          mRemovePostBuffer[ job ].size() );
+-  mRemovePostBuffer[ job ].resize( 0 );
++  KIO::StoredTransferJob *stj = qobject_cast<KIO::StoredTransferJob*>(job);
++  const QString data = QString::fromUtf8( stj->data(), stj->data().size() );
+ 
+   KBlog::BlogPost *post = mRemovePostMap[ job ];
+   mRemovePostMap.remove( job );
+@@ -963,18 +901,6 @@
+   emit q->removedPost( post );
+ }
+ 
+-void GDataPrivate::slotCreateCommentData( KIO::Job *job, const QByteArray &data )
+-{
+-  kDebug();
+-  if( !job ) {
+-    kError() << "job is a null pointer.";
+-    return;
+-  }
+-  unsigned int oldSize = mCreateCommentBuffer[ job ].size();
+-  mCreateCommentBuffer[ job ].resize( oldSize + data.size() );
+-  memcpy( mCreateCommentBuffer[ job ].data() + oldSize, data.data(), data.size() );
+-}
+-
+ void GDataPrivate::slotCreateComment( KJob *job )
+ {
+   kDebug();
+@@ -982,9 +908,8 @@
+     kError() << "job is a null pointer.";
+     return;
+   }
+-  const QString data = QString::fromUtf8( mCreateCommentBuffer[ job ].data(),
+-                                          mCreateCommentBuffer[ job ].size() );
+-  mCreateCommentBuffer[ job ].resize( 0 );
++  KIO::StoredTransferJob *stj = qobject_cast<KIO::StoredTransferJob*>(job);
++  const QString data = QString::fromUtf8( stj->data(), stj->data().size() );
+   kDebug() << "Dump data: " << data;
+ 
+   Q_Q( GData );
+@@ -1034,18 +959,6 @@
+   emit q->createdComment( post, comment );
+ }
+ 
+-void GDataPrivate::slotRemoveCommentData( KIO::Job *job, const QByteArray &data )
+-{
+-  kDebug();
+-  if( !job ) {
+-    kError() << "job is a null pointer.";
+-    return;
+-  }
+-  unsigned int oldSize = mRemoveCommentBuffer[ job ].size();
+-  mRemoveCommentBuffer[ job ].resize( oldSize + data.size() );
+-  memcpy( mRemoveCommentBuffer[ job ].data() + oldSize, data.data(), data.size() );
+-}
+-
+ void GDataPrivate::slotRemoveComment( KJob *job )
+ {
+   kDebug();
+@@ -1053,9 +966,8 @@
+     kError() << "job is a null pointer.";
+     return;
+   }
+-  const QString data = QString::fromUtf8( mRemoveCommentBuffer[ job ].data(),
+-                                          mRemoveCommentBuffer[ job ].size() );
+-  mRemoveCommentBuffer[ job ].resize( 0 );
++  KIO::StoredTransferJob *stj = qobject_cast<KIO::StoredTransferJob*>(job);
++  const QString data = QString::fromUtf8( stj->data(), stj->data().size() );
+ 
+   Q_Q( GData );
+ 
+Index: kblog/wordpressbuggy.h
+===================================================================
+--- kblog/wordpressbuggy.h	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kblog/wordpressbuggy.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
+@@ -111,9 +111,7 @@
+   private:
+     Q_DECLARE_PRIVATE( WordpressBuggy )
+     Q_PRIVATE_SLOT( d_func(), void slotCreatePost( KJob * ) )
+-    Q_PRIVATE_SLOT( d_func(), void slotCreatePostData( KIO::Job *,const QByteArray & ) )
+     Q_PRIVATE_SLOT( d_func(), void slotModifyPost( KJob * ) )
+-    Q_PRIVATE_SLOT( d_func(), void slotModifyPostData( KIO::Job *,const QByteArray & ) )
+ };
+ 
+ } //namespace KBlog
 Index: kabc/addresseedialog.cpp
 ===================================================================
---- kabc/addresseedialog.cpp	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 952918)
-+++ kabc/addresseedialog.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 952918)
+--- kabc/addresseedialog.cpp	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kabc/addresseedialog.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
 @@ -317,7 +317,7 @@
  
  void AddresseeDialog::Private::removeSelected()
@@ -95,8 +779,8 @@ Index: kabc/addresseedialog.cpp
    }
 Index: kabc/plugins/ldapkio/ldapkio.desktop
 ===================================================================
---- kabc/plugins/ldapkio/ldapkio.desktop	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 952918)
-+++ kabc/plugins/ldapkio/ldapkio.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 952918)
+--- kabc/plugins/ldapkio/ldapkio.desktop	(.../tags/KDE/4.2.2/kdepimlibs)	(wersja 956244)
++++ kabc/plugins/ldapkio/ldapkio.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 956244)
 @@ -31,6 +31,7 @@
  Comment[sr]=Пружа приступ контактима складиштеним на серверу ЛДАП именика
  Comment[sr@latin]=Pruža pristup kontaktima skladištenim na serveru LDAP imenika
