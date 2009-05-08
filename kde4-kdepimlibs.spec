@@ -26,7 +26,7 @@ BuildRequires:	akonadi-devel >= 1.1.2
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
-BuildRequires:	cmake >= 2.6.2
+BuildRequires:	cmake >= 2.6.3
 BuildRequires:	cyrus-sasl-devel
 BuildRequires:	docbook-dtd42-xml
 %{?with_apidocs:BuildRequires:	doxygen}
@@ -240,5 +240,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %dir %{_libdir}/gpgmepp
 %{_libdir}/gpgmepp/*.cmake
-%{_libdir}/KdepimLibs-%{version}
+%dir %{_libdir}/cmake
+%{_libdir}/cmake/KdepimLibs-%{version}
 %{_datadir}/apps/cmake/modules/*.cmake
