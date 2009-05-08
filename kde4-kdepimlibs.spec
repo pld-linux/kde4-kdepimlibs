@@ -240,11 +240,5 @@ rm -rf $RPM_BUILD_ROOT
 
 %dir %{_libdir}/gpgmepp
 %{_libdir}/gpgmepp/*.cmake
-%ifarch %{x8664}
 %{_libdir}/KdepimLibs-%{version}
-%endif
-%ifarch %{ix86}
-%dir %{_libdir}/cmake
-%{_libdir}/cmake/KdepimLibs-%{version}
-%endif
 %{_datadir}/apps/cmake/modules/*.cmake
