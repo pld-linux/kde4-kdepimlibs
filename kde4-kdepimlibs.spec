@@ -22,7 +22,7 @@ BuildRequires:	QtGui-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	QtTest-devel >= %{qtver}
-BuildRequires:	akonadi-devel >= 1.1.1
+BuildRequires:	akonadi-devel >= 1.1.2
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
