@@ -3,17 +3,17 @@
 %bcond_without	apidocs		# do not prepare API documentation
 #
 %define		qtver		4.5.0
-%define		_state		stable
+%define		_state		unstable
 %define		orgname		kdepimlibs
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.2.3
-Release:	5
+Version:	4.2.85
+Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	0c6f760fd1b3e031254b0a3082396657
+# Source0-md5:	cf90852fc59dbaf1388d786071901f85
 Patch100:	%{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -22,7 +22,7 @@ BuildRequires:	QtGui-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	QtTest-devel >= %{qtver}
-BuildRequires:	akonadi-devel >= 1.1.2
+BuildRequires:	akonadi-devel >= 1.1.85
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
@@ -34,7 +34,7 @@ BuildRequires:	flex
 BuildRequires:	gpgme-devel
 %{?with_apidocs:BuildRequires:	graphviz}
 BuildRequires:	kde4-kdelibs-devel >= %{version}
-BuildRequires:	libical-devel >= 0.33
+BuildRequires:	libical-devel >= 0.43
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	qt4-build >= %{qtver}
@@ -149,6 +149,12 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libakonadi-kmime.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kabc.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-kabc.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkholidays.so.4
+%attr(755,root,root) %{_libdir}/libkholidays.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkpimtextedit.so.4
+%attr(755,root,root) %{_libdir}/libkpimtextedit.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libmicroblog.so.4
+%attr(755,root,root) %{_libdir}/libmicroblog.so.4.*.*
 
 %attr(755,root,root) %{_libdir}/kde4/kabc_directory.so
 %attr(755,root,root) %{_libdir}/kde4/kabc_file.so
@@ -176,6 +182,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %{_datadir}/apps/kconf_update/mailtransports.upd
 %{_datadir}/apps/kconf_update/migrate-transports.pl
+%{_datadir}/apps/libkholidays
 
 %{_datadir}/config.kcfg/mailtransport.kcfg
 
@@ -221,9 +228,21 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/*.so
+%{_includedir}/KDE/Akonadi
+%{_includedir}/KDE/KABC
+%{_includedir}/KDE/KBlog
+%{_includedir}/KDE/KCal
+%{_includedir}/KDE/KHolidays
+%{_includedir}/KDE/KLDAP
+%{_includedir}/KDE/KPIMIdentities
+%{_includedir}/KDE/KPIMTextEdit
+%{_includedir}/KDE/KPIMUtils
+%{_includedir}/KDE/KResources
+%{_includedir}/KDE/Syndication
 %{_includedir}/akonadi
 %{_includedir}/kabc
 %{_includedir}/kcal
+%{_includedir}/kholidays
 %{_includedir}/kldap
 %{_includedir}/kresources
 %{_includedir}/ktnef
@@ -234,8 +253,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/kimap
 %{_includedir}/kmime
 %{_includedir}/kpimidentities
+%{_includedir}/kpimtextedit
 %{_includedir}/kpimutils
 %{_includedir}/mailtransport
+%{_includedir}/microblog
 %{_includedir}/qgpgme
 
 %dir %{_libdir}/gpgmepp
