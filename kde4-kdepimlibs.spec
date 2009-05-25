@@ -14,14 +14,14 @@ License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 # Source0-md5:	cf90852fc59dbaf1388d786071901f85
-Patch100:	%{name}-branch.diff
+#Patch100: %{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
 BuildRequires:	QtDBus-devel >= %{qtver}
 BuildRequires:	QtGui-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
-BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	QtTest-devel >= %{qtver}
+BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	akonadi-devel >= 1.1.85
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	bison
@@ -45,8 +45,8 @@ BuildRequires:	zlib-devel
 BuildConflicts:	indexlib
 BuildConflicts:	kdepim-kontact-libs
 BuildConflicts:	kdepim-libkmailprivate
-Requires:	%{name} = %{version}-%{release}
 Requires(post,postun):	/sbin/ldconfig
+Requires:	%{name} = %{version}-%{release}
 Obsoletes:	kdepimlibs4
 Conflicts:	kdelibs
 Conflicts:	kdepimlibs4
