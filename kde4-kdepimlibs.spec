@@ -2,7 +2,7 @@
 # Conditional build:
 %bcond_without	apidocs		# do not prepare API documentation
 #
-%define		qtver		4.5.0
+%define		qtver		4.5.1
 %define		_state		stable
 %define		orgname		kdepimlibs
 Summary:	Personal Information Management (PIM) libraries for KDE
