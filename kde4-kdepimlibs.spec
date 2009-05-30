@@ -5,18 +5,18 @@
 %define		qtver		4.5.0
 %define		_state		unstable
 %define		orgname		kdepimlibs
-%define		svn		969966
+%define		svn		973768
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.2.87
+Version:	4.2.88
 Release:	1
 License:	GPL
 Group:		X11/Applications
 #Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}svn%{svn}.tar.bz2
-# Source0-md5:	4ccfbe27aa3fea510a8b87ac255e3c69
+# Source0-md5:	51b6afe93d5ce78602f9cb3ba91c99fa
 #Patch100: %{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -265,7 +265,5 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_libdir}/gpgmepp
 %{_libdir}/gpgmepp/*.cmake
 %dir %{_libdir}/cmake
-# YES, this is wrong...
-%{_libdir}/cmake/KdepimLibs-4.2.85
-#%{_libdir}/cmake/KdepimLibs-%{ersion}
+%{_libdir}/cmake/KdepimLibs
 %{_datadir}/apps/cmake/modules/*.cmake
