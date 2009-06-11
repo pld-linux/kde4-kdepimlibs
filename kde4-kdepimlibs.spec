@@ -2,21 +2,21 @@
 # Conditional build:
 %bcond_without	apidocs		# do not prepare API documentation
 #
-%define		qtver		4.5.0
+%define		qtver		4.5.1
 %define		_state		unstable
 %define		orgname		kdepimlibs
-%define		svn		973768
+%define		svn		979380
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.2.90
+Version:	4.2.91
 Release:	1
 License:	GPL
 Group:		X11/Applications
-Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	5a4700a1e36724efa4d50fa4db111f35
-#Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}svn%{svn}.tar.bz2
+#Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
+Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}svn%{svn}.tar.bz2
+# Source0-md5:	bd9caf24a58e5b947961147f09aa6cfc
 #Patch100: %{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -78,8 +78,8 @@ Pakiet ten zawiera pliki nagłówkowe potrzebne do budowy aplikacji
 opartych na kdepimlibs.
 
 %prep
-%setup -q -n %{orgname}-%{version}
-#%setup -q -n %{orgname}-%{version}svn%{svn}
+##%setup -q -n %{orgname}-%{version}
+%setup -q -n %{orgname}-%{version}svn%{svn}
 #%patch100 -p0
 
 %build
