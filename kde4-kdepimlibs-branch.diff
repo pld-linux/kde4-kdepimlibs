@@ -1,7 +1,27 @@
+Index: kresources/kresources_manager.desktop
+===================================================================
+--- kresources/kresources_manager.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kresources/kresources_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
+@@ -29,6 +29,7 @@
+ Name[ro]=Gestionar KResurse
+ Name[ru]=Управление источниками данных
+ Name[se]=KResources-gieđahalli
++Name[sk]=KResources manažér
+ Name[sl]=Upravnik KResources
+ Name[sr]=Менаџер к‑ресурса
+ Name[sr@latin]=Menadžer k‑resursa
+@@ -71,6 +72,7 @@
+ Comment[ro]=Gestionar KResurse
+ Comment[ru]=Управление источниками данных
+ Comment[se]=KResources-gieđahalli
++Comment[sk]=KResources manažér
+ Comment[sl]=Upravnik KResources
+ Comment[sr]=Менаџер к‑ресурса
+ Comment[sr@latin]=Menadžer k‑resursa
 Index: kresources/factory.cpp
 ===================================================================
---- kresources/factory.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kresources/factory.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
+--- kresources/factory.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kresources/factory.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
 @@ -57,9 +57,15 @@
      QMap<QString, KService::Ptr> mTypeMap;
  };
@@ -20,11 +40,59 @@ Index: kresources/factory.cpp
  Factory *Factory::self( const QString &resourceFamily )
  {
    kDebug();
+Index: kresources/kresources.desktop
+===================================================================
+--- kresources/kresources.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kresources/kresources.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
+@@ -38,6 +38,7 @@
+ Name[ro]=Resurse KDE
+ Name[ru]=Источники данных
+ Name[se]=KDE-resurssat
++Name[sk]=KDE zdroje
+ Name[sl]=Viri KDE
+ Name[sr]=КДЕ ресурси
+ Name[sr@latin]=KDE resursi
+@@ -79,6 +80,7 @@
+ Comment[ro]=Configurare resurse KDE
+ Comment[ru]=Настроить источники данных KDE
+ Comment[se]=Heivet KDE-resurssaid
++Comment[sk]=Konfiguruj KDE zdroje
+ Comment[sl]=Nastavi vire KDE
+ Comment[sr]=Подеси ресурсе КДЕ‑а
+ Comment[sr@latin]=Podesi resurse KDE‑a
+Index: kresources/kresources_plugin.desktop
+===================================================================
+--- kresources/kresources_plugin.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kresources/kresources_plugin.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
+@@ -29,6 +29,7 @@
+ Name[ro]=Modul KResurse
+ Name[ru]=Модуль KResources
+ Name[se]=KResources-lassemodula
++Name[sk]=KResources zásuvný modul
+ Name[sl]=Vstavek KResources
+ Name[sr]=Прикључак радног оквира к‑ресурса
+ Name[sr@latin]=Priključak radnog okvira k‑resursa
+@@ -70,6 +71,7 @@
+ Comment[pt_BR]=Plug-in do KResource
+ Comment[ro]=Modul de arhitectură KResurse
+ Comment[ru]=Модуль инфраструктуры KResource
++Comment[sk]=KResources Framework zásuvný modul
+ Comment[sl]=Vstavek za ogrodje KResources
+ Comment[sr]=Прикључак радног оквира к‑ресурса
+ Comment[sr@latin]=Priključak radnog okvira k‑resursa
 Index: kcal/localdir.desktop
 ===================================================================
---- kcal/localdir.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kcal/localdir.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
-@@ -41,6 +41,7 @@
+--- kcal/localdir.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kcal/localdir.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
+@@ -29,6 +29,7 @@
+ Name[ro]=Calendar în director local
+ Name[ru]=Календарь в локальной папке
+ Name[se]=Kaleandar báikkálaš katalogas
++Name[sk]=Kalendár v lokálnom adresári.
+ Name[sl]=Koledar v krajevnem imeniku
+ Name[sr]=Календар у локалној фасцикли
+ Name[sr@latin]=Kalendar u lokalnoj fascikli
+@@ -41,6 +42,7 @@
  Name[zh_TW]=本地端目錄裡的行事曆
  Comment=Provides access to calendar items, each stored in a single file, in a given directory
  Comment[ca]=Proporciona l'accés als elements d'un calendari, cada un emmagatzemat en un fitxer individual, en un directori donat
@@ -32,11 +100,27 @@ Index: kcal/localdir.desktop
  Comment[da]=Giver adgang til kalenderelementer, hver lagret i en enkelt fil, i en given mappe
  Comment[de]=Ermöglicht Zugriff auf Kalender, die jeweils in einzelnen Dateien in einem vorgegebenen Ordner gespeichert sind. 
  Comment[el]=Προσφέρει πρόσβαση σε αντικείμενα ημερολογίου, αποθηκευμένα σε ξεχωριστά αρχεία, σε ένα δοσμένο κατάλογο
+@@ -65,6 +67,7 @@
+ Comment[ro]=Oferă acces la elemente de calendar, fiecare stocat într-un singur fișier, într-un anumit director
+ Comment[ru]=Хранение каждого события или задачи в отдельных файлах в указанной локальной папке.
+ Comment[se]=Dáinna beasat kaleandarmerkošidda, vurkejuvvon okta fiilan, dihto katalogas
++Comment[sk]=Poskytuje prístup do položiek adresára, každá uložená v jednoduchom súbore v danom adresári.
+ Comment[sl]=Nudi dostop do koledarskih vnosov, ki so shranjeni vsak posebej v svoji datoteki, v danem imeniku
+ Comment[sr]=Пружа приступ календарским ставкама, складиштеним у појединачним фајловима у датој фасцикли.
+ Comment[sr@latin]=Pruža pristup kalendarskim stavkama, skladištenim u pojedinačnim fajlovima u datoj fascikli.
 Index: kcal/local.desktop
 ===================================================================
---- kcal/local.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kcal/local.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
-@@ -41,6 +41,7 @@
+--- kcal/local.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kcal/local.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
+@@ -29,6 +29,7 @@
+ Name[ro]=Calendar în fișier local
+ Name[ru]=Календарь в локальном файле
+ Name[se]=Kaleandar báikkálaš fiillas
++Name[sk]=Kalendár v lokálnom súbore
+ Name[sl]=Koledar v krajevni datoteki
+ Name[sr]=Календар у локалном фајлу
+ Name[sr@latin]=Kalendar u lokalnom fajlu
+@@ -41,6 +42,7 @@
  Name[zh_TW]=本地端檔案裡的行事曆
  Comment=Provides access to a calendar stored in a single local file
  Comment[ca]=Proporciona l'accés a un calendari emmagatzemat en un fitxer local individual
@@ -44,10 +128,18 @@ Index: kcal/local.desktop
  Comment[da]=Giver adgang til en kalender lagret i en enkelt lokal fil
  Comment[de]=Ermöglicht Zugriff auf einen Kalender, der in einer einzigen Dateien lokal gespeichert ist
  Comment[el]=Προσφέρει πρόσβαση σε ένα ημερολόγιο αποθηκευμένο σε ένα τοπικό αρχείο
+@@ -65,6 +67,7 @@
+ Comment[ro]=Oferă acces la un calendar stocat într-un singur fișier local
+ Comment[ru]=Хранение календаря в одном локальном файле
+ Comment[se]=Dáinna beasat kaleandarii vurkejuvvon okta báikásaš fiilan
++Comment[sk]=Poskytuje prístup ku kalendáru uloženému v jednoduchom lokálnom súbore.
+ Comment[sl]=Nudi dostop do koledarja, ki je shranjen v eni sami krajevni datoteki
+ Comment[sr]=Пружа приступ календару складиштеном у једном локалном фајлу
+ Comment[sr@latin]=Pruža pristup kalendaru skladištenom u jednom lokalnom fajlu
 Index: kcal/kcal_manager.desktop
 ===================================================================
---- kcal/kcal_manager.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kcal/kcal_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
+--- kcal/kcal_manager.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kcal/kcal_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
 @@ -19,6 +19,7 @@
  Name[km]=ប្រតិទិន
  Name[lt]=Kalendorius
@@ -56,10 +148,18 @@ Index: kcal/kcal_manager.desktop
  Name[nb]=Kalender
  Name[nds]=Kalenner
  Name[nl]=Agenda
+@@ -30,6 +31,7 @@
+ Name[pt_BR]=Calendário
+ Name[ru]=Календарь
+ Name[se]=Kaleandar
++Name[sk]=Kalendár
+ Name[sl]=Koledar
+ Name[sr]=Календар
+ Name[sr@latin]=Kalendar
 Index: kcal/recurrence.cpp
 ===================================================================
---- kcal/recurrence.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kcal/recurrence.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
+--- kcal/recurrence.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kcal/recurrence.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
 @@ -941,12 +941,35 @@
    for ( i = 0, count = d->mRRules.count();  i < count;  ++i ) {
      times += d->mRRules[i]->timesInInterval( start, end );
@@ -101,8 +201,8 @@ Index: kcal/recurrence.cpp
    // Remove excluded times
 Index: kcal/htmlexport.cpp
 ===================================================================
---- kcal/htmlexport.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kcal/htmlexport.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
+--- kcal/htmlexport.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kcal/htmlexport.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
 @@ -501,7 +501,7 @@
      *ts << " class=\"done\"";
    }
@@ -165,8 +265,8 @@ Index: kcal/htmlexport.cpp
  }
 Index: kcal/incidenceformatter.cpp
 ===================================================================
---- kcal/incidenceformatter.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kcal/incidenceformatter.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
+--- kcal/incidenceformatter.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kcal/incidenceformatter.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
 @@ -402,11 +402,12 @@
      tmpStr += "<td>" + eventViewerFormatAttachments( event ) + "</td>";
      tmpStr += "</tr>";
@@ -250,8 +350,8 @@ Index: kcal/incidenceformatter.cpp
  }
 Index: kcal/calendar.cpp
 ===================================================================
---- kcal/calendar.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kcal/calendar.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
+--- kcal/calendar.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kcal/calendar.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
 @@ -457,7 +457,7 @@
  
    Incidence *newInc = incidence->clone();
@@ -263,8 +363,8 @@ Index: kcal/calendar.cpp
      recur->clear();
 Index: kcal/recurrencerule.cpp
 ===================================================================
---- kcal/recurrencerule.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kcal/recurrencerule.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
+--- kcal/recurrencerule.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kcal/recurrencerule.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
 @@ -751,7 +751,6 @@
                                 // unless it matches the rule)
      uint mFrequency;
@@ -355,8 +455,8 @@ Index: kcal/recurrencerule.cpp
      nextValid.setDate( start.date().addYears( periods ) );
 Index: CMakeLists.txt
 ===================================================================
---- CMakeLists.txt	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ CMakeLists.txt	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
+--- CMakeLists.txt	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ CMakeLists.txt	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
 @@ -5,11 +5,11 @@
  # Used e.g. in KdepimLibsConfig.cmake, Alex
  set(KDEPIMLIBS_VERSION_MAJOR 4)
@@ -373,8 +473,8 @@ Index: CMakeLists.txt
  include (MacroLibrary)
 Index: kioslave/smtp/smtp.cpp
 ===================================================================
---- kioslave/smtp/smtp.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kioslave/smtp/smtp.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
+--- kioslave/smtp/smtp.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kioslave/smtp/smtp.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
 @@ -132,9 +132,6 @@
    s >> what;
    if ( what == 'c' ) {
@@ -385,10 +485,63 @@ Index: kioslave/smtp/smtp.cpp
    } else if ( what == 'N' ) {
      if ( !execute( Command::NOOP ) )
        return;
+Index: kioslave/sieve/sieve.protocol
+===================================================================
+--- kioslave/sieve/sieve.protocol	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kioslave/sieve/sieve.protocol	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
+@@ -38,6 +38,7 @@
+ Description[ro]=Un „ioslave” pentru protocolul de filtrare a poștei Sieve
+ Description[ru]=Поддержка протокола фильтрации почты Sieve
+ Description[se]=SO-šláva Sieve e-boastasillenprotokolla várás
++Description[sk]=Ioslave pre Sieve mail filtrovací protokol
+ Description[sl]=Ioslave za protokol poštnega filtriranja Sieve
+ Description[sr]=У/И захват за сито, протокол филтрирања поште
+ Description[sr@latin]=U/I zahvat za sito, protokol filtriranja pošte
+Index: gpgme++/context.cpp
+===================================================================
+--- gpgme++/context.cpp	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ gpgme++/context.cpp	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
+@@ -51,6 +51,10 @@
+ #include <cassert>
+ 
+ namespace GpgME {
++  void initializeLibrary() {
++      gpgme_check_version( 0 );
++  }
++
+   static inline gpgme_error_t makeError( gpg_err_code_t code ) {
+     return gpg_err_make( (gpg_err_source_t)22, code );
+   }
+Index: gpgme++/CMakeLists.txt
+===================================================================
+--- gpgme++/CMakeLists.txt	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ gpgme++/CMakeLists.txt	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
+@@ -32,7 +32,7 @@
+         gpgadduserideditinteractor.cpp
+ )
+ 
+-set( _gpgmepp_version 2.0.2 )
++set( _gpgmepp_version 2.0.3 )
+ set( _gpgmepp_soversion 2 )
+ 
+ set( GPGMEPP_INCLUDE ${INCLUDE_INSTALL_DIR} ${GPGME_INCLUDES} ${Boost_INCLUDE_DIR} )
+Index: gpgme++/global.h
+===================================================================
+--- gpgme++/global.h	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ gpgme++/global.h	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
+@@ -39,6 +39,8 @@
+ 
+ namespace GpgME {
+ 
++    GPGMEPP_EXPORT void initializeLibrary();
++
+     enum Protocol { OpenPGP, CMS, UnknownProtocol };
+ 
+     enum Engine { GpgEngine, GpgSMEngine, GpgConfEngine, UnknownEngine };
 Index: kabc/plugins/file/file.desktop
 ===================================================================
---- kabc/plugins/file/file.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kabc/plugins/file/file.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
+--- kabc/plugins/file/file.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kabc/plugins/file/file.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
 @@ -17,6 +17,7 @@
  Name[km]=ឯកសារ
  Name[lt]=Failas
@@ -397,7 +550,15 @@ Index: kabc/plugins/file/file.desktop
  Name[nb]=Fil
  Name[nds]=Datei
  Name[nl]=Bestand
-@@ -41,6 +42,7 @@
+@@ -29,6 +30,7 @@
+ Name[ro]=Fișier
+ Name[ru]=Файл
+ Name[se]=Fiila
++Name[sk]=Súbor
+ Name[sl]=Datoteka
+ Name[sr]=Фајл
+ Name[sr@latin]=Fajl
+@@ -41,6 +43,7 @@
  Name[zh_TW]=檔案
  Comment=Provides access to contacts stored in a single local file. Supports standard VCard files and other formats depending on available plugins
  Comment[ca]=Proporciona l'accés als contactes emmagatzemats en un fitxer individual. Accepta els fitxers estàndard VCard i altres formats, depenent dels connectors disponibles
@@ -405,10 +566,18 @@ Index: kabc/plugins/file/file.desktop
  Comment[da]=Giver adgang til kontakter, hver lagret i en enkelt fil. Understøtter standard VCard-fil og andre formater afhængigt af tilgængelige af plugins
  Comment[de]=Ermöglicht Zugriff auf Kontakte, die in einer einzigen Dateien lokal gespeichert sind. Unterstützt Standard-VCard-Dateien und andere Formate abhängig von den verfügbaren Modulen.
  Comment[el]=Προσφέρει πρόσβαση σε επαφές, αποθηκευμένες σε ένα τοπικό αρχείο. Υποστηρίζει  τυπικά αρχεία VCard και άλλες μορφές αρχείων ανάλογα με τη διαθεσιμότητα των πρόσθετων
+@@ -63,6 +66,7 @@
+ Comment[pt_BR]=Fornece acesso aos contatos armazenados em um único arquivo local. Suporta o formato de arquivos VCard padrão e outros formatos, dependendo da disponibilidade dos plug-ins
+ Comment[ro]=Oferă acces la contactele stocate într-un singur fișier. Susține fișiere VCard standard precum și alte formate în dependență de modulele disponibile
+ Comment[ru]=Хранение всех контактов в одном локальном файле формата vCard или любого другого формата, который поддерживается модулями
++Comment[sk]=Poskytuje prístup ku kontaktom uloženým v jednoduchom lokálnom súbore. Podporuje štandardný VCard súbor a ostatné formáty v závislosti od dostupnosti zásuvných modulov.
+ Comment[sl]=Nudi dostop do stikov, ki so shranjeni v eni sami krajevni datoteki. Podpira običajne datoteke VCard in druge formate, odvisno od dosegljivosti vstavkov
+ Comment[sr]=Пружа приступ контактима складиштеним у једном локалном фајлу. Подржава стандардне в‑кард фајлове и друге формате, према расположивим прикључцима.
+ Comment[sr@latin]=Pruža pristup kontaktima skladištenim u jednom lokalnom fajlu. Podržava standardne vCard fajlove i druge formate, prema raspoloživim priključcima.
 Index: kabc/plugins/ldapkio/ldapkio.desktop
 ===================================================================
---- kabc/plugins/ldapkio/ldapkio.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kabc/plugins/ldapkio/ldapkio.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
+--- kabc/plugins/ldapkio/ldapkio.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kabc/plugins/ldapkio/ldapkio.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
 @@ -6,6 +6,7 @@
  Name[x-test]=xxLDAPxx
  Comment=Provides access to contacts stored on a LDAP directory server
@@ -417,10 +586,18 @@ Index: kabc/plugins/ldapkio/ldapkio.desktop
  Comment[da]=Giver adgang til kontakter lagret på en LDAP directory-server
  Comment[de]=Ermöglicht Zugriff auf Kontakte, die auf einem LDAP-Server gespeichert sind.
  Comment[el]=Προσφέρει πρόσβαση σε επαφές, αποθηκευμένες σε έναν εξυπηρετητή καταλόγου LDAP
+@@ -27,6 +28,7 @@
+ Comment[pt]=Oferece o acesso aos contactos guardados num servidor de directório LDAP
+ Comment[pt_BR]=Fornece acesso aos contatos armazenados em um servidor de pastas LDAP
+ Comment[ru]=Хранение контактов на сервере каталогов LDAP
++Comment[sk]=Poskytuje prístup ku kontaktom uloženým na LDAP adresárovom serveri.
+ Comment[sl]=Nudi dostop do stikov, ki so shranjeni na imeniškem strežniku LDAP
+ Comment[sr]=Пружа приступ контактима складиштеним на серверу ЛДАП именика
+ Comment[sr@latin]=Pruža pristup kontaktima skladištenim na serveru LDAP imenika
 Index: kabc/plugins/net/net.desktop
 ===================================================================
---- kabc/plugins/net/net.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kabc/plugins/net/net.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
+--- kabc/plugins/net/net.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kabc/plugins/net/net.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
 @@ -18,6 +18,7 @@
  Name[km]=បណ្តាញ
  Name[lt]=Tinklas
@@ -429,7 +606,15 @@ Index: kabc/plugins/net/net.desktop
  Name[nb]=Nettverk
  Name[nds]=Nettwark
  Name[nl]=Netwerk
-@@ -42,6 +43,7 @@
+@@ -30,6 +31,7 @@
+ Name[ro]=Rețea
+ Name[ru]=Сетевой файл
+ Name[se]=Fierbmi
++Name[sk]=Sieť
+ Name[sl]=Omrežje
+ Name[sr]=Мрежа
+ Name[sr@latin]=Mreža
+@@ -42,6 +44,7 @@
  Name[zh_TW]=網路
  Comment=Provides access to contacts in remote files using KDE's network framework KIO. Supports standard VCard files and other formats depending on available plugins
  Comment[ca]=Proporciona l'accés als contactes en fitxers remots usant la infraestructura KIO de xarxa del KDE. Accepta els fitxers estàndard VCard i altres formats, depenent dels connectors disponibles
@@ -437,11 +622,19 @@ Index: kabc/plugins/net/net.desktop
  Comment[da]=Giver adgang til kontakter i eksterne filer med brug af KDE's netværks-framework KIO. Understøtter standard VCard-filer og andre formater afhængigt af tilgængelige plugins
  Comment[de]=Ermöglicht Zugriff auf Kontakte in entfernten Dateien durch das KIO-Netzwerksystem von KDE. Unterstützt Standard-VCard-Dateien und andere Formate abhängig von den verfügbaren Modulen.
  Comment[el]=Προσφέρει πρόσβαση σε επαφές σε απομακρυσμένα αρχεία με τη χρήση του συστήματος KIO  του KDE. Υποστηρίζει τυπικά αρχεία VCard και άλλες μορφές αρχείων ανάλογα με τη  διαθεσιμότητα των πρόσθετων
+@@ -63,6 +66,7 @@
+ Comment[pt]=Oferece o acesso aos contactos em ficheiros remotos, disponíveis através de um KIO da plataforma de rede do KDE.  Suporta os ficheiros VCard normais, assim como outros formatos, dependendo da disponibilidade dos 'plugins'
+ Comment[pt_BR]=Fornece acesso aos contatos em arquivos remotos usando o KIO framework da rede do KDE. O suporte à arquivos VCard padrão e outros formatos dependem da disponibilidade de plug-ins
+ Comment[ru]=Хранение всех контактов в одном файле на сервере, доступном по протоколу KIO в формате vCard или любом другом формата, который поддерживается модулями
++Comment[sk]=Poskytuje prístup ku kontaktom vo vzdialených súboroch s použitím KDE sieťového rámec KIO.  Podporuje štandardný VCard súbor a ostatné formáty v závislosti od dostupnosti zásuvných modulov.
+ Comment[sl]=Nudi dostop do stikov v oddaljenih datotekah z uporabo KDE-jevega ogrodja KIO. Podpira običajne datoteke VCard in druge formate, odvisno od dosegljivosti vstavkov
+ Comment[sr]=Пружа приступ контактима у удаљеним фајловима преко КДЕ‑овог мрежног радног оквира К‑У/И. Подржава стандардне в‑кард фајлове и друге формате, према расположивим прикључцима.
+ Comment[sr@latin]=Pruža pristup kontaktima u udaljenim fajlovima preko KDE‑ovog mrežnog radnog okvira K‑U/I. Podržava standardne vCard fajlove i druge formate, prema raspoloživim priključcima.
 Index: kabc/plugins/dir/dir.desktop
 ===================================================================
---- kabc/plugins/dir/dir.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kabc/plugins/dir/dir.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
-@@ -18,6 +18,7 @@
+--- kabc/plugins/dir/dir.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kabc/plugins/dir/dir.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
+@@ -18,10 +18,11 @@
  Name[km]=ថត
  Name[lt]=Aplankas
  Name[lv]=Mape
@@ -449,7 +642,20 @@ Index: kabc/plugins/dir/dir.desktop
  Name[nb]=Mappe
  Name[nds]=Orner
  Name[nl]=Map
-@@ -42,6 +43,7 @@
+-Name[nn]=Mappe
++Name[nn]=Katalog
+ Name[oc]=Repertòri
+ Name[pa]=ਡਾਇਰੈਕਟਰੀ
+ Name[pl]=Katalog
+@@ -30,6 +31,7 @@
+ Name[ro]=Director
+ Name[ru]=Папка
+ Name[se]=Kataloga
++Name[sk]=Adresár
+ Name[sl]=Imenik
+ Name[sr]=Фасцикла
+ Name[sr@latin]=Fascikla
+@@ -42,6 +44,7 @@
  Name[zh_TW]=目錄
  Comment=Provides access to contacts, each stored in a single file, in a given directory. Supports standard VCard file and other formats depending on availability of plugins
  Comment[ca]=Proporciona l'accés als contactes, cada un emmagatzemat en un fitxer individual, en un directori donat. Accepta els fitxers estàndard VCard i altres formats depenent de la disponibilitat dels connectors
@@ -457,10 +663,18 @@ Index: kabc/plugins/dir/dir.desktop
  Comment[da]=Giver adgang til kontakter, hver lagret i en enkelt fil, i en given mappe. Understøtter standard VCard-fil og andre formater afhængigt af tilgængeligheden af plugins
  Comment[de]=Ermöglicht Zugriff auf Kontakte, die in einzelnen Dateien in einem vorgegebenen Ordner gespeichert sind. Unterstützt Standard-VCard-Dateien und andere Formate abhängig von den verfügbaren Modulen.
  Comment[el]=Προσφέρει πρόσβαση σε επαφές, αποθηκευμένες σε ξεχωριστά αρχεία, σε ένα  δοσμένο κατάλογο. Υποστηρίζει τυπικά αρχεία VCard και άλλες μορφές αρχείων  ανάλογα με τη διαθεσιμότητα των πρόσθετων
+@@ -64,6 +67,7 @@
+ Comment[pt_BR]=Fornece acesso aos contatos, cada um armazenado em um único arquivo, em uma pasta informada. Suporta o formato de arquivos VCard padrão e outros formatos, dependendo da disponibilidade dos plug-ins
+ Comment[ro]=Oferă acces la contacte, fiecare stocat într-un singur fișier, într-un director dat. Susține fișiere VCard standard precum și alte formate în dependență de disponibilitatea modulelor
+ Comment[ru]=Хранение каждого контакта в отдельном файле в указанной локальной папке. Для файлов используется формат vCard или любой другой формат, который поддерживается модулями
++Comment[sk]=Poskytuje prístup ku kontaktom každý uložený v jednoduchom súbore v danom adresári. Podporuje štandardný VCard súbor a ostatné formáty v závislosti od dostupnosti zásuvných modulov.
+ Comment[sl]=Nudi dostop do stikov, ki so vsak posebej shranjeni v eni datoteki, v danem imeniku. Podpira običajne datoteke VCard in druge formate, odvisno od dosegljivosti vstavkov
+ Comment[sr]=Пружа приступ контактима складиштеним у појединачним фајловима у датој фасцикли. Подржава стандардне в‑кард фајлове и друге формате, према расположивим прикључцима.
+ Comment[sr@latin]=Pruža pristup kontaktima skladištenim u pojedinačnim fajlovima u datoj fascikli. Podržava standardne vCard fajlove i druge formate, prema raspoloživim priključcima.
 Index: kabc/kabc_manager.desktop
 ===================================================================
---- kabc/kabc_manager.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kabc/kabc_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
+--- kabc/kabc_manager.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kabc/kabc_manager.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
 @@ -18,6 +18,7 @@
  Name[km]=ទំនាក់ទំនង​
  Name[lt]=Kontaktai
@@ -469,10 +683,18 @@ Index: kabc/kabc_manager.desktop
  Name[nb]=Kontakter
  Name[nds]=Kontakten
  Name[nl]=Contactpersonen
+@@ -30,6 +31,7 @@
+ Name[ro]=Contacte
+ Name[ru]=Контакты
+ Name[se]=Oktavuođat
++Name[sk]=Kontakty
+ Name[sl]=Stiki
+ Name[sr]=Контакти
+ Name[sr@latin]=Kontakti
 Index: kabc/formats/binary.desktop
 ===================================================================
---- kabc/formats/binary.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 974231)
-+++ kabc/formats/binary.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 974231)
+--- kabc/formats/binary.desktop	(.../tags/KDE/4.2.3/kdepimlibs)	(wersja 987537)
++++ kabc/formats/binary.desktop	(.../branches/KDE/4.2/kdepimlibs)	(wersja 987537)
 @@ -18,6 +18,7 @@
  Name[km]=គោលពីរ
  Name[lt]=Dvejetainis
@@ -481,3 +703,11 @@ Index: kabc/formats/binary.desktop
  Name[nb]=Binært
  Name[nds]=Bineer
  Name[nl]=Binair
+@@ -30,6 +31,7 @@
+ Name[ro]=Binar
+ Name[ru]=Двоичный
+ Name[se]=Binára
++Name[sk]=Binárny
+ Name[sl]=Dvojiško
+ Name[sr]=Бинарни
+ Name[sr@latin]=Binarni
