@@ -10,13 +10,13 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.2.91
+Version:	4.2.95
 Release:	1
 License:	GPL
 Group:		X11/Applications
 #Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}svn%{svn}.tar.bz2
-# Source0-md5:	bd9caf24a58e5b947961147f09aa6cfc
+Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
+# Source0-md5:	161ab45c7fb2199a803b2ea7e311ec3e
 #Patch100: %{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -25,7 +25,7 @@ BuildRequires:	QtGui-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
 BuildRequires:	QtTest-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
-BuildRequires:	akonadi-devel >= 1.1.90
+BuildRequires:	akonadi-devel >= 1.1.95
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
@@ -78,8 +78,8 @@ Pakiet ten zawiera pliki nagłówkowe potrzebne do budowy aplikacji
 opartych na kdepimlibs.
 
 %prep
-##%setup -q -n %{orgname}-%{version}
-%setup -q -n %{orgname}-%{version}svn%{svn}
+%setup -q -n %{orgname}-%{version}
+##%setup -q -n %{orgname}-%{version}svn%{svn}
 #%patch100 -p0
 
 %build
@@ -228,6 +228,8 @@ rm -rf $RPM_BUILD_ROOT
 %lang(en) %{_kdedocdir}/en/kioslave/nntp
 %lang(en) %{_kdedocdir}/en/kioslave/pop3
 %lang(en) %{_kdedocdir}/en/kioslave/smtp
+
+%{_datadir}/mime/packages/kdepimlibs-mime.xml
 
 %files devel
 %defattr(644,root,root,755)
