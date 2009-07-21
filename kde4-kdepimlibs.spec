@@ -2,7 +2,7 @@
 # Conditional build:
 %bcond_without	apidocs		# do not prepare API documentation
 #
-%define		qtver		4.5.1
+%define		qtver		4.5.2
 %define		_state		unstable
 %define		orgname		kdepimlibs
 %define		svn		979380
