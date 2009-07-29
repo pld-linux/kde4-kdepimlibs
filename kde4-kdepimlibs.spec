@@ -2,27 +2,29 @@
 # Conditional build:
 %bcond_without	apidocs		# do not prepare API documentation
 #
-%define		qtver		4.5.1
+%define		qtver		4.5.2
 %define		_state		stable
 %define		orgname		kdepimlibs
+%define		svn		979380
+
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.2.4
-Release:	2
+Version:	4.3.0
+Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	ee1d783140be0bb67652784f6fa93f70
-Patch100:	%{name}-branch.diff
+# Source0-md5:	313f1a9d353f82c2ffee517115404dd5
+#Patch100: %{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
 BuildRequires:	QtDBus-devel >= %{qtver}
 BuildRequires:	QtGui-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
-BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	QtTest-devel >= %{qtver}
-BuildRequires:	akonadi-devel >= 1.1.2
+BuildRequires:	QtXml-devel >= %{qtver}
+BuildRequires:	akonadi-devel >= 1.1.95
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
@@ -34,7 +36,7 @@ BuildRequires:	flex
 BuildRequires:	gpgme-devel
 %{?with_apidocs:BuildRequires:	graphviz}
 BuildRequires:	kde4-kdelibs-devel >= %{version}
-BuildRequires:	libical-devel >= 0.33
+BuildRequires:	libical-devel >= 0.43
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	qt4-build >= %{qtver}
@@ -45,8 +47,8 @@ BuildRequires:	zlib-devel
 BuildConflicts:	indexlib
 BuildConflicts:	kdepim-kontact-libs
 BuildConflicts:	kdepim-libkmailprivate
-Requires:	%{name} = %{version}-%{release}
 Requires(post,postun):	/sbin/ldconfig
+Requires:	%{name} = %{version}-%{release}
 Obsoletes:	kdepimlibs4
 Conflicts:	kdelibs
 Conflicts:	kdepimlibs4
@@ -76,6 +78,7 @@ opartych na kdepimlibs.
 
 %prep
 %setup -q -n %{orgname}-%{version}
+##%setup -q -n %{orgname}-%{version}svn%{svn}
 #%patch100 -p0
 
 %build
@@ -83,6 +86,7 @@ install -d build
 cd build
 %cmake \
 	-DCMAKE_INSTALL_PREFIX=%{_prefix} \
+	-DLIB_INSTALL_DIR=%{_libdir} \
 	-DSYSCONF_INSTALL_DIR=%{_sysconfdir} \
 	-DCMAKE_BUILD_TYPE=%{!?debug:release}%{?debug:debug} \
 %if "%{_lib}" == "lib64"
@@ -149,6 +153,12 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libakonadi-kmime.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kabc.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-kabc.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkholidays.so.4
+%attr(755,root,root) %{_libdir}/libkholidays.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkpimtextedit.so.4
+%attr(755,root,root) %{_libdir}/libkpimtextedit.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libmicroblog.so.4
+%attr(755,root,root) %{_libdir}/libmicroblog.so.4.*.*
 
 %attr(755,root,root) %{_libdir}/kde4/kabc_directory.so
 %attr(755,root,root) %{_libdir}/kde4/kabc_file.so
@@ -176,6 +186,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %{_datadir}/apps/kconf_update/mailtransports.upd
 %{_datadir}/apps/kconf_update/migrate-transports.pl
+%{_datadir}/apps/libkholidays
 
 %{_datadir}/config.kcfg/mailtransport.kcfg
 
@@ -218,12 +229,26 @@ rm -rf $RPM_BUILD_ROOT
 %lang(en) %{_kdedocdir}/en/kioslave/pop3
 %lang(en) %{_kdedocdir}/en/kioslave/smtp
 
+%{_datadir}/mime/packages/kdepimlibs-mime.xml
+
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/*.so
+%{_includedir}/KDE/Akonadi
+%{_includedir}/KDE/KABC
+%{_includedir}/KDE/KBlog
+%{_includedir}/KDE/KCal
+%{_includedir}/KDE/KHolidays
+%{_includedir}/KDE/KLDAP
+%{_includedir}/KDE/KPIMIdentities
+%{_includedir}/KDE/KPIMTextEdit
+%{_includedir}/KDE/KPIMUtils
+%{_includedir}/KDE/KResources
+%{_includedir}/KDE/Syndication
 %{_includedir}/akonadi
 %{_includedir}/kabc
 %{_includedir}/kcal
+%{_includedir}/kholidays
 %{_includedir}/kldap
 %{_includedir}/kresources
 %{_includedir}/ktnef
@@ -234,12 +259,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/kimap
 %{_includedir}/kmime
 %{_includedir}/kpimidentities
+%{_includedir}/kpimtextedit
 %{_includedir}/kpimutils
 %{_includedir}/mailtransport
+%{_includedir}/microblog
 %{_includedir}/qgpgme
 
 %dir %{_libdir}/gpgmepp
 %{_libdir}/gpgmepp/*.cmake
 %dir %{_libdir}/cmake
-%{_libdir}/cmake/KdepimLibs-*
+%{_libdir}/cmake/KdepimLibs
 %{_datadir}/apps/cmake/modules/*.cmake
