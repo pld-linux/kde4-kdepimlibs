@@ -33,7 +33,7 @@ BuildRequires:	cyrus-sasl-devel
 BuildRequires:	docbook-dtd42-xml
 %{?with_apidocs:BuildRequires:	doxygen}
 BuildRequires:	flex
-BuildRequires:	gpgme-devel
+BuildRequires:	gpgme-devel >= 1:1.2.0
 %{?with_apidocs:BuildRequires:	graphviz}
 BuildRequires:	kde4-kdelibs-devel >= %{version}
 BuildRequires:	libical-devel >= 0.43
@@ -49,6 +49,7 @@ BuildConflicts:	kdepim-kontact-libs
 BuildConflicts:	kdepim-libkmailprivate
 Requires(post,postun):	/sbin/ldconfig
 Requires:	%{name} = %{version}-%{release}
+Requires:	gpgme >= 1:1.2.0
 Obsoletes:	kdepimlibs4
 Conflicts:	kdelibs
 Conflicts:	kdepimlibs4
