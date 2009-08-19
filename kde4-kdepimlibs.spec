@@ -3,20 +3,21 @@
 %bcond_without	apidocs		# do not prepare API documentation
 #
 %define		qtver		4.5.2
-%define		_state		stable
+%define		_state		unstable
 %define		orgname		kdepimlibs
-%define		svn		979380
+%define		snap		svn1010339
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.3.0
-Release:	3
+Version:	4.3.64
+Release:	1
 License:	GPL
 Group:		X11/Applications
-Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	313f1a9d353f82c2ffee517115404dd5
-Patch100:	%{name}-branch.diff
+#Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
+Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}%{snap}.tar.bz2
+# Source0-md5:	991cf952773019427c934d4cc3a19945
+#Patch100: %{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
 BuildRequires:	QtDBus-devel >= %{qtver}
@@ -78,8 +79,9 @@ Pakiet ten zawiera pliki nagłówkowe potrzebne do budowy aplikacji
 opartych na kdepimlibs.
 
 %prep
-%setup -q -n %{orgname}-%{version}
-%patch100 -p0
+%setup -q -n %{orgname}-%{version}%{snap}
+##%setup -q -n %{orgname}-%{version}
+#%patch100 -p0
 
 %build
 install -d build
@@ -188,6 +190,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kconf_update/migrate-transports.pl
 %{_datadir}/apps/libkholidays
 
+%{_datadir}/config.kcfg/localfolders.kcfg
 %{_datadir}/config.kcfg/mailtransport.kcfg
 
 %{_datadir}/dbus-1/interfaces/org.kde.KResourcesManager.xml
@@ -239,11 +242,15 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KBlog
 %{_includedir}/KDE/KCal
 %{_includedir}/KDE/KHolidays
+%{_includedir}/KDE/KIMAP
 %{_includedir}/KDE/KLDAP
+%{_includedir}/KDE/KMime
 %{_includedir}/KDE/KPIMIdentities
 %{_includedir}/KDE/KPIMTextEdit
 %{_includedir}/KDE/KPIMUtils
 %{_includedir}/KDE/KResources
+%{_includedir}/KDE/KTNEF
+%{_includedir}/KDE/Mailtransport
 %{_includedir}/KDE/Syndication
 %{_includedir}/akonadi
 %{_includedir}/kabc
