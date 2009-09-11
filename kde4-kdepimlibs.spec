@@ -5,18 +5,18 @@
 %define		qtver		4.5.2
 %define		_state		unstable
 %define		orgname		kdepimlibs
-%define		snap		svn1013471
+%define		snap		svn1020033
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.3.65
+Version:	4.3.67
 Release:	1
 License:	GPL
 Group:		X11/Applications
 #Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}%{snap}.tar.bz2
-# Source0-md5:	a8c2a7c8766ef4dfc503dd999d13635d
+# Source0-md5:	5649d6c1b17e9174c217d508b29bf450
 #Patch100: %{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -149,6 +149,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libgpgme++-pth.so.2
 %attr(755,root,root) %ghost %{_libdir}/libsyndication.so.4
 %attr(755,root,root) %{_libdir}/libsyndication.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libakonadi-contact.so.4
+%attr(755,root,root) %{_libdir}/libakonadi-contact.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kde.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-kde.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kmime.so.4
@@ -183,6 +185,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kabc/*countrytransl.map
 %dir %{_datadir}/apps/kabc/formats
 %{_datadir}/apps/kabc/formats/*binary.desktop
+%{_datadir}/apps/akonadi/contact
 %dir %{_datadir}/apps/akonadi-kde
 %{_datadir}/apps/akonadi-kde/kcfg2dbus.xsl
 
