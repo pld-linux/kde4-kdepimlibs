@@ -1,6 +1,5 @@
 #
 # Conditional build:
-%bcond_without	apidocs		# do not prepare API documentation
 #
 %define		qtver		4.5.2
 %define		_state		unstable
@@ -31,17 +30,13 @@ BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
 BuildRequires:	cmake >= 2.6.3
 BuildRequires:	cyrus-sasl-devel
-BuildRequires:	docbook-dtd42-xml
-%{?with_apidocs:BuildRequires:	doxygen}
 BuildRequires:	flex
 BuildRequires:	gpgme-devel >= 1:1.2.0
-%{?with_apidocs:BuildRequires:	graphviz}
 BuildRequires:	kde4-kdelibs-devel >= %{version}
 BuildRequires:	libical-devel >= 0.43
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	qt4-build >= %{qtver}
-%{?with_apidocs:BuildRequires:	qt4-doc >= %{qtver}}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	zlib-devel
