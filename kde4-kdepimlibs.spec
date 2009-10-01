@@ -4,12 +4,12 @@
 %define		qtver		4.5.2
 %define		_state		unstable
 %define		orgname		kdepimlibs
-%define		snap		svn1024329
+%define		snap		svn1027298
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.3.68
+Version:	4.3.69
 Release:	1
 License:	GPL
 Group:		X11/Applications
@@ -116,6 +116,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libkcal.so.4
 %attr(755,root,root) %{_libdir}/libkldap.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkldap.so.4
+%attr(755,root,root) %{_libdir}/libkontactinterface.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkontactinterface.so.4
 %attr(755,root,root) %{_libdir}/libkresources.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkresources.so.4
 %attr(755,root,root) %{_libdir}/libktnef.so.4.*.*
@@ -166,6 +168,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/kde4/kabcformat_binary.so
 %attr(755,root,root) %{_libdir}/kde4/kcal_local.so
 %attr(755,root,root) %{_libdir}/kde4/kcal_localdir.so
+%attr(755,root,root) %{_libdir}/kde4/kcm_akonadicontact_actions.so
 %attr(755,root,root) %{_libdir}/kde4/kcm_kresources.so
 %attr(755,root,root) %{_libdir}/kde4/kcm_mailtransport.so
 %attr(755,root,root) %{_libdir}/kde4/kio_imap4.so
@@ -207,6 +210,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/kde4/services/smtp.protocol
 %{_datadir}/kde4/services/smtps.protocol
 
+%{_datadir}/kde4/services/akonadicontact_actions.desktop
 %{_datadir}/kde4/services/kcm_mailtransport.desktop
 %{_datadir}/kde4/services/kresources.desktop
 %dir %{_datadir}/kde4/services/kresources
@@ -221,6 +225,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/kde4/services/kresources/kcal/localdir.desktop
 %{_datadir}/kde4/services/kresources/kcal_manager.desktop
 
+%{_datadir}/kde4/servicetypes/kontactplugin.desktop
 %{_datadir}/kde4/servicetypes/kresources_manager.desktop
 %{_datadir}/kde4/servicetypes/kresources_plugin.desktop
 %lang(en) %{_kdedocdir}/en/kcontrol/kresources
@@ -241,6 +246,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KCal
 %{_includedir}/KDE/KHolidays
 %{_includedir}/KDE/KIMAP
+%{_includedir}/KDE/KontactInterface
 %{_includedir}/KDE/KLDAP
 %{_includedir}/KDE/KMime
 %{_includedir}/KDE/KPIMIdentities
@@ -254,6 +260,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/kabc
 %{_includedir}/kcal
 %{_includedir}/kholidays
+%{_includedir}/kontactinterface
 %{_includedir}/kldap
 %{_includedir}/kresources
 %{_includedir}/ktnef
