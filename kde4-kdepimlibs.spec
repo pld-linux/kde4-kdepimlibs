@@ -1,7 +1,7 @@
 #
 # Conditional build:
 #
-%define		qtver		4.5.2
+%define		qtver		4.5.3
 %define		_state		stable
 %define		orgname		kdepimlibs
 %define		svn		979380
