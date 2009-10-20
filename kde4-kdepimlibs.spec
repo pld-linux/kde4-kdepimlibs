@@ -183,6 +183,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kabc/*countrytransl.map
 %dir %{_datadir}/apps/kabc/formats
 %{_datadir}/apps/kabc/formats/*binary.desktop
+%dir %{_datadir}/apps/akonadi
 %{_datadir}/apps/akonadi/contact
 %dir %{_datadir}/apps/akonadi-kde
 %{_datadir}/apps/akonadi-kde/kcfg2dbus.xsl
