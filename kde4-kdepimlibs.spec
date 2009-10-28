@@ -4,18 +4,18 @@
 %define		qtver		4.6.0
 %define		_state		unstable
 %define		orgname		kdepimlibs
-%define		snap		svn1035674
+%define		snap		svn1040395
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.3.72
+Version:	4.3.73
 Release:	1
 License:	GPL
 Group:		X11/Applications
 #Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}%{snap}.tar.bz2
-# Source0-md5:	6e30549b92cdc5b0b06ac2107d434acc
+# Source0-md5:	00f0c4d5a621ed2162d95ff3c6864813
 #Patch100: %{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -192,7 +192,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kconf_update/migrate-transports.pl
 %{_datadir}/apps/libkholidays
 
-%{_datadir}/config.kcfg/localfolders.kcfg
+%{_datadir}/config.kcfg/specialcollections.kcfg
 %{_datadir}/config.kcfg/mailtransport.kcfg
 
 %{_datadir}/dbus-1/interfaces/org.kde.KResourcesManager.xml
