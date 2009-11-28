@@ -4,18 +4,18 @@
 %define		qtver		4.6.0
 %define		_state		unstable
 %define		orgname		kdepimlibs
-%define		snap		svn1048496
+%define		snap		svn1053190
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.3.75
+Version:	4.3.77
 Release:	1
 License:	GPL
 Group:		X11/Applications
 #Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}%{snap}.tar.bz2
-# Source0-md5:	6717cf65d42a16684ca7fa794757cb3c
+# Source0-md5:	17678b543ea8349e42841c726e8efe9b
 #Patch100: %{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -192,8 +192,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kconf_update/migrate-transports.pl
 %{_datadir}/apps/libkholidays
 
-%{_datadir}/config.kcfg/specialcollections.kcfg
 %{_datadir}/config.kcfg/mailtransport.kcfg
+%{_datadir}/config.kcfg/recentcontactscollections.kcfg
+%{_datadir}/config.kcfg/specialmailcollections.kcfg
 
 %{_datadir}/dbus-1/interfaces/org.kde.KResourcesManager.xml
 %{_datadir}/dbus-1/interfaces/org.kde.pim.IdentityManager.xml
@@ -237,6 +238,8 @@ rm -rf $RPM_BUILD_ROOT
 %lang(en) %{_kdedocdir}/en/kioslave/pop3
 %lang(en) %{_kdedocdir}/en/kioslave/sieve
 %lang(en) %{_kdedocdir}/en/kioslave/smtp
+%lang(en) %{_kdedocdir}/en/kioslave/mbox
+%lang(en) %{_kdedocdir}/en/kioslave/sieve
 
 %{_datadir}/mime/packages/kdepimlibs-mime.xml
 
