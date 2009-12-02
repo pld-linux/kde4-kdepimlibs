@@ -1,0 +1,11 @@
+--- akonadi/CMakeLists.txt.old	2009-12-02 11:21:52.356239133 +0100
++++ akonadi/CMakeLists.txt	2009-12-02 11:21:59.451551081 +0100
+@@ -234,7 +234,7 @@
+   entitylistview.h
+   entitymimetypefiltermodel.h
+ # Made private in 4.4 -- Stephen Kelly.
+-#  entityrightsfiltermodel.h
++  entityrightsfiltermodel.h
+   entitytreemodel.h
+   entitytreeview.h
+   entitytreeviewstatesaver.h
