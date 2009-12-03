@@ -33,6 +33,7 @@ BuildRequires:	flex
 BuildRequires:	gpgme-devel >= 1:1.2.0
 BuildRequires:	kde4-kdelibs-devel >= %{version}
 BuildRequires:	libical-devel >= 0.43
+BuildRequires:	openldap-devel
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	qt4-build >= %{qtver}
