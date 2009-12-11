@@ -1,246 +1,34 @@
-Index: qgpgme/dataprovider.cpp
+Index: kcal/incidencebase.cpp
 ===================================================================
---- qgpgme/dataprovider.cpp	(.../tags/KDE/4.3.3/kdepimlibs)	(wersja 1053997)
-+++ qgpgme/dataprovider.cpp	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1053997)
-@@ -23,6 +23,7 @@
- #include <qgpgme/dataprovider.h>
- 
- #include <QIODevice>
-+#include <QProcess>
- 
- #include <stdio.h>
- #include <string.h>
-@@ -159,9 +160,25 @@
-     };
- }
- 
-+static qint64 blocking_read( const boost::shared_ptr<QIODevice> & io, char * buffer, qint64 maxSize ) {
-+    while ( !io->bytesAvailable() )
-+        if ( !io->waitForReadyRead( -1 ) )
-+            if ( const QProcess * const p = qobject_cast<QProcess*>( io.get() ) )
-+                if ( p->error() == QProcess::UnknownError &&
-+                     p->exitStatus() == QProcess::NormalExit &&
-+                     p->exitCode() == 0 )
-+                    return 0;
-+                else
-+                    return errno = EIO, -1;
-+            else
-+                return 0; // assume EOF (loses error cases :/ )
-+
-+    return io->read( buffer, maxSize );
-+}
-+
- ssize_t QIODeviceDataProvider::read( void * buffer, size_t bufSize ) {
- #ifndef NDEBUG
--  //qDebug( "QIODeviceDataProvider::read( %p, %d )", buffer, bufSize );
-+  //qDebug( "QIODeviceDataProvider::read( %p, %lu )", buffer, bufSize );
- #endif
-   if ( bufSize == 0 )
-     return 0;
-@@ -172,7 +189,7 @@
-   //workaround: some QIODevices (known example: QProcess) might not return 0 (EOF), but immediately -1 when finished. If no
-   //errno is set, gpgme doesn't detect the error and loops forever. So return 0 on the very first -1 in case errno is 0
- 
--  const qint64 numRead = mIO->read( static_cast<char*>(buffer), bufSize );
-+  const qint64 numRead = blocking_read( mIO, static_cast<char*>(buffer), bufSize );
- 
-   Enabler en( numRead < 0 ? &mErrorOccurred : 0 );
-   if ( numRead < 0 && errno == 0 ) {
-@@ -186,7 +203,7 @@
- 
- ssize_t QIODeviceDataProvider::write( const void * buffer, size_t bufSize ) {
- #ifndef NDEBUG
--  qDebug( "QIODeviceDataProvider::write( %p, %lu )", buffer, static_cast<unsigned long>( bufSize ) );
-+  //qDebug( "QIODeviceDataProvider::write( %p, %lu )", buffer, static_cast<unsigned long>( bufSize ) );
- #endif
-   if ( bufSize == 0 )
-     return 0;
-Index: kresources/kresources.desktop
-===================================================================
---- kresources/kresources.desktop	(.../tags/KDE/4.3.3/kdepimlibs)	(wersja 1053997)
-+++ kresources/kresources.desktop	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1053997)
-@@ -91,7 +91,7 @@
- Comment[sv]=Anpassa KDE-resurser
- Comment[th]=ปรับแต่งทรัพยากร KDE
- Comment[tr]=KDE Kaynaklarını Yapılandır
--Comment[uk]=Налаштувати ресурси KDE
-+Comment[uk]=Налаштування ресурсів даних KDE
- Comment[x-test]=xxConfigure KDE Resourcesxx
- Comment[zh_CN]=配置 KDE 资源
- Comment[zh_TW]=設定 KDE 資源
-Index: kimap/capabilitiesjob.cpp
-===================================================================
---- kimap/capabilitiesjob.cpp	(.../tags/KDE/4.3.3/kdepimlibs)	(wersja 1053997)
-+++ kimap/capabilitiesjob.cpp	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1053997)
-@@ -68,7 +68,7 @@
-     if ( response.content.size() >= 2
-            && response.content[1].toString()=="CAPABILITY" ) {
-       for (int i=2; i<response.content.size(); ++i) {
--        d->capabilities << response.content[i].toString();
-+        d->capabilities << response.content[i].toString().toUpper();
-       }
-       emit capabilitiesReceived(d->capabilities);
+--- kcal/incidencebase.cpp	(.../tags/KDE/4.3.4/kdepimlibs)	(wersja 1061285)
++++ kcal/incidencebase.cpp	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1061285)
+@@ -477,7 +477,9 @@
+     d->mUpdatedPending = true;
+   } else {
+     foreach ( IncidenceObserver *o, d->mObservers ) {
+-      o->incidenceUpdated( this );
++      if ( o ) {
++        o->incidenceUpdated( this );
++      }
      }
-Index: kcal/local.desktop
+   }
+ }
+Index: akonadi/CMakeLists.txt
 ===================================================================
---- kcal/local.desktop	(.../tags/KDE/4.3.3/kdepimlibs)	(wersja 1053997)
-+++ kcal/local.desktop	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1053997)
-@@ -46,7 +46,7 @@
- Comment[ca]=Proporciona l'accés a un calendari emmagatzemat en un fitxer local individual
- Comment[cs]=Poskytuje přístup ke kalendáři uloženém v jednom lokálním souboru
- Comment[da]=Giver adgang til en kalender lagret i en enkelt lokal fil
--Comment[de]=Ermöglicht Zugriff auf einen Kalender, der in einer einzigen Dateien lokal gespeichert ist
-+Comment[de]=Ermöglicht Zugriff auf einen Kalender, der in einer einzigen Datei lokal gespeichert ist
- Comment[el]=Προσφέρει πρόσβαση σε ένα ημερολόγιο αποθηκευμένο σε ένα τοπικό αρχείο
- Comment[en_GB]=Provides access to a calendar stored in a single local file
- Comment[es]=Provee acceso a un calendario almacenado en un único archivo local
-Index: gpgme++/ConfigureChecks.cmake
-===================================================================
---- gpgme++/ConfigureChecks.cmake	(.../tags/KDE/4.3.3/kdepimlibs)	(wersja 1053997)
-+++ gpgme++/ConfigureChecks.cmake	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1053997)
-@@ -4,6 +4,7 @@
- if ( GPGME_FOUND )
+--- akonadi/CMakeLists.txt	(.../tags/KDE/4.3.4/kdepimlibs)	(wersja 1061285)
++++ akonadi/CMakeLists.txt	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1061285)
+@@ -144,11 +144,11 @@
+ target_link_libraries( akonadi-kde ${KDE4_SOLID_LIBS} ${QT_QTNETWORK_LIBRARY} ${QT_QTDBUS_LIBRARY} ${QT_QTSQL_LIBRARY} ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS} ${AKONADI_COMMON_LIBRARIES} )
+ set( AKONADI_KDE_DEPS ${KDE4_KDEUI_LIBS} ${QT_QTDBUS_LIBRARY} ${QT_QTCORE_LIBRARY} )
  
- set(CMAKE_REQUIRED_INCLUDES ${GPGME_INCLUDES})
-+set(CMAKE_REQUIRED_DEFINITIONS ${KDE4_DEFINITIONS})
- set(CMAKE_REQUIRED_LIBRARIES)
- foreach( _FLAVOUR VANILLA PTHREAD QT PTH GLIB )
-   if ( NOT CMAKE_REQUIRED_LIBRARIES )
-Index: kholidays/holidays/holiday_luLuxembourgish
-===================================================================
---- kholidays/holidays/holiday_luLuxembourgish	(.../tags/KDE/4.3.3/kdepimlibs)	(wersja 0)
-+++ kholidays/holidays/holiday_luLuxembourgish	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1053997)
-@@ -0,0 +1,18 @@
-+:
-+: Luxembourg holiday file. Copy to ~/.holiday
-+:
-+: Author: Georges Toth, <gtoth@trypill.org>
-+: Adapted from Belgium (French) holiday by Guido van Rossum, CWI, Amsterdam <Guido.van.Rossum@cwi.nl>
-+:
-+small    "Neijoerschdag"        weekend on 1.1
-+small    "Ouschteren"           weekend on easter
-+small    "Ouschterméindeg"      weekend on easter plus 1 day
-+small    "Éischte Mee"          weekend on 1.5
-+small    "Christihimmelfahrt"   weekend on easter plus 39 days
-+small    "Péngschten"           weekend on easter plus 49 days
-+small    "Päischtméindeg"       weekend on easter plus 50 days
-+small    "Nationale Feierdag"   weekend on 23.6
-+small    "Maria Himmelfahrt"    weekend on 15.8
-+small    "Allerhellegen"        weekend on 1.11
-+small    "Chrëschtdag"          weekend on 25.12
-+small    "Stiefesdag"           weekend on 26.12
-Index: kholidays/holidays/holiday_co
-===================================================================
---- kholidays/holidays/holiday_co	(.../tags/KDE/4.3.3/kdepimlibs)	(wersja 1053997)
-+++ kholidays/holidays/holiday_co	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1053997)
-@@ -1,27 +1,38 @@
- :
--: Archivo holiday_colombia. Cópialo a  ~/.holiday
--: Modifica este archivo borrando y añadiendo lo que te parezca.
-+: Colombia holiday file
- :
--: Festivos 
--: 
--red "Año nuevo" red on january 1
--red "Reyes magos" red on monday after january 6
--red "San José" red on march 24
--red "Día del Trabajo" red on may 1
--red "Dia de la ascención" red on june 2
--red "Día del Corpus" red on monday after june 23
--red "San Pedro y San Pablo" red on monday after june 30
--red "Sagrado Corazón" red on monday after june 30
--red "Día de la Independencia" red on july 20
--red "Fiesta de la Batalla de Boyaca" red on august 7
--red "Asunción" red on monday after august 18
--red "Día de la Raza" red on october 13
--red "Todos los Santos" red on monday after november 3
--red "Independencia de Cartagena" red on november 17
--red "La Inmaculada" red on december 8
--red "Día de Navidad" red on december  25
-+: See more
-+: http://es.wikipedia.org/wiki/Fiestas_de_Colombia
- :
--: Relacionados con la pascua
- :
--small "Jueves Santo" weekend on easter minus 3 days
--small "Viernes Santo" weekend on easter minus 2 days
-+: Author: Xavier Corredor Llano <xavier.corredor.llano <a> gmail.com>
-+
-+
-+: National holidays (fijas)
-+
-+small "Año nuevo" weekend on 1/1
-+small "Inmaculada Concepción" weekend on 12/8
-+small "Día del Trabajo" weekend on 5/1
-+small "Navidad" weekend on 12/25
-+small "Grito de la Independencia" weekend on 7/20
-+small "Batalla de Boyacá" weekend on 8/7
-+
-+: National holidays (primer lunes despues de fecha base)
-+
-+small "Epifanía" weekend on monday after 1/6
-+small "San José" weekend on monday after 3/19
-+small "San Pedro y San Pablo" weekend on monday after 6/29
-+small "Asunción de la Virgen" weekend on monday after 8/15
-+small "Todos los Santos" weekend on monday after 11/1
-+small "Día de la Raza" weekend on monday after 10/12
-+small "Independencia de Cartagena" weekend on monday after 11/11
-+
-+: Pascua
-+
-+:small "Domingo de Ramos" weekend on easter minus 7
-+small "Jueves Santo" weekend on easter minus 3
-+small "Viernes Santo" weekend on easter minus 2
-+:small "Domingo de Pascua" weekend on easter
-+small "Ascensión de Jesús" weekend on easter plus 43
-+small "Corpus Christi" weekend on easter plus 64
-+small "Sagrado Corazón" weekend on easter plus 71
-Index: kholidays/holidays/CMakeLists.txt
-===================================================================
---- kholidays/holidays/CMakeLists.txt	(.../tags/KDE/4.3.3/kdepimlibs)	(wersja 1053997)
-+++ kholidays/holidays/CMakeLists.txt	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1053997)
-@@ -35,6 +35,8 @@
-          holiday_jm
-          holiday_jp
-          holiday_lt
-+         holiday_luFrench
-+         holiday_luLuxembourgish
-          holiday_mx
-          holiday_nl
-          holiday_no
-Index: kholidays/holidays/holiday_luFrench
-===================================================================
---- kholidays/holidays/holiday_luFrench	(.../tags/KDE/4.3.3/kdepimlibs)	(wersja 0)
-+++ kholidays/holidays/holiday_luFrench	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1053997)
-@@ -0,0 +1,18 @@
-+:
-+: Luxembourg holiday file. Copy to ~/.holiday
-+:
-+: Author: Georges Toth, <gtoth@trypill.org>
-+: Adapted from Belgium (French) holiday by Guido van Rossum, CWI, Amsterdam <Guido.van.Rossum@cwi.nl>
-+:
-+small    "Nouvel an"           weekend on 1.1
-+small    "Pâques"              weekend on easter
-+small    "Lundi de Pâques"     weekend on easter plus 1 day
-+small    "Fête du travail"     weekend on 1.5
-+small    "Ascension"           weekend on easter plus 39 days
-+small    "Pentecôte"           weekend on easter plus 49 days
-+small    "Lundi de Pentecôte"  weekend on easter plus 50 days
-+small    "Fête nationale"      weekend on 23.6
-+small    "Assomption"          weekend on 15.8
-+small    "Toussaint"           weekend on 1.11
-+small    "Noël"                weekend on 25.12
-+small    "Saint-Étienne"      weekend on 26.12
-Index: kabc/plugins/file/file.desktop
-===================================================================
---- kabc/plugins/file/file.desktop	(.../tags/KDE/4.3.3/kdepimlibs)	(wersja 1053997)
-+++ kabc/plugins/file/file.desktop	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1053997)
-@@ -48,7 +48,7 @@
- Comment[ca]=Proporciona l'accés als contactes emmagatzemats en un fitxer individual. Accepta els fitxers estàndard VCard i altres formats, depenent dels connectors disponibles.
- Comment[cs]=Poskytuje přístup ke kontaktům uloženým v jednom lokálním souboru. Podporuje standardní soubory s vizitkou a jiným formátům podle dostupných modulů.
- Comment[da]=Giver adgang til kontakter, hver lagret i en enkelt fil. Understøtter standard VCard-fil og andre formater afhængigt af tilgængelige af plugins.
--Comment[de]=Ermöglicht Zugriff auf Kontakte, die in einer einzigen Dateien lokal gespeichert sind. Unterstützt Standard-VCard-Dateien und andere Formate abhängig von den verfügbaren Modulen.
-+Comment[de]=Ermöglicht Zugriff auf Kontakte, die in einer einzigen Datei lokal gespeichert sind. Unterstützt Standard-VCard-Dateien und andere Formate abhängig von den verfügbaren Modulen.
- Comment[el]=Προσφέρει πρόσβαση σε επαφές, αποθηκευμένες σε ένα τοπικό αρχείο. Υποστηρίζει τυπικά αρχεία VCard και άλλες μορφές αρχείων ανάλογα με τη διαθεσιμότητα των πρόσθετων.
- Comment[en_GB]=Provides access to contacts stored in a single local file. Supports standard VCard files and other formats depending on available plugins.
- Comment[es]=Provee acceso a los contactos almacenados en un único archivo local. Soporta archivos VCard estándar y otros formatos dependiendo de la disponibilidad de los componentes.
+-if(${KDE_IS_AT_LEAST_42})
++if(KDE_IS_AT_LEAST_42)
+ target_link_libraries( akonadi-kde LINK_INTERFACE_LIBRARIES ${AKONADI_KDE_DEPS})
+-else(${KDE_IS_AT_LEAST_42})
++else(KDE_IS_AT_LEAST_42)
+ target_link_libraries( akonadi-kde ${AKONADI_KDE_DEPS})
+-endif(${KDE_IS_AT_LEAST_42})
++endif(KDE_IS_AT_LEAST_42)
+ 
+ 
+ set_target_properties( akonadi-kde PROPERTIES VERSION ${GENERIC_LIB_VERSION} SOVERSION ${GENERIC_LIB_SOVERSION} )
