@@ -1,0 +1,11 @@
+--- kdepimlibs-4.3.4/kioslave/nntp/nntp.cpp.org	2009-06-23 13:14:08.000000000 +0200
++++ kdepimlibs-4.3.4/kioslave/nntp/nntp.cpp	2009-12-11 23:42:10.259557697 +0100
+@@ -517,7 +517,7 @@
+   if (firstSerNum == 0)
+     return true;
+   first = qMax( first, firstSerNum );
+-  if ( max > 0 && lastSerNum - first > max )
++  if ( max > 0 && max <= lastSerNum && lastSerNum - first > max )
+     first = lastSerNum - max + 1;
+ 
+   DBG << "Starting from serial number: " << first << " of " << firstSerNum << " - " << lastSerNum;
