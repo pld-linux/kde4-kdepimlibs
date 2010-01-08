@@ -9,12 +9,12 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.3.85
+Version:	4.3.90
 Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	b93ec318798eaa7ccceb622310b66211
+# Source0-md5:	b1dcb7dd3cea90bbc54984ae46896390
 #Patch100: %{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -106,6 +106,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libakonadi-kcal.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libakonadi-kcal.so.4
 %attr(755,root,root) %{_libdir}/libkabc.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkabc.so.4
 %attr(755,root,root) %{_libdir}/libkabc_file_core.so.4.*.*
