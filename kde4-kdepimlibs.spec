@@ -27,7 +27,7 @@ BuildRequires:	akonadi-devel >= 1.2.80
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
-BuildRequires:	cmake >= 2.6.3
+BuildRequires:	cmake >= 2.8.0
 BuildRequires:	cyrus-sasl-devel
 BuildRequires:	flex
 BuildRequires:	gpgme-devel >= 1:1.2.0
