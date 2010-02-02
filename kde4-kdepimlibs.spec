@@ -286,6 +286,5 @@ rm -rf $RPM_BUILD_ROOT
 
 %dir %{_libdir}/gpgmepp
 %{_libdir}/gpgmepp/*.cmake
-%dir %{_libdir}/cmake
 %{_libdir}/cmake/KdepimLibs
 %{_datadir}/apps/cmake/modules/*.cmake
