@@ -1,7 +1,7 @@
 #
 # Conditional build:
 #
-%define		qtver		4.6.0
+%define		qtver		4.6.1
 %define		_state		unstable
 %define		orgname		kdepimlibs
 
