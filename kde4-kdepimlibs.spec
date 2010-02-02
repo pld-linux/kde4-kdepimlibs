@@ -4,7 +4,6 @@
 %define		qtver		4.6.0
 %define		_state		unstable
 %define		orgname		kdepimlibs
-%define		snap		svn1053190
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
