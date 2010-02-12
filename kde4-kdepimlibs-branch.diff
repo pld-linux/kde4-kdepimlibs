@@ -1,5 +1,35 @@
---- branches/KDE/4.4/kdepimlibs/kpimutils/linklocator.cpp	2010/01/06 22:46:33	1070858
-+++ branches/KDE/4.4/kdepimlibs/kpimutils/linklocator.cpp	2010/02/05 11:21:14	1085498
+Index: kxmlrpcclient/query.cpp
+===================================================================
+--- kxmlrpcclient/query.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1089014)
++++ kxmlrpcclient/query.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1089014)
+@@ -227,7 +227,7 @@
+         QString markup;
+         markup += "<value><array><data>";
+         while ( dataIterator.hasNext() ) {
+-          markup += "<string><![CDATA[" + dataIterator.next() + "]]></string>\r\n";
++          markup += "<value><string><![CDATA[" + dataIterator.next() + "]]></string></value>\r\n";
+         }
+         markup += "</data></array></value>";
+         return markup;
+Index: kpimutils/tests/testlinklocator.cpp
+===================================================================
+--- kpimutils/tests/testlinklocator.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1089014)
++++ kpimutils/tests/testlinklocator.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1089014)
+@@ -298,6 +298,10 @@
+   // Bug reported by dfaure, the <hostname> would get lost
+   QTest::newRow( "" ) << "KUrl url(\"http://strange<hostname>/\");" << (0x08 | 0x02)
+                       << "KUrl url(&quot;<a href=\"http://strange<hostname>/\">http://strange&lt;hostname&gt;/</a>&quot;);";
++
++  // Bug: 211128 - plain text emails should not replace ampersand & with &amp;
++  QTest::newRow( "bug211128" ) << "https://green-site/?Ticket=85&Page=next" << 0x01
++    << "<a href=\"https://green-site/?Ticket=85&Page=next\">https://green-site/?Ticket=85&amp;Page=next</a>";
+ }
+ 
+ void LinkLocatorTest::testHtmlConvert()
+Index: kpimutils/linklocator.cpp
+===================================================================
+--- kpimutils/linklocator.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1089014)
++++ kpimutils/linklocator.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1089014)
 @@ -372,7 +372,6 @@
              hyperlink = str;
            }
@@ -8,3 +38,70 @@
            result += "<a href=\"" + hyperlink + "\">" + Qt::escape( str ) + "</a>";
            x += locator.mPos - start;
            continue;
+Index: CMakeLists.txt
+===================================================================
+--- CMakeLists.txt	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1089014)
++++ CMakeLists.txt	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1089014)
+@@ -49,7 +49,7 @@
+ if (NOT KDEPIM_ONLY_KLEO)
+   #FindAkonadi.cmake is only there for compatibility reasons, but we don't want to use that.
+   find_package(Akonadi 1.2.61 QUIET NO_MODULE)
+-  macro_log_feature(Akonadi_FOUND "Akonadi" "Akonadi server libraries (from kdesupport)" "http://pim.kde.org/akonadi" TRUE "1.2.61" "Akonadi is required to build KdepimLibs.")
++  macro_log_feature(Akonadi_FOUND "Akonadi" "Akonadi server libraries (from kdesupport)" "http://pim.kde.org/akonadi" TRUE "1.3.1" "Akonadi is required to build KdepimLibs.")
+ 
+   find_package(Sasl2)
+   macro_log_feature(SASL2_FOUND "cyrus-sasl" "Cyrus SASL API" "http://asg.web.cmu.edu/sasl/sasl-library.html" TRUE "" "Required to support authentication of logins in the IMAP and Sieve kioslaves.")
+Index: mailtransport/transport.h
+===================================================================
+--- mailtransport/transport.h	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1089014)
++++ mailtransport/transport.h	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1089014)
+@@ -34,6 +34,12 @@
+   Represents the settings of a specific mail transport.
+ 
+   To create a new empty Transport object, use TransportManager::createTransport().
++
++  Initialize an empty Transport object by calling the set...() methods defined in
++  kcfg-generated TransportBase, and in this class. Note that some transports use
++  the "host" setting to store the following values:
++   - Sendmail transport: path to the sendmail executable
++   - Akonadi transports: resource ID.
+ */
+ // TODO KDE5: Do something about the kcfg-generated TransportBase.
+ // Currently it has the config stuff as private members, which means it is
+Index: mailtransport/addtransportdialog.cpp
+===================================================================
+--- mailtransport/addtransportdialog.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1089014)
++++ mailtransport/addtransportdialog.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1089014)
+@@ -102,6 +102,8 @@
+       this, SLOT(typeListClicked()) );
+   connect( d->ui.typeListView, SIGNAL(itemSelectionChanged()),
+       this, SLOT(typeListClicked()) );
++  connect( d->ui.typeListView, SIGNAL(doubleClicked(const QModelIndex &) ),
++           this, SLOT(accept() ) );
+ }
+ 
+ AddTransportDialog::~AddTransportDialog()
+Index: akonadi/agentbase.cpp
+===================================================================
+--- akonadi/agentbase.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1089014)
++++ akonadi/agentbase.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1089014)
+@@ -231,6 +231,10 @@
+   KGlobal::ref();
+   KGlobal::setAllowQuit( true );
+ 
++  // disable session management
++  if ( KApplication::kApplication() )
++    KApplication::kApplication()->disableSessionManagement();
++
+   QTimer::singleShot( 0, q, SLOT( delayedInit() ) );
+ }
+ 
+@@ -430,8 +434,6 @@
+   sAgentBase = this;
+   d_ptr->mId = id;
+   d_ptr->init();
+-  if ( KApplication::kApplication() )
+-    KApplication::kApplication()->disableSessionManagement();
+ }
+ 
+ AgentBase::AgentBase( AgentBasePrivate* d, const QString &id ) :
