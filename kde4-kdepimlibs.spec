@@ -1,21 +1,20 @@
 #
 # Conditional build:
 #
-%define		qtver		4.5.3
+%define		qtver		4.6.1
 %define		_state		stable
 %define		orgname		kdepimlibs
-%define		svn		979380
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.3.5
-Release:	1
+Version:	4.4.0
+Release:	3
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	bac3b6c50fc75408b39b401a6f2e6064
-Patch100:	%{name}-branch.diff
+# Source0-md5:	2eb04e5ae39a25009f036ec333eb118a
+Patch100: %{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
 BuildRequires:	QtDBus-devel >= %{qtver}
@@ -23,11 +22,11 @@ BuildRequires:	QtGui-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
 BuildRequires:	QtTest-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
-BuildRequires:	akonadi-devel >= 1.1.95
+BuildRequires:	akonadi-devel >= 1.3.1
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
-BuildRequires:	cmake >= 2.6.3
+BuildRequires:	cmake >= 2.8.0
 BuildRequires:	cyrus-sasl-devel
 BuildRequires:	flex
 BuildRequires:	gpgme-devel >= 1:1.2.0
@@ -75,7 +74,7 @@ opartych na kdepimlibs.
 
 %prep
 %setup -q -n %{orgname}-%{version}
-#%patch100 -p0
+%patch100 -p0
 
 %build
 install -d build
@@ -107,6 +106,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libakonadi-kcal.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libakonadi-kcal.so.4
 %attr(755,root,root) %{_libdir}/libkabc.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkabc.so.4
 %attr(755,root,root) %{_libdir}/libkabc_file_core.so.4.*.*
@@ -115,6 +116,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libkcal.so.4
 %attr(755,root,root) %{_libdir}/libkldap.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkldap.so.4
+%attr(755,root,root) %{_libdir}/libkontactinterface.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkontactinterface.so.4
 %attr(755,root,root) %{_libdir}/libkresources.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkresources.so.4
 %attr(755,root,root) %{_libdir}/libktnef.so.4.*.*
@@ -143,6 +146,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libgpgme++-pth.so.2
 %attr(755,root,root) %ghost %{_libdir}/libsyndication.so.4
 %attr(755,root,root) %{_libdir}/libsyndication.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libakonadi-contact.so.4
+%attr(755,root,root) %{_libdir}/libakonadi-contact.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kde.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-kde.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kmime.so.4
@@ -163,6 +168,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/kde4/kabcformat_binary.so
 %attr(755,root,root) %{_libdir}/kde4/kcal_local.so
 %attr(755,root,root) %{_libdir}/kde4/kcal_localdir.so
+%attr(755,root,root) %{_libdir}/kde4/kcm_akonadicontact_actions.so
 %attr(755,root,root) %{_libdir}/kde4/kcm_kresources.so
 %attr(755,root,root) %{_libdir}/kde4/kcm_mailtransport.so
 %attr(755,root,root) %{_libdir}/kde4/kio_imap4.so
@@ -177,6 +183,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kabc/*countrytransl.map
 %dir %{_datadir}/apps/kabc/formats
 %{_datadir}/apps/kabc/formats/*binary.desktop
+%dir %{_datadir}/apps/akonadi
+%{_datadir}/apps/akonadi/contact
 %dir %{_datadir}/apps/akonadi-kde
 %{_datadir}/apps/akonadi-kde/kcfg2dbus.xsl
 
@@ -185,6 +193,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/libkholidays
 
 %{_datadir}/config.kcfg/mailtransport.kcfg
+%{_datadir}/config.kcfg/recentcontactscollections.kcfg
+%{_datadir}/config.kcfg/specialmailcollections.kcfg
 
 %{_datadir}/dbus-1/interfaces/org.kde.KResourcesManager.xml
 %{_datadir}/dbus-1/interfaces/org.kde.pim.IdentityManager.xml
@@ -202,6 +212,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/kde4/services/smtp.protocol
 %{_datadir}/kde4/services/smtps.protocol
 
+%{_datadir}/kde4/services/akonadicontact_actions.desktop
 %{_datadir}/kde4/services/kcm_mailtransport.desktop
 %{_datadir}/kde4/services/kresources.desktop
 %dir %{_datadir}/kde4/services/kresources
@@ -216,14 +227,19 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/kde4/services/kresources/kcal/localdir.desktop
 %{_datadir}/kde4/services/kresources/kcal_manager.desktop
 
+%{_datadir}/kde4/servicetypes/kontactplugin.desktop
 %{_datadir}/kde4/servicetypes/kresources_manager.desktop
 %{_datadir}/kde4/servicetypes/kresources_plugin.desktop
 %lang(en) %{_kdedocdir}/en/kcontrol/kresources
 %lang(en) %{_kdedocdir}/en/kioslave/imap
 %lang(en) %{_kdedocdir}/en/kioslave/ldap
+%lang(en) %{_kdedocdir}/en/kioslave/mbox
 %lang(en) %{_kdedocdir}/en/kioslave/nntp
 %lang(en) %{_kdedocdir}/en/kioslave/pop3
+%lang(en) %{_kdedocdir}/en/kioslave/sieve
 %lang(en) %{_kdedocdir}/en/kioslave/smtp
+%lang(en) %{_kdedocdir}/en/kioslave/mbox
+%lang(en) %{_kdedocdir}/en/kioslave/sieve
 
 %{_datadir}/mime/packages/kdepimlibs-mime.xml
 
@@ -235,16 +251,22 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KBlog
 %{_includedir}/KDE/KCal
 %{_includedir}/KDE/KHolidays
+%{_includedir}/KDE/KIMAP
+%{_includedir}/KDE/KontactInterface
 %{_includedir}/KDE/KLDAP
+%{_includedir}/KDE/KMime
 %{_includedir}/KDE/KPIMIdentities
 %{_includedir}/KDE/KPIMTextEdit
 %{_includedir}/KDE/KPIMUtils
 %{_includedir}/KDE/KResources
+%{_includedir}/KDE/KTNEF
+%{_includedir}/KDE/Mailtransport
 %{_includedir}/KDE/Syndication
 %{_includedir}/akonadi
 %{_includedir}/kabc
 %{_includedir}/kcal
 %{_includedir}/kholidays
+%{_includedir}/kontactinterface
 %{_includedir}/kldap
 %{_includedir}/kresources
 %{_includedir}/ktnef
