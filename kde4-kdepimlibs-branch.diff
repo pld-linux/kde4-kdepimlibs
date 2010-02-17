@@ -1,7 +1,7 @@
 Index: kxmlrpcclient/query.cpp
 ===================================================================
---- kxmlrpcclient/query.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1089014)
-+++ kxmlrpcclient/query.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1089014)
+--- kxmlrpcclient/query.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ kxmlrpcclient/query.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
 @@ -227,7 +227,7 @@
          QString markup;
          markup += "<value><array><data>";
@@ -13,8 +13,8 @@ Index: kxmlrpcclient/query.cpp
          return markup;
 Index: kpimutils/tests/testlinklocator.cpp
 ===================================================================
---- kpimutils/tests/testlinklocator.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1089014)
-+++ kpimutils/tests/testlinklocator.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1089014)
+--- kpimutils/tests/testlinklocator.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ kpimutils/tests/testlinklocator.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
 @@ -298,6 +298,10 @@
    // Bug reported by dfaure, the <hostname> would get lost
    QTest::newRow( "" ) << "KUrl url(\"http://strange<hostname>/\");" << (0x08 | 0x02)
@@ -28,8 +28,8 @@ Index: kpimutils/tests/testlinklocator.cpp
  void LinkLocatorTest::testHtmlConvert()
 Index: kpimutils/linklocator.cpp
 ===================================================================
---- kpimutils/linklocator.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1089014)
-+++ kpimutils/linklocator.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1089014)
+--- kpimutils/linklocator.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ kpimutils/linklocator.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
 @@ -372,7 +372,6 @@
              hyperlink = str;
            }
@@ -40,8 +40,8 @@ Index: kpimutils/linklocator.cpp
            continue;
 Index: CMakeLists.txt
 ===================================================================
---- CMakeLists.txt	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1089014)
-+++ CMakeLists.txt	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1089014)
+--- CMakeLists.txt	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ CMakeLists.txt	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
 @@ -49,7 +49,7 @@
  if (NOT KDEPIM_ONLY_KLEO)
    #FindAkonadi.cmake is only there for compatibility reasons, but we don't want to use that.
@@ -53,8 +53,8 @@ Index: CMakeLists.txt
    macro_log_feature(SASL2_FOUND "cyrus-sasl" "Cyrus SASL API" "http://asg.web.cmu.edu/sasl/sasl-library.html" TRUE "" "Required to support authentication of logins in the IMAP and Sieve kioslaves.")
 Index: mailtransport/transport.h
 ===================================================================
---- mailtransport/transport.h	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1089014)
-+++ mailtransport/transport.h	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1089014)
+--- mailtransport/transport.h	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ mailtransport/transport.h	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
 @@ -34,6 +34,12 @@
    Represents the settings of a specific mail transport.
  
@@ -70,8 +70,8 @@ Index: mailtransport/transport.h
  // Currently it has the config stuff as private members, which means it is
 Index: mailtransport/addtransportdialog.cpp
 ===================================================================
---- mailtransport/addtransportdialog.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1089014)
-+++ mailtransport/addtransportdialog.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1089014)
+--- mailtransport/addtransportdialog.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ mailtransport/addtransportdialog.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
 @@ -102,6 +102,8 @@
        this, SLOT(typeListClicked()) );
    connect( d->ui.typeListView, SIGNAL(itemSelectionChanged()),
@@ -83,8 +83,8 @@ Index: mailtransport/addtransportdialog.cpp
  AddTransportDialog::~AddTransportDialog()
 Index: akonadi/agentbase.cpp
 ===================================================================
---- akonadi/agentbase.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1089014)
-+++ akonadi/agentbase.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1089014)
+--- akonadi/agentbase.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ akonadi/agentbase.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
 @@ -231,6 +231,10 @@
    KGlobal::ref();
    KGlobal::setAllowQuit( true );
@@ -105,3 +105,18 @@ Index: akonadi/agentbase.cpp
  }
  
  AgentBase::AgentBase( AgentBasePrivate* d, const QString &id ) :
+Index: akonadi/entitycache_p.h
+===================================================================
+--- akonadi/entitycache_p.h	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ akonadi/entitycache_p.h	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
+@@ -171,10 +171,6 @@
+ 
+     void fetchResult( KJob* job )
+     {
+-      if ( job->error() ) {
+-        kWarning() << "Fetch failed:" << job->errorString();
+-        return;
+-      }
+       typename T::Id id = job->property( "EntityCacheNode" ).template value<typename T::Id>();
+       EntityCacheNode<T> *node = cacheNodeForId( id );
+       if ( !node )
