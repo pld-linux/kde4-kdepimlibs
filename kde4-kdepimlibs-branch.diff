@@ -1,49 +1,122 @@
-Index: kcal/incidencebase.cpp
+Index: kxmlrpcclient/query.cpp
 ===================================================================
---- kcal/incidencebase.cpp	(.../tags/KDE/4.3.4/kdepimlibs)	(wersja 1062713)
-+++ kcal/incidencebase.cpp	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1062713)
-@@ -477,7 +477,9 @@
-     d->mUpdatedPending = true;
-   } else {
-     foreach ( IncidenceObserver *o, d->mObservers ) {
--      o->incidenceUpdated( this );
-+      if ( o ) {
-+        o->incidenceUpdated( this );
-+      }
-     }
-   }
+--- kxmlrpcclient/query.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ kxmlrpcclient/query.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
+@@ -227,7 +227,7 @@
+         QString markup;
+         markup += "<value><array><data>";
+         while ( dataIterator.hasNext() ) {
+-          markup += "<string><![CDATA[" + dataIterator.next() + "]]></string>\r\n";
++          markup += "<value><string><![CDATA[" + dataIterator.next() + "]]></string></value>\r\n";
+         }
+         markup += "</data></array></value>";
+         return markup;
+Index: kpimutils/tests/testlinklocator.cpp
+===================================================================
+--- kpimutils/tests/testlinklocator.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ kpimutils/tests/testlinklocator.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
+@@ -298,6 +298,10 @@
+   // Bug reported by dfaure, the <hostname> would get lost
+   QTest::newRow( "" ) << "KUrl url(\"http://strange<hostname>/\");" << (0x08 | 0x02)
+                       << "KUrl url(&quot;<a href=\"http://strange<hostname>/\">http://strange&lt;hostname&gt;/</a>&quot;);";
++
++  // Bug: 211128 - plain text emails should not replace ampersand & with &amp;
++  QTest::newRow( "bug211128" ) << "https://green-site/?Ticket=85&Page=next" << 0x01
++    << "<a href=\"https://green-site/?Ticket=85&Page=next\">https://green-site/?Ticket=85&amp;Page=next</a>";
  }
-Index: kabc/plugins/ldapkio/resourceldapkio.cpp
+ 
+ void LinkLocatorTest::testHtmlConvert()
+Index: kpimutils/linklocator.cpp
 ===================================================================
---- kabc/plugins/ldapkio/resourceldapkio.cpp	(.../tags/KDE/4.3.4/kdepimlibs)	(wersja 1062713)
-+++ kabc/plugins/ldapkio/resourceldapkio.cpp	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1062713)
-@@ -216,7 +216,9 @@
-     if ( mod ) {
-       tmp += KLDAP::Ldif::assembleLine( QLatin1String( "replace" ), attr ) + '\n';
-     }
--    tmp += KLDAP::Ldif::assembleLine( attr, value ) + '\n';
-+    if ( !value.isEmpty() ) {
-+      tmp += KLDAP::Ldif::assembleLine( attr, value ) + '\n';
-+    }
-     if ( mod ) {
-       tmp += "-\n";
-     }
-Index: akonadi/CMakeLists.txt
+--- kpimutils/linklocator.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ kpimutils/linklocator.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
+@@ -372,7 +372,6 @@
+             hyperlink = str;
+           }
+ 
+-          str = str.replace( '&', "&amp;" );
+           result += "<a href=\"" + hyperlink + "\">" + Qt::escape( str ) + "</a>";
+           x += locator.mPos - start;
+           continue;
+Index: CMakeLists.txt
 ===================================================================
---- akonadi/CMakeLists.txt	(.../tags/KDE/4.3.4/kdepimlibs)	(wersja 1062713)
-+++ akonadi/CMakeLists.txt	(.../branches/KDE/4.3/kdepimlibs)	(wersja 1062713)
-@@ -144,11 +144,11 @@
- target_link_libraries( akonadi-kde ${KDE4_SOLID_LIBS} ${QT_QTNETWORK_LIBRARY} ${QT_QTDBUS_LIBRARY} ${QT_QTSQL_LIBRARY} ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS} ${AKONADI_COMMON_LIBRARIES} )
- set( AKONADI_KDE_DEPS ${KDE4_KDEUI_LIBS} ${QT_QTDBUS_LIBRARY} ${QT_QTCORE_LIBRARY} )
+--- CMakeLists.txt	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ CMakeLists.txt	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
+@@ -49,7 +49,7 @@
+ if (NOT KDEPIM_ONLY_KLEO)
+   #FindAkonadi.cmake is only there for compatibility reasons, but we don't want to use that.
+   find_package(Akonadi 1.2.61 QUIET NO_MODULE)
+-  macro_log_feature(Akonadi_FOUND "Akonadi" "Akonadi server libraries (from kdesupport)" "http://pim.kde.org/akonadi" TRUE "1.2.61" "Akonadi is required to build KdepimLibs.")
++  macro_log_feature(Akonadi_FOUND "Akonadi" "Akonadi server libraries (from kdesupport)" "http://pim.kde.org/akonadi" TRUE "1.3.1" "Akonadi is required to build KdepimLibs.")
  
--if(${KDE_IS_AT_LEAST_42})
-+if(KDE_IS_AT_LEAST_42)
- target_link_libraries( akonadi-kde LINK_INTERFACE_LIBRARIES ${AKONADI_KDE_DEPS})
--else(${KDE_IS_AT_LEAST_42})
-+else(KDE_IS_AT_LEAST_42)
- target_link_libraries( akonadi-kde ${AKONADI_KDE_DEPS})
--endif(${KDE_IS_AT_LEAST_42})
-+endif(KDE_IS_AT_LEAST_42)
+   find_package(Sasl2)
+   macro_log_feature(SASL2_FOUND "cyrus-sasl" "Cyrus SASL API" "http://asg.web.cmu.edu/sasl/sasl-library.html" TRUE "" "Required to support authentication of logins in the IMAP and Sieve kioslaves.")
+Index: mailtransport/transport.h
+===================================================================
+--- mailtransport/transport.h	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ mailtransport/transport.h	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
+@@ -34,6 +34,12 @@
+   Represents the settings of a specific mail transport.
  
+   To create a new empty Transport object, use TransportManager::createTransport().
++
++  Initialize an empty Transport object by calling the set...() methods defined in
++  kcfg-generated TransportBase, and in this class. Note that some transports use
++  the "host" setting to store the following values:
++   - Sendmail transport: path to the sendmail executable
++   - Akonadi transports: resource ID.
+ */
+ // TODO KDE5: Do something about the kcfg-generated TransportBase.
+ // Currently it has the config stuff as private members, which means it is
+Index: mailtransport/addtransportdialog.cpp
+===================================================================
+--- mailtransport/addtransportdialog.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ mailtransport/addtransportdialog.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
+@@ -102,6 +102,8 @@
+       this, SLOT(typeListClicked()) );
+   connect( d->ui.typeListView, SIGNAL(itemSelectionChanged()),
+       this, SLOT(typeListClicked()) );
++  connect( d->ui.typeListView, SIGNAL(doubleClicked(const QModelIndex &) ),
++           this, SLOT(accept() ) );
+ }
  
- set_target_properties( akonadi-kde PROPERTIES VERSION ${GENERIC_LIB_VERSION} SOVERSION ${GENERIC_LIB_SOVERSION} )
+ AddTransportDialog::~AddTransportDialog()
+Index: akonadi/agentbase.cpp
+===================================================================
+--- akonadi/agentbase.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ akonadi/agentbase.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
+@@ -231,6 +231,10 @@
+   KGlobal::ref();
+   KGlobal::setAllowQuit( true );
+ 
++  // disable session management
++  if ( KApplication::kApplication() )
++    KApplication::kApplication()->disableSessionManagement();
++
+   QTimer::singleShot( 0, q, SLOT( delayedInit() ) );
+ }
+ 
+@@ -430,8 +434,6 @@
+   sAgentBase = this;
+   d_ptr->mId = id;
+   d_ptr->init();
+-  if ( KApplication::kApplication() )
+-    KApplication::kApplication()->disableSessionManagement();
+ }
+ 
+ AgentBase::AgentBase( AgentBasePrivate* d, const QString &id ) :
+Index: akonadi/entitycache_p.h
+===================================================================
+--- akonadi/entitycache_p.h	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
++++ akonadi/entitycache_p.h	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
+@@ -171,10 +171,6 @@
+ 
+     void fetchResult( KJob* job )
+     {
+-      if ( job->error() ) {
+-        kWarning() << "Fetch failed:" << job->errorString();
+-        return;
+-      }
+       typename T::Id id = job->property( "EntityCacheNode" ).template value<typename T::Id>();
+       EntityCacheNode<T> *node = cacheNodeForId( id );
+       if ( !node )
