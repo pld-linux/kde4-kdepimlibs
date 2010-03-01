@@ -14,7 +14,7 @@ License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 # Source0-md5:	a3854496e8350d930ea69b1b6952b049
-Patch100: %{name}-branch.diff
+Patch100:	%{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
 BuildRequires:	QtDBus-devel >= %{qtver}
@@ -24,11 +24,9 @@ BuildRequires:	QtTest-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	akonadi-devel >= 1.3.1
 BuildRequires:	automoc4 >= 0.9.88
-BuildRequires:	bison
 BuildRequires:	boost-devel >= 1.35.0
 BuildRequires:	cmake >= 2.8.0
 BuildRequires:	cyrus-sasl-devel
-BuildRequires:	flex
 BuildRequires:	gpgme-devel >= 1:1.2.0
 BuildRequires:	kde4-kdelibs-devel >= %{version}
 BuildRequires:	libical-devel >= 0.43
