@@ -1,122 +1,448 @@
-Index: kxmlrpcclient/query.cpp
+Index: cmake/modules/FindLibical.cmake
 ===================================================================
---- kxmlrpcclient/query.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
-+++ kxmlrpcclient/query.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
-@@ -227,7 +227,7 @@
-         QString markup;
-         markup += "<value><array><data>";
-         while ( dataIterator.hasNext() ) {
--          markup += "<string><![CDATA[" + dataIterator.next() + "]]></string>\r\n";
-+          markup += "<value><string><![CDATA[" + dataIterator.next() + "]]></string></value>\r\n";
-         }
-         markup += "</data></array></value>";
-         return markup;
-Index: kpimutils/tests/testlinklocator.cpp
-===================================================================
---- kpimutils/tests/testlinklocator.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
-+++ kpimutils/tests/testlinklocator.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
-@@ -298,6 +298,10 @@
-   // Bug reported by dfaure, the <hostname> would get lost
-   QTest::newRow( "" ) << "KUrl url(\"http://strange<hostname>/\");" << (0x08 | 0x02)
-                       << "KUrl url(&quot;<a href=\"http://strange<hostname>/\">http://strange&lt;hostname&gt;/</a>&quot;);";
-+
-+  // Bug: 211128 - plain text emails should not replace ampersand & with &amp;
-+  QTest::newRow( "bug211128" ) << "https://green-site/?Ticket=85&Page=next" << 0x01
-+    << "<a href=\"https://green-site/?Ticket=85&Page=next\">https://green-site/?Ticket=85&amp;Page=next</a>";
- }
+--- cmake/modules/FindLibical.cmake	(.../tags/KDE/4.4.1/kdepimlibs)	(wersja 1104125)
++++ cmake/modules/FindLibical.cmake	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1104125)
+@@ -4,8 +4,10 @@
+ #  LIBICAL_INCLUDE_DIRS - the Libical include directories
+ #  LIBICAL_LIBRARIES - The libraries needed to use Libical
+ #  LIBICAL_VERSION = The value of ICAL_VERSION defined in ical.h
++#  LIBICAL_MAJOR_VERSION = The library major version number
++#  LIBICAL_MINOR_VERSION = The library minor version number
  
- void LinkLocatorTest::testHtmlConvert()
-Index: kpimutils/linklocator.cpp
+-# Copyright (c) 2008, Allen Winter <winter@kde.org>
++# Copyright (c) 2008,2010 Allen Winter <winter@kde.org>
+ #
+ # Redistribution and use is allowed according to the terms of the BSD license.
+ # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
+@@ -72,6 +74,10 @@
+     message(FATAL_ERROR "Unable to compile or run the libical version detection program.")
+   endif(COMPILE_RESULT AND RUN_RESULT EQUAL 1)
+ 
++  #compute the major and minor version numbers
++  string(REGEX REPLACE "\\..*$" "" LIBICAL_MAJOR_VERSION ${LIBICAL_VERSION})
++  string(REGEX REPLACE "^.*\\." "" LIBICAL_MINOR_VERSION ${LIBICAL_VERSION})
++
+ endif(LIBICAL_INCLUDE_DIRS AND LIBICAL_LIBRARIES)
+ 
+ include(FindPackageHandleStandardArgs)
+Index: kcal/dndfactory.cpp
 ===================================================================
---- kpimutils/linklocator.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
-+++ kpimutils/linklocator.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
-@@ -372,7 +372,6 @@
-             hyperlink = str;
+--- kcal/dndfactory.cpp	(.../tags/KDE/4.4.1/kdepimlibs)	(wersja 1104125)
++++ kcal/dndfactory.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1104125)
+@@ -250,18 +250,17 @@
+     kDebug() << "Can't parse clipboard";
+     return 0;
+   }
+-  Incidence *ret = 0;
+ 
+   Incidence::List incList = cal->incidences();
+-  Incidence *inc = incList.first();
++  Incidence *inc = incList.isEmpty() ? 0 : incList.first();
+ 
+-  if ( !incList.isEmpty() && inc ) {
++  if ( inc ) {
+     inc = inc->clone();
+-
+     inc->recreate();
++  }
+ 
++  if ( inc && newDate.isValid() ) {
+     if ( inc->type() == "Event" ) {
+-
+       Event *anEvent = static_cast<Event*>( inc );
+       // Calculate length of event
+       int daysOffset = anEvent->dtStart().date().daysTo(
+@@ -302,9 +301,7 @@
+     } else {
+       kDebug() << "Trying to paste unknown incidence of type" << inc->type();
+     }
+-
+-    ret = inc;
+   }
+   delete cal;
+-  return ret;
++  return inc;
+ }
+Index: kcal/todo.cpp
+===================================================================
+--- kcal/todo.cpp	(.../tags/KDE/4.4.1/kdepimlibs)	(wersja 1104125)
++++ kcal/todo.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1104125)
+@@ -296,7 +296,9 @@
+     return KDateTime();
+   }
+   if ( recurs() && !first ) {
+-    return d->mDtRecurrence.addDays( dtDue( true ).daysTo( IncidenceBase::dtStart() ) );
++    KDateTime dt = d->mDtRecurrence.addDays( dtDue( true ).daysTo( IncidenceBase::dtStart() ) );
++    dt.setTime( IncidenceBase::dtStart().time() );
++    return dt;
+   } else {
+     return IncidenceBase::dtStart();
+   }
+Index: kioslave/sieve/sieve.protocol
+===================================================================
+--- kioslave/sieve/sieve.protocol	(.../tags/KDE/4.4.1/kdepimlibs)	(wersja 1104125)
++++ kioslave/sieve/sieve.protocol	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1104125)
+@@ -30,6 +30,7 @@
+ Description[it]=Un IOSlave per il protocollo di filtraggio della posta Sieve
+ Description[ja]=Sieve メールフィルタリングプロトコルのための ioslave
+ Description[km]=ioslave សម្រាប់​ពិធីការ​តម្រង​សំបុត្រ​របស់ Sieve
++Description[lt]=Sieve pašto filtravimo protokolo palaikymas
+ Description[lv]=IO apstrādātājs Sieve pasta filtrēšanas protokolam
+ Description[nb]=En ioslave for Sieve e-postfiltrering
+ Description[nds]=In-/Utgaavmoduul för't Nettpostfilter-Protokoll Sieve
+Index: kontactinterface/kontactplugin.desktop
+===================================================================
+--- kontactinterface/kontactplugin.desktop	(.../tags/KDE/4.4.1/kdepimlibs)	(wersja 1104125)
++++ kontactinterface/kontactplugin.desktop	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1104125)
+@@ -14,13 +14,16 @@
+ Name[fr]=Module externe pour Kontact
+ Name[ga]=Breiseán Kontact
+ Name[gl]=Engadido de Kontact
++Name[hu]=Kontact-modul
+ Name[it]=Plugin di Kontact
+ Name[ja]=Kontact プラグイン
+ Name[km]=កម្មវិធី​ជំនួយ Kontact
++Name[lt]=Kontact priedas
+ Name[lv]=Kontact spraudnis
+ Name[nb]=Kontact-programtillegg
+ Name[nds]=Kontact-Moduul
+ Name[nl]=Kontact-plugin
++Name[nn]=Kontakt-tillegg
+ Name[pa]=ਕੇਸੰਪਰਕ ਪਲੱਗਇਨ
+ Name[pt]='Plugin' do Kontact
+ Name[pt_BR]=Plug-in do Kontact
+Index: mailtransport/smtpconfigwidget.cpp
+===================================================================
+--- mailtransport/smtpconfigwidget.cpp	(.../tags/KDE/4.4.1/kdepimlibs)	(wersja 1104125)
++++ mailtransport/smtpconfigwidget.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1104125)
+@@ -109,9 +109,11 @@
+         ui.noAuthPossible->setVisible( true );
+         ui.kcfg_requiresAuthentication->setChecked( false );
+         ui.kcfg_requiresAuthentication->setEnabled( false );
++        ui.kcfg_requiresAuthentication->setVisible( false );
+       } else {
+         ui.noAuthPossible->setVisible( false );
+         ui.kcfg_requiresAuthentication->setEnabled( true );
++        ui.kcfg_requiresAuthentication->setVisible( true );
+       }
+     }
+ };
+Index: mailtransport/smtpsettings.ui
+===================================================================
+--- mailtransport/smtpsettings.ui	(.../tags/KDE/4.4.1/kdepimlibs)	(wersja 1104125)
++++ mailtransport/smtpsettings.ui	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1104125)
+@@ -133,14 +133,29 @@
+        <string comment="advanced smtp settings">Advanced</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout">
+-       <item row="0" column="0" colspan="3">
+-        <widget class="QCheckBox" name="kcfg_requiresAuthentication">
++       <item row="1" column="0" colspan="3">
++        <widget class="QLabel" name="noAuthPossible">
++         <property name="visible">
++          <bool>false</bool>
++         </property>
++         <property name="frameShape">
++          <enum>QFrame::Box</enum>
++         </property>
++         <property name="frameShadow">
++          <enum>QFrame::Plain</enum>
++         </property>
++         <property name="lineWidth">
++          <number>0</number>
++         </property>
+          <property name="text">
+-          <string>Server &amp;requires authentication</string>
++          <string>This server does not support authentication</string>
+          </property>
++         <property name="alignment">
++          <set>Qt::AlignCenter</set>
++         </property>
+         </widget>
+        </item>
+-       <item row="1" column="0">
++       <item row="2" column="0">
+         <widget class="QLabel" name="usernameLabel">
+          <property name="enabled">
+           <bool>false</bool>
+@@ -156,14 +171,14 @@
+          </property>
+         </widget>
+        </item>
+-       <item row="1" column="1" colspan="2">
++       <item row="2" column="1" colspan="2">
+         <widget class="KLineEdit" name="kcfg_userName">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+-       <item row="2" column="0">
++       <item row="3" column="0">
+         <widget class="QLabel" name="passwordLabel">
+          <property name="enabled">
+           <bool>false</bool>
+@@ -179,7 +194,7 @@
+          </property>
+         </widget>
+        </item>
+-       <item row="2" column="1" colspan="2">
++       <item row="3" column="1" colspan="2">
+         <widget class="KLineEdit" name="password">
+          <property name="enabled">
+           <bool>false</bool>
+@@ -192,7 +207,7 @@
+          </property>
+         </widget>
+        </item>
+-       <item row="3" column="1" colspan="2">
++       <item row="4" column="1" colspan="2">
+         <widget class="QCheckBox" name="kcfg_storePassword">
+          <property name="enabled">
+           <bool>false</bool>
+@@ -202,7 +217,7 @@
+          </property>
+         </widget>
+        </item>
+-       <item row="4" column="0" colspan="3">
++       <item row="5" column="0" colspan="3">
+         <widget class="KButtonGroup" name="kcfg_authenticationType">
+          <property name="enabled">
+           <bool>false</bool>
+@@ -260,17 +275,17 @@
+          </layout>
+         </widget>
+        </item>
+-       <item row="5" column="0" colspan="3">
++       <item row="6" column="0" colspan="3">
+         <widget class="KSeparator" name="kseparator_3"/>
+        </item>
+-       <item row="6" column="0" colspan="3">
++       <item row="7" column="0" colspan="3">
+         <widget class="QCheckBox" name="kcfg_specifyHostname">
+          <property name="text">
+           <string>Sen&amp;d custom hostname to server</string>
+          </property>
+         </widget>
+        </item>
+-       <item row="7" column="0" colspan="2">
++       <item row="8" column="0" colspan="2">
+         <widget class="QLabel" name="hostnameLabel">
+          <property name="enabled">
+           <bool>false</bool>
+@@ -286,17 +301,17 @@
+          </property>
+         </widget>
+        </item>
+-       <item row="7" column="2">
++       <item row="8" column="2">
+         <widget class="KLineEdit" name="kcfg_localHostname">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+-       <item row="8" column="0" colspan="3">
++       <item row="9" column="0" colspan="3">
+         <widget class="KSeparator" name="kseparator_2"/>
+        </item>
+-       <item row="9" column="0" colspan="2">
++       <item row="10" column="0" colspan="2">
+         <widget class="QLabel" name="precommandLabel">
+          <property name="text">
+           <string>Precommand:</string>
+@@ -306,35 +321,17 @@
+          </property>
+         </widget>
+        </item>
+-       <item row="9" column="2">
++       <item row="10" column="2">
+         <widget class="KLineEdit" name="kcfg_precommand"/>
+        </item>
++       <item row="0" column="0" colspan="3">
++        <widget class="QCheckBox" name="kcfg_requiresAuthentication">
++         <property name="text">
++          <string>Server &amp;requires authentication</string>
++         </property>
++        </widget>
++       </item>
+       </layout>
+-      <widget class="QLabel" name="noAuthPossible">
+-       <property name="geometry">
+-        <rect>
+-         <x>0</x>
+-         <y>0</y>
+-         <width>100</width>
+-         <height>30</height>
+-        </rect>
+-       </property>
+-       <property name="visible">
+-        <bool>false</bool>
+-       </property>
+-       <property name="frameShape">
+-        <enum>QFrame::Box</enum>
+-       </property>
+-       <property name="frameShadow">
+-        <enum>QFrame::Raised</enum>
+-       </property>
+-       <property name="text">
+-        <string>This server does not support authentication</string>
+-       </property>
+-       <property name="alignment">
+-        <set>Qt::AlignCenter</set>
+-       </property>
+-      </widget>
+      </widget>
+     </widget>
+    </item>
+Index: kabc/plugins/file/file.desktop
+===================================================================
+--- kabc/plugins/file/file.desktop	(.../tags/KDE/4.4.1/kdepimlibs)	(wersja 1104125)
++++ kabc/plugins/file/file.desktop	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1104125)
+@@ -61,10 +61,11 @@
+ Comment[fr]=Fourni l'accès aux contacts stockés dans un seul fichier local. Le format VCard et d'autres formats sont pris en charge en fonction des modules externes disponibles.
+ Comment[ga]=Soláthraíonn sé seo rochtain ar theagmhálacha, stóráilte i gcomhad aonair. Tacaítear le comhaid v-Chárta agus formáidí eile, ag brath ar na breiseáin atá ar fáil.
+ Comment[gl]=Dá acceso a contactos gardados nun único ficheiro local. Admite ficheiros vCard estándar e outros formatos en función das extensións dispoñíbeis.
+-Comment[hu]=Névjegyek elérését biztosítja. Minden névjegy egy közös helyi fájlban található. Támogatja a standard vCard formátumot, és bővítmények segítségével más formátumok is kezelhetők.
++Comment[hu]=A névjegyek elérését biztosítja. Minden névjegy egy közös helyi fájlban található. Támogatja a standard vCard formátumot, és bővítmények segítségével más formátumok is kezelhetők.
+ Comment[it]=Fornisce accesso a contatti memorizzati in un singolo file locale. Gestisce file in standard VCard e altri formati in base ai plugin disponibili.
+ Comment[ja]=単一のローカルファイルに保存されている連絡先へのアクセスを提供します。標準の VCard ファイルと、利用可能なプラグインに応じたフォーマットをサポートします。
+ Comment[km]=ផ្ដល់​កា​រចូលដំណើរការ​ទៅ​ទំនាក់ទំនង​​នៅ​ក្នុង​ឯកសារ​មូលដ្ឋាន​តែ​មួយ ។ គាំទ្រ​ឯកសារ VCard ស្តង់ដារ និង​ទ្រង់ទ្រាយ​ផ្សេងៗ​ ដោយ​អាស្រ័យ​លើ​កម្មវិធី​ជំនួយ​ដែល​មាន ។
++Comment[lt]=Suteikia prieigą prie kontaktų, saugomų viename vietiniame faile. Palaiko standartinius VCard failus ir kitus formatus, jei yra įdiegti atitinkami įskiepiai.
+ Comment[lv]=Nodrošina piekļuvi kontaktiem, kas glabājas vienā lokālā failā. Atbalsta standarta VCard failus un citus formātus, atkarībā no pieejamajiem spraudņiem.
+ Comment[nb]=Gir tilgang til kontakter, lagret i en enkelt lokal fil. Støtter standard vCard og andre formater avhengig av tilgjengelige programtillegg.
+ Comment[nds]=Stellt Togriep op Kontakten praat, de in een enkel lokaal Datei wohrt warrt. Ünnerstütt VCard-Dateien un anner Formaten na de 'verföögboren Modulen.
+Index: kabc/plugins/ldapkio/ldapkio.desktop
+===================================================================
+--- kabc/plugins/ldapkio/ldapkio.desktop	(.../tags/KDE/4.4.1/kdepimlibs)	(wersja 1104125)
++++ kabc/plugins/ldapkio/ldapkio.desktop	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1104125)
+@@ -65,6 +65,7 @@
+ Comment[it]=Fornisce accesso a contatti memorizzati su un server LDAP
+ Comment[ja]=LDAP ディレクトリサーバに保存されている連絡先へのアクセスを提供します。
+ Comment[km]=ផ្ដល់​ការ​ចូលដំណើរការ​ទៅ​ទំនាក់ទំនង​ដែល​បានផ្ទុក​នៅ​លើ​ម៉ាស៊ីន​បម្រើ​ថត LDAP
++Comment[lt]=Suteikia prieigą prie kontaktų, saugomų LDAP serveryje
+ Comment[lv]=Nodrošina piekļuvi kontaktiem, kas glabājas LDAP direktorija serverī
+ Comment[nb]=Gir tilgang til kontakter lagret på en LDAP-katalogtjener
+ Comment[nds]=Stellt Togriep op Kontakten praat, de op en LDAP-Vertelenserver wohrt warrt
+Index: kabc/plugins/net/net.desktop
+===================================================================
+--- kabc/plugins/net/net.desktop	(.../tags/KDE/4.4.1/kdepimlibs)	(wersja 1104125)
++++ kabc/plugins/net/net.desktop	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1104125)
+@@ -65,6 +65,7 @@
+ Comment[it]=Fornisce accesso a contatti su file remoti usando KIO, l'infrastruttura di rete di KDE. Gestisce file in standard VCard e altri formati in base ai plugin disponibili.
+ Comment[ja]=KDE のネットワークフレームワーク KIO を使って、リモートファイルに保存されている連絡先へのアクセスを提供します。標準の VCard ファイルと、利用可能なプラグインに応じたフォーマットをサポートします。
+ Comment[km]=ផ្ដល់​កា​រចូលដំណើរការ​ទៅកាន់​ទំនាក់ទំនង​ក្នុង​​ឯកសារ​ពី​ចម្ងាយ ដោយ​ប្រើ KIO ​គ្រោងការណ៍​បណ្ដាញ​របស់ KDE ។ គាំទ្រ​ឯកសារ VCard ស្តង់ដារ និង​ទ្រង់ទ្រាយ​ផ្សេងៗ​ទៀត ដោយ​អាស្រ័យ​លើ​កម្មវិធី​ជំនួយ​ដែល​មាន ។
++Comment[lt]=Suteikia prieigą prie kontaktų, esančių nutolusiuose failuose, naudojant KDE tinklo infrastruktūrą KIO. Palaiko standartinius VCard failus ir kitus failų formatus, jei įdiegti juos palaikantys įskiepiai.
+ Comment[lv]=Nodrošina piekļuvi kontaktiem attālinātos failus, izmantojot KDE tīklošanas ietvaru KIO. Atbalsta standarta VCard failus un citus formātus, atkarībā no pieejamajiem spraudņiem.
+ Comment[nb]=Gir tilgang til kontakter i nettverksfiler, ved bruk av KDEs rammeverk KIO for nettverk. Støtter standard vCard og andre formater avhengig av tilgjengelige programtillegg.
+ Comment[nds]=Stellt Togriep op Kontakten binnen feern Dateien praat, bruukt KDE sien Nettwark-Rahmenwark KIO. Ünnerstütt VCard-Dateien un anner Formaten na de verföögboren Modulen.
+Index: kabc/plugins/dir/dir.desktop
+===================================================================
+--- kabc/plugins/dir/dir.desktop	(.../tags/KDE/4.4.1/kdepimlibs)	(wersja 1104125)
++++ kabc/plugins/dir/dir.desktop	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1104125)
+@@ -18,6 +18,7 @@
+ Name[it]=Cartella
+ Name[ja]=フォルダ
+ Name[km]=ថត
++Name[lt]=Aplankas
+ Name[lv]=Mape
+ Name[nb]=Mappe
+ Name[nds]=Orner
+@@ -53,10 +54,11 @@
+ Comment[fr]=Fourni l'accès aux contacts stockés chacun dans un fichier dans le dossier indiqué. Le format VCard et d'autres formats sont pris en charge en fonction des modules externes disponibles
+ Comment[ga]=Soláthraíonn sé seo rochtain ar theagmhálacha, gach ceann stóráilte i gcomhad aonair, i bhfillteán sonraithe. Tacaítear le comhaid v-Chárta agus le formáidí eile, ag brath ar na breiseáin atá ar fáil.
+ Comment[gl]=Dá acceso aos contactos, cada un gardado nun ficheiro nun cartafol dado. Admite ficheiros vCard estándar e outros formatos, en función da dispoñibilidade de extensións.
+-Comment[hu]=Névjegyek elérését biztosítja. Minden névjegy külön fájlban található, egy adott mappában. Támogatja a standard vCard formátumot, és bővítmények segítségével más formátumok is kezelhetők.
++Comment[hu]=A névjegyek elérését biztosítja. Minden névjegy külön fájlban található, egy adott mappában. Támogatja a standard vCard formátumot, és bővítmények segítségével más formátumok is kezelhetők.
+ Comment[it]=Fornisce accesso a contatti, ciascuno dei quali memorizzato in un singolo file in una cartella data. Gestisce file in standard VCard e altri formati in base ai plugin disponibili.
+ Comment[ja]=それぞれが単一のファイルに保存されている任意のフォルダ内の連絡先へのアクセスを提供します。標準の VCard ファイルと、利用可能なプラグインに応じたフォーマットをサポートします。
+ Comment[km]=ផ្ដល់​ការ​ចូលដំណើរការ​ទៅ​កាន់​ទំនាក់ទំនង ដែល​ទំនាក់ទំនង​នីមួយៗ​ត្រូវ​បានផ្ទុកនៅ​ក្នុង​ឯកសារ​តែ​មួយ នៅ​ក្នុង​ថត​ដែល​បានផ្ដល់​ឲ្យ ។ គាំទ្រ​ឯកសារ VCard និង​ទ្រង់ទ្រាយ​ផ្សេងៗ​ ដោយ​អាស្រ័យ​លើ​កម្មវិធី​ជំនួយ​ដែល​មាន ។
++Comment[lt]=Suteikia prieigą prie kontaktų, kurių kiekvienas saugomas atskirame faile konkrečiame aplanke. Palaiko standartinius VCard failus ir kitus formatus, priklausomai nuo įdiegtų įskiepių. 
+ Comment[lv]=Nodrošina pieeju kontaktiem, kas katrs saglabāts individuālā failā norādītajā mapē. Atbalsta standarta VCard failus un citus formātus, atkarībā no pieejamajiem spraudņiem.
+ Comment[nb]=Gir tilgang til kontakter, lagret hver for seg i en enkelt fil, i en gitt mappe. Støtter standard vCard og andre formater avhengig av tilgjengelige programtillegg.
+ Comment[nds]=Stellt Togriep op Kontakten praat, elkeen binnen een Datei binnen en angeven Orner. Ünnerstütt VCard-Dateien un anner Formaten na de verföögboren Modulen.
+Index: kabc/kabc_manager.desktop
+===================================================================
+--- kabc/kabc_manager.desktop	(.../tags/KDE/4.4.1/kdepimlibs)	(wersja 1104125)
++++ kabc/kabc_manager.desktop	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1104125)
+@@ -17,7 +17,7 @@
+ Name[ga]=Teagmhálacha
+ Name[gl]=Contactos
+ Name[hne]=सम्पर्क
+-Name[hu]=Partnerek
++Name[hu]=Névjegyek
+ Name[it]=Contatti
+ Name[ja]=連絡先
+ Name[km]=ទំនាក់ទំនង​
+Index: kabc/vcardparser/vcardparser.cpp
+===================================================================
+--- kabc/vcardparser/vcardparser.cpp	(.../tags/KDE/4.4.1/kdepimlibs)	(wersja 1104125)
++++ kabc/vcardparser/vcardparser.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1104125)
+@@ -133,16 +133,14 @@
+         bool wasBase64Encoded = false;
+ 
+         if ( vCardLine.parameterList().contains( QLatin1String( "encoding" ) ) ) {
++          const QString encoding = vCardLine.parameter( QLatin1String( "encoding" ) ).toLower();
++
+           // have to decode the data
+-          if ( vCardLine.parameter( QLatin1String( "encoding" ) ).toLower() ==
+-               QLatin1String( "b" ) ||
+-               vCardLine.parameter( QLatin1String( "encoding" ) ).toLower() ==
+-               QLatin1String( "base64" ) ) {
++          if ( encoding == QLatin1String( "b" ) || encoding == QLatin1String( "base64" ) ) {
+             output = QByteArray::fromBase64( value );
+             wasBase64Encoded = true;
            }
- 
--          str = str.replace( '&', "&amp;" );
-           result += "<a href=\"" + hyperlink + "\">" + Qt::escape( str ) + "</a>";
-           x += locator.mPos - start;
-           continue;
-Index: CMakeLists.txt
+-          else if ( vCardLine.parameter( QLatin1String( "encoding" ) ).toLower() ==
+-                    QLatin1String( "quoted-printable" ) ) {
++          else if ( encoding == QLatin1String( "quoted-printable" ) ) {
+             // join any qp-folded lines
+             while ( value.endsWith( '=' ) && it != linesEnd ) {
+               value.chop( 1 ); // remove the '='
+@@ -150,6 +148,8 @@
+               ++it;
+             }
+             KCodecs::quotedPrintableDecode( value, output );
++          } else if ( encoding == QLatin1String( "8bit" ) ) {
++            output = value;
+           } else {
+             qDebug( "Unknown vcard encoding type!" );
+           }
+Index: akonadi/contact/kcm/akonadicontact_actions.desktop
 ===================================================================
---- CMakeLists.txt	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
-+++ CMakeLists.txt	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
-@@ -49,7 +49,7 @@
- if (NOT KDEPIM_ONLY_KLEO)
-   #FindAkonadi.cmake is only there for compatibility reasons, but we don't want to use that.
-   find_package(Akonadi 1.2.61 QUIET NO_MODULE)
--  macro_log_feature(Akonadi_FOUND "Akonadi" "Akonadi server libraries (from kdesupport)" "http://pim.kde.org/akonadi" TRUE "1.2.61" "Akonadi is required to build KdepimLibs.")
-+  macro_log_feature(Akonadi_FOUND "Akonadi" "Akonadi server libraries (from kdesupport)" "http://pim.kde.org/akonadi" TRUE "1.3.1" "Akonadi is required to build KdepimLibs.")
- 
-   find_package(Sasl2)
-   macro_log_feature(SASL2_FOUND "cyrus-sasl" "Cyrus SASL API" "http://asg.web.cmu.edu/sasl/sasl-library.html" TRUE "" "Required to support authentication of logins in the IMAP and Sieve kioslaves.")
-Index: mailtransport/transport.h
-===================================================================
---- mailtransport/transport.h	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
-+++ mailtransport/transport.h	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
-@@ -34,6 +34,12 @@
-   Represents the settings of a specific mail transport.
- 
-   To create a new empty Transport object, use TransportManager::createTransport().
-+
-+  Initialize an empty Transport object by calling the set...() methods defined in
-+  kcfg-generated TransportBase, and in this class. Note that some transports use
-+  the "host" setting to store the following values:
-+   - Sendmail transport: path to the sendmail executable
-+   - Akonadi transports: resource ID.
- */
- // TODO KDE5: Do something about the kcfg-generated TransportBase.
- // Currently it has the config stuff as private members, which means it is
-Index: mailtransport/addtransportdialog.cpp
-===================================================================
---- mailtransport/addtransportdialog.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
-+++ mailtransport/addtransportdialog.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
-@@ -102,6 +102,8 @@
-       this, SLOT(typeListClicked()) );
-   connect( d->ui.typeListView, SIGNAL(itemSelectionChanged()),
-       this, SLOT(typeListClicked()) );
-+  connect( d->ui.typeListView, SIGNAL(doubleClicked(const QModelIndex &) ),
-+           this, SLOT(accept() ) );
- }
- 
- AddTransportDialog::~AddTransportDialog()
-Index: akonadi/agentbase.cpp
-===================================================================
---- akonadi/agentbase.cpp	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
-+++ akonadi/agentbase.cpp	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
-@@ -231,6 +231,10 @@
-   KGlobal::ref();
-   KGlobal::setAllowQuit( true );
- 
-+  // disable session management
-+  if ( KApplication::kApplication() )
-+    KApplication::kApplication()->disableSessionManagement();
-+
-   QTimer::singleShot( 0, q, SLOT( delayedInit() ) );
- }
- 
-@@ -430,8 +434,6 @@
-   sAgentBase = this;
-   d_ptr->mId = id;
-   d_ptr->init();
--  if ( KApplication::kApplication() )
--    KApplication::kApplication()->disableSessionManagement();
- }
- 
- AgentBase::AgentBase( AgentBasePrivate* d, const QString &id ) :
-Index: akonadi/entitycache_p.h
-===================================================================
---- akonadi/entitycache_p.h	(.../tags/KDE/4.4.0/kdepimlibs)	(wersja 1091895)
-+++ akonadi/entitycache_p.h	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1091895)
-@@ -171,10 +171,6 @@
- 
-     void fetchResult( KJob* job )
-     {
--      if ( job->error() ) {
--        kWarning() << "Fetch failed:" << job->errorString();
--        return;
--      }
-       typename T::Id id = job->property( "EntityCacheNode" ).template value<typename T::Id>();
-       EntityCacheNode<T> *node = cacheNodeForId( id );
-       if ( !node )
+--- akonadi/contact/kcm/akonadicontact_actions.desktop	(.../tags/KDE/4.4.1/kdepimlibs)	(wersja 1104125)
++++ akonadi/contact/kcm/akonadicontact_actions.desktop	(.../branches/KDE/4.4/kdepimlibs)	(wersja 1104125)
+@@ -21,13 +21,16 @@
+ Name[fi]=Yhteystietotoiminnot
+ Name[fr]=Actions sur les contacts
+ Name[gl]=Accións de contacto
++Name[hu]=Névjegyműveletek
+ Name[it]=Azioni per i contatti
+ Name[ja]=連絡先アクション
+ Name[km]=អំពើ​ទំនាក់​ទំនង
++Name[lt]=Kontaktų veiksmai
+ Name[lv]=Kontaktu darbības
+ Name[nb]=Kontakthandlinger
+ Name[nds]=Kontakt-Akschonen
+ Name[nl]=Contactpersoon-acties
++Name[nn]=Kontakthandlingar
+ Name[pa]=ਸੰਪਰਕ ਐਕਸ਼ਨ
+ Name[pt]=Acções do Contacto
+ Name[pt_BR]=Ações do contatos
+@@ -53,13 +56,16 @@
+ Comment[fi]=Yhteystietotoimintojen asetukset
+ Comment[fr]=Configurer les actions sur les contacts
+ Comment[gl]=Configurar as accións de contacto
++Comment[hu]=A névjegyműveletek beállítása
+ Comment[it]=Configua le azioni per i contatti
+ Comment[ja]=連絡先アクションの設定
+ Comment[km]=កំណត់​រចនាសម្ព័ន្ធ​អំពើ​ទំនាក់​ទំនង
++Comment[lt]=Konfigūruoti kontaktų veiksmus
+ Comment[lv]=Konfigurēt kontaktu darbības
+ Comment[nb]=Sett opp kontakthandlinger
+ Comment[nds]=Kontakt-Akschonen instellen
+ Comment[nl]=De contactpersoon-actie configureren
++Comment[nn]=Set opp kontakthandlingar
+ Comment[pa]=ਸੰਪਰਕ ਐਕਸ਼ਨ ਸੰਰਚਨਾ
+ Comment[pt]=Configurar as Acções do Contacto
+ Comment[pt_BR]=Configura as ações do contato
