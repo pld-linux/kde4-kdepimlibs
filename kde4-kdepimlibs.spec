@@ -236,8 +236,6 @@ rm -rf $RPM_BUILD_ROOT
 %lang(en) %{_kdedocdir}/en/kioslave/pop3
 %lang(en) %{_kdedocdir}/en/kioslave/sieve
 %lang(en) %{_kdedocdir}/en/kioslave/smtp
-%lang(en) %{_kdedocdir}/en/kioslave/mbox
-%lang(en) %{_kdedocdir}/en/kioslave/sieve
 
 %{_datadir}/mime/packages/kdepimlibs-mime.xml
 
