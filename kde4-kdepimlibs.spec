@@ -1,19 +1,19 @@
 #
 # Conditional build:
 #
-%define		qtver		4.6.2
-%define		_state		unstable
+%define		qtver		4.6.3
+%define		_state		stable
 %define		orgname		kdepimlibs
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.4.80
+Version:	4.5.0
 Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	d1990419ee19f09acdc1f24cf4391442
+# Source0-md5:	d040839a388d826e2ffbc3e4d1931079
 #Patch100:	%{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
