@@ -8,13 +8,13 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.4.5
+Version:	4.5.0
 Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	4c3297e2e7f5d61ca5932f59ec62a0b8
-Patch100:	%{name}-branch.diff
+# Source0-md5:	d040839a388d826e2ffbc3e4d1931079
+#Patch100:	%{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
 BuildRequires:	QtDBus-devel >= %{qtver}
@@ -22,7 +22,7 @@ BuildRequires:	QtGui-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
 BuildRequires:	QtTest-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
-BuildRequires:	akonadi-devel >= 1.3.1
+BuildRequires:	akonadi-devel >= 1.3.80
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	boost-devel >= 1.35.0
 BuildRequires:	cmake >= 2.8.0
@@ -225,6 +225,21 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/kde4/services/kresources/kcal/localdir.desktop
 %{_datadir}/kde4/services/kresources/kcal_manager.desktop
 
+%dir %{_datadir}/kde4/services/akonadi
+%dir %{_datadir}/kde4/services/akonadi/contact
+%{_datadir}/kde4/services/akonadi/contact/aimprotocol.desktop
+%{_datadir}/kde4/services/akonadi/contact/gaduprotocol.desktop
+%{_datadir}/kde4/services/akonadi/contact/groupwiseprotocol.desktop
+%{_datadir}/kde4/services/akonadi/contact/icqprotocol.desktop
+%{_datadir}/kde4/services/akonadi/contact/ircprotocol.desktop
+%{_datadir}/kde4/services/akonadi/contact/jabberprotocol.desktop
+%{_datadir}/kde4/services/akonadi/contact/meanwhileprotocol.desktop
+%{_datadir}/kde4/services/akonadi/contact/msnprotocol.desktop
+%{_datadir}/kde4/services/akonadi/contact/skypeprotocol.desktop
+%{_datadir}/kde4/services/akonadi/contact/smsprotocol.desktop
+%{_datadir}/kde4/services/akonadi/contact/yahooprotocol.desktop
+
+%{_datadir}/kde4/servicetypes/kaddressbookimprotocol.desktop
 %{_datadir}/kde4/servicetypes/kontactplugin.desktop
 %{_datadir}/kde4/servicetypes/kresources_manager.desktop
 %{_datadir}/kde4/servicetypes/kresources_plugin.desktop
@@ -234,8 +249,8 @@ rm -rf $RPM_BUILD_ROOT
 %lang(en) %{_kdedocdir}/en/kioslave/mbox
 %lang(en) %{_kdedocdir}/en/kioslave/nntp
 %lang(en) %{_kdedocdir}/en/kioslave/pop3
-%lang(en) %{_kdedocdir}/en/kioslave/sieve
 %lang(en) %{_kdedocdir}/en/kioslave/smtp
+%lang(en) %{_kdedocdir}/en/kioslave/sieve
 
 %{_datadir}/mime/packages/kdepimlibs-mime.xml
 
