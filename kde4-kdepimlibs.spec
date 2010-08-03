@@ -13,7 +13,7 @@ Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	d040839a388d826e2ffbc3e4d1931079
+# Source0-md5:	d773688cd86be50052338e0b5143ee2e
 #Patch100:	%{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -22,7 +22,7 @@ BuildRequires:	QtGui-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
 BuildRequires:	QtTest-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
-BuildRequires:	akonadi-devel >= 1.3.80
+BuildRequires:	akonadi-devel >= 1.4.0
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	boost-devel >= 1.35.0
 BuildRequires:	cmake >= 2.8.0
