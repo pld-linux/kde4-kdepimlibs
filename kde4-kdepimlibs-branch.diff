@@ -1,7 +1,21 @@
+Index: cmake/modules/FindLibical.cmake
+===================================================================
+--- cmake/modules/FindLibical.cmake	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
++++ cmake/modules/FindLibical.cmake	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
+@@ -70,6 +70,9 @@
+       set(LIBICAL_INCLUDE_DIRS "")
+       set(LIBICAL_LIBRARIES "")
+     endif(NOT LIBICAL_VERSION_OK)
++    if((LIBICAL_VERSION VERSION_EQUAL 0.46) OR (LIBICAL_VERSION VERSION_GREATER 0.46))
++      set(USE_ICAL_0_46 TRUE)
++    endif()
+   else(COMPILE_RESULT AND RUN_RESULT EQUAL 1)
+     message(FATAL_ERROR "Unable to compile or run the libical version detection program.")
+   endif(COMPILE_RESULT AND RUN_RESULT EQUAL 1)
 Index: kimap/sessionthread.cpp
 ===================================================================
---- kimap/sessionthread.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1170567)
-+++ kimap/sessionthread.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1170567)
+--- kimap/sessionthread.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
++++ kimap/sessionthread.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
 @@ -49,7 +49,10 @@
  {
    // don't call quit() directly, this will deadlock in wait() if exec() hasn't run yet
@@ -16,8 +30,8 @@ Index: kimap/sessionthread.cpp
  void SessionThread::sendData( const QByteArray &payload )
 Index: kmime/kmime_content.cpp
 ===================================================================
---- kmime/kmime_content.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1170567)
-+++ kmime/kmime_content.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1170567)
+--- kmime/kmime_content.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
++++ kmime/kmime_content.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
 @@ -513,7 +513,6 @@
          // Add to new content.
          main->setHeader( *it );
@@ -34,6 +48,402 @@ Index: kmime/kmime_content.cpp
      main->h_eaders.clear();
  
      // Move the body.
+Index: doc/kcontrol/kresources/index.docbook
+===================================================================
+--- doc/kcontrol/kresources/index.docbook	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
++++ doc/kcontrol/kresources/index.docbook	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
+@@ -6,6 +6,7 @@
+ ]>
+ 	
+ <article lang="&language;">
++<title>&kde; Resources</title>
+ <articleinfo>
+ 
+ <authorgroup>
+@@ -26,8 +27,6 @@
+ <keyword>notes</keyword>
+ </keywordset>
+ </articleinfo>
+-<sect1 id="kde-resources">
+-<title>&kde; Resources</title>
+ 
+ <para>This module is a configuration tool for managing the resources used by different &kde; applications.
+ It allows you to add, deleted or modify the resources for <guilabel>Alarms</guilabel>, 
+@@ -90,6 +89,4 @@
+ will not be able to select it.
+ </para>
+ 
+-</sect1>
+-
+ </article>
+Index: kcal/icalformat_p.cpp
+===================================================================
+--- kcal/icalformat_p.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
++++ kcal/icalformat_p.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
+@@ -784,7 +784,11 @@
+   if ( att->isUri() ) {
+     attach = icalattach_new_from_url( att->uri().toUtf8().data() );
+   } else {
++#ifdef USE_ICAL_0_46
++    attach = icalattach_new_from_data ( ( const char * )att->data(), 0, 0 );
++#else
+     attach = icalattach_new_from_data ( ( unsigned char * )att->data(), 0, 0 );
++#endif
+   }
+   icalproperty *p = icalproperty_new_attach( attach );
+ 
+Index: kcal/CMakeLists.txt
+===================================================================
+--- kcal/CMakeLists.txt	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
++++ kcal/CMakeLists.txt	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
+@@ -9,6 +9,11 @@
+ add_definitions(-DWANT_DEPRECATED_KABC_API)
+ add_definitions(-DWANT_DEPRECATED_KRESOURCE_API)
+ 
++# Workaround a SIC change in libical 0.46
++if(USE_ICAL_0_46)
++  add_definitions(-DUSE_ICAL_0_46)
++endif()
++
+ include (ConfigureChecks.cmake)
+ 
+ if(KDE4_BUILD_TESTS)
+Index: kholidays/parsers/plan2/holidayparserdriverplan_p.h
+===================================================================
+--- kholidays/parsers/plan2/holidayparserdriverplan_p.h	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
++++ kholidays/parsers/plan2/holidayparserdriverplan_p.h	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
+@@ -25,6 +25,7 @@
+ #include <fstream>
+ 
+ #include <QByteArray>
++#include <QStringList>
+ 
+ #include "../holidayparserdriver_p.h"
+ 
+@@ -141,12 +142,15 @@
+ 
+     QByteArray          m_scanData;                 // Holiday file stored as a string
+ 
++    QStringList         m_fileCalendarTypes;        // List of all Calendar Systems used in file
++
+     bool                m_traceParsing;             // Bison C++ skeleton enable tracing in Bison parser class
+     HolidayParserPlan  *m_parser;                   // Bison C++ skeleton Bison parser class implementation
+ 
+     bool                m_traceScanning;            // Flex C++ enable tracing in Flex scanner class
+     HolidayScannerPlan *m_scanner;                  // Flex C++ scanner class implementation
+ 
++    bool                m_parseMetadataOnly;        // Only parse file for metadata
+     QDate               m_parseYearStart;           // First day of year being parsed
+     QDate               m_parseYearEaster;          // Easter in the parse year, Gregorian only
+     QDate               m_parseYearPascha;          // Orthodox Easter in the parse year, Gregorian only
+Index: kholidays/parsers/plan2/holidayparserdriverplan.cpp
+===================================================================
+--- kholidays/parsers/plan2/holidayparserdriverplan.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
++++ kholidays/parsers/plan2/holidayparserdriverplan.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
+@@ -52,7 +52,8 @@
+ HolidayParserDriverPlan::HolidayParserDriverPlan( const QString &planFilePath )
+                         :HolidayParserDriver( planFilePath ),
+                         m_traceParsing( false ),
+-                        m_traceScanning( false )
++                        m_traceScanning( false ),
++                        m_parseMetadataOnly( false )
+ {
+     QFile holidayFile( filePath() );
+     if ( holidayFile.open( QIODevice::ReadOnly ) ) {
+@@ -89,10 +90,8 @@
+ 
+ void HolidayParserDriverPlan::parse()
+ {
+-    // Parse the file using every available calendar system, even if not defined in file
+-    // TODO this will not scale as more systems are added over time, either move to AST model
+-    //      or have this driven via pre-scan or file metadata to determine requied calendar systems
+-    foreach( QString calendar, KCalendarSystem::calendarSystems() ) {
++    // Parse the file using every calendar system in the file
++    foreach( QString calendar, m_fileCalendarTypes ) {
+ 
+         // Cater for events defined in other Calendar Systems where request year could cover 2 or 3 event years
+         // Perhaps also parse year before and year after to allow events to span years or shift to other year?
+@@ -117,10 +116,13 @@
+ 
+ void HolidayParserDriverPlan::parseMetadata()
+ {
++    m_parseMetadataOnly = true;
+     m_fileCountryCode.clear();
+     m_fileLanguageCode.clear();
+     m_fileName.clear();
+     m_fileDescription.clear();
++    m_fileCalendarTypes.clear();
++    m_fileCalendarTypes.append( "gregorian" );
+ 
+     // Default to files internal metadata
+     setParseCalendar( "gregorian" );
+@@ -155,7 +157,7 @@
+         }
+     }
+ 
+-
++    m_parseMetadataOnly = false;
+ }
+ 
+ QString HolidayParserDriverPlan::filePath()
+@@ -404,7 +406,10 @@
+ 
+ void  HolidayParserDriverPlan::setEventCalendarType( const QString &calendarType )
+ {
+-  m_eventCalendarType = calendarType;
++    m_eventCalendarType = calendarType;
++    if ( m_parseMetadataOnly && !m_fileCalendarTypes.contains( calendarType ) ) {
++        m_fileCalendarTypes.append( calendarType );
++    }
+ }
+ 
+ void  HolidayParserDriverPlan::setEventDate( int eventYear, int eventMonth, int eventDay )
+@@ -431,8 +436,8 @@
+ 
+ void HolidayParserDriverPlan::setFromWeekdayInMonth( int occurrence, int weekday, int month, int offset, int duration )
+ {
+-    // Don't set if calendar for event rule is not the current parse calendar
+-    if ( m_eventCalendarType != m_parseCalendar->calendarType() ) {
++    // Don't set if only parsing metadata or calendar for event rule is not the current parse calendar
++    if ( m_parseMetadataOnly || m_eventCalendarType != m_parseCalendar->calendarType() ) {
+         return;
+     }
+ 
+@@ -484,8 +489,8 @@
+ 
+ void HolidayParserDriverPlan::setFromRelativeWeekday( int occurrence, int weekday, int offset, int duration )
+ {
+-    // Don't set if calendar for event rule is not the current parse calendar
+-    if ( m_eventCalendarType != m_parseCalendar->calendarType() ) {
++    // Don't set if only parsing metadata or calendar for event rule is not the current parse calendar
++    if ( m_parseMetadataOnly || m_eventCalendarType != m_parseCalendar->calendarType() ) {
+         return;
+     }
+ 
+@@ -572,8 +577,8 @@
+ 
+ void HolidayParserDriverPlan::setFromDate( int offset, int condition, int duration )
+ {
+-    // Don't set if calendar for event rule is not the current parse calendar
+-    if ( m_eventCalendarType != m_parseCalendar->calendarType() ) {
++    // Don't set if only parsing metadata or calendar for event rule is not the current parse calendar
++    if ( m_parseMetadataOnly || m_eventCalendarType != m_parseCalendar->calendarType() ) {
+         return;
+     }
+ 
+@@ -632,8 +637,8 @@
+ 
+ void HolidayParserDriverPlan::setFromEaster( int offset, int duration )
+ {
+-    // Don't set if calendar for event rule is not the current parse calendar
+-    if ( m_eventCalendarType != m_parseCalendar->calendarType() ) {
++    // Don't set if only parsing metadata or calendar for event rule is not the current parse calendar
++    if ( m_parseMetadataOnly || m_eventCalendarType != m_parseCalendar->calendarType() ) {
+         return;
+     }
+ 
+@@ -652,8 +657,8 @@
+ 
+ void HolidayParserDriverPlan::setFromPascha( int offset, int duration )
+ {
+-    // Don't set if calendar for event rule is not the current parse calendar
+-    if ( m_eventCalendarType != m_parseCalendar->calendarType() ) {
++    // Don't set if only parsing metadata or calendar for event rule is not the current parse calendar
++    if ( m_parseMetadataOnly || m_eventCalendarType != m_parseCalendar->calendarType() ) {
+         return;
+     }
+ 
+@@ -667,8 +672,8 @@
+ // Set the event if it falls inside the requested date range
+ void HolidayParserDriverPlan::setEvent( int jd, int observeOffset, int duration )
+ {
+-    // Don't set if calendar for event rule is not the current parse calendar
+-    if ( m_eventCalendarType != m_parseCalendar->calendarType() ) {
++    // Don't set if only parsing metadata or calendar for event rule is not the current parse calendar
++    if ( m_parseMetadataOnly || m_eventCalendarType != m_parseCalendar->calendarType() ) {
+         return;
+     }
+ 
+Index: kholidays/holidays/plan2/holiday_hr_hr
+===================================================================
+--- kholidays/holidays/plan2/holiday_hr_hr	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 0)
++++ kholidays/holidays/plan2/holiday_hr_hr	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
+@@ -0,0 +1,86 @@
++::
++:: Country:  Croatia
++::
++:: Language: Croatian
++::
++:: Author:   Marko Dimjašević <marko@dimjasevic.net>
++::
++:: Updated:  2010-09-13
++::
++:: Source:   Hrvatski sabor: Zakon o blagdanima, spomendanima i neradnim danima
++::           u Republici Hrvatskoj
++::           http://narodne-novine.nn.hr/clanci/sluzbeni/309949.html
++::           Hrvatski sabor: Zakon o izmjenama i dopunama zakona o blagdanima,
++::           spomendanima i neradnim danima u Republici Hrvatskoj
++::           http://narodne-novine.nn.hr/clanci/sluzbeni/339400.html
++::
++
++:: Metadata
++country     "HR"
++language    "hr"
++:name        "optional - defaults to country name"
++:description "Datoteka s blagdanima, spomendanima i neradnim danima u Hrvatskoj"
++
++:: Public Holidays
++"Nova godina"                                                      weekend on january 1
++"Sveta tri kralja"                                                 weekend on january 6
++"Uskrsni ponedjeljak"                                              weekend on easter plus 1 day
++"Tijelovo"                                                         weekend on easter plus 60 days
++"Praznik rada"                                                     weekend on may 1
++"Dan antifašističke borbe"                                         weekend on june 22
++"Dan državnosti"                                                   weekend on june 25
++"Dan pobjede i domovinske zahvalnosti i Dan hrvatskih branitelja"  weekend on august 5
++"Velika Gospa"                                                     weekend on august 15
++"Dan neovisnosti"                                                  weekend on october 8
++"Svi sveti"                                                        weekend on november 1
++"Božić"                                                            weekend on december 25
++"Sveti Stjepan"                                                    weekend on december 26
++
++:: Religious Holidays
++"Uskrs"                                                            on easter
++"Pepelnica"                                                        on easter minus 46 days
++"Veliki četvrtak"                                                  on easter minus 3 days
++"Veliki petak"                                                     on easter minus 2 days
++"Velika subota"                                                    on easter minus 1 day
++"Duhovi"                                                           on easter plus 49 days
++"Presveto Trojstvo"                                                on easter plus 56 days
++
++:: Financial
++
++:: Cultural
++"Valentinovo"                                                      on february 14
++"Međunarodni dan žena"                                             on march 8
++"Svjetski dan kazališta"                                           on march 27
++"Dan slobode dokumenata"                                           on last wednesday in march
++"Prvotravanjska šala"                                              on april 1
++"Svjetski dan smijeha"                                             on first sunday in may
++"Majčin dan"                                                       on second sunday in may
++"Dan očeva"                                                        on third sunday in june
++"Međunarodni dan mladih"                                           on august 12
++"Dan slobodnog softvera"                                           on third saturday in september
++"Dan sjećanja na Vukovar"                                          on november 18
++"Dan hrvatskog kazališta"                                          on november 24
++"Međunarodni dan volontera"                                        on december 5
++"Sveti Nikola"                                                     on december 6
++
++:: School
++"Početak školske godine"                                           on september 1
++"Međunarodni dan pismenosti (UNESCO)"                              on september 8
++"Europski dan jezika"                                              on september 26
++"Međunarodni dan učitelja"                                         on october 5
++"Međunarodni dan školskih knjižnica"                               on october 24
++
++:: Daylight Saving
++"Ljetno računanje vremena"                                         on last sunday in march
++"Zimsko računanje vremena"                                         on last sunday in october
++
++:: Seasons
++"Proljetna ravnodnevica (ekvinocij)"                               on march 20
++"Ljetna dugodnevica (solsticij)"                                   on june 21
++"Jesenska ravnodnevica (ekvinocij)"                                on september 22
++"Zimska kratkodnevica (solsticij)"                                 on december 21
++
++:: Name Days
++
++:: To be sorted
++"Dan Hrvatskoga sabora"                                            on may 30
+Index: mailtransport/transport.cpp
+===================================================================
+--- mailtransport/transport.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
++++ mailtransport/transport.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
+@@ -79,8 +79,7 @@
+ {
+   if ( !d->passwordLoaded && requiresAuthentication() && storePassword() &&
+        d->password.isEmpty() ) {
+-    TransportManager::self()->loadPasswords();
+-    d->password = TransportManager::self()->transportById( id(), false )->password();
++    readPassword();
+   }
+   return d->password;
+ }
+Index: mailtransport/addtransportdialog.cpp
+===================================================================
+--- mailtransport/addtransportdialog.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
++++ mailtransport/addtransportdialog.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
+@@ -131,7 +131,7 @@
+     }
+     transport->setHost( cjob->instance().identifier() );
+   }
+-  transport->setName( d->ui.name->text() );
++  transport->setName( d->ui.name->text().trimmed() );
+   transport->forceUniqueName();
+   if( TransportManager::self()->configureTransport( transport, this ) ) {
+     // The user clicked OK and the transport settings were saved.
+Index: mailtransport/transportmanager.cpp
+===================================================================
+--- mailtransport/transportmanager.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
++++ mailtransport/transportmanager.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
+@@ -628,10 +628,11 @@
+   }
+ 
+   // flush the wallet queue
+-  foreach ( TransportJob *job, d->walletQueue ) {
++  const QList<TransportJob*> copy = d->walletQueue;
++  d->walletQueue.clear();
++  foreach ( TransportJob *job, copy ) {
+     job->start();
+   }
+-  d->walletQueue.clear();
+ 
+   emit passwordsChanged();
+ }
+Index: akonadi/kdescendantsproxymodel.cpp
+===================================================================
+--- akonadi/kdescendantsproxymodel.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
++++ akonadi/kdescendantsproxymodel.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
+@@ -640,12 +640,36 @@
+     const QModelIndex oldIndex = q->sourceModel()->index(rowCount - 1 - difference, column, parent);
+     Q_ASSERT(m_mapping.leftContains(oldIndex));
+ 
+-    // oldIndex is E in the source. proxyRow is 4.
+-    const int proxyRow = m_mapping.takeLeft(oldIndex);
+     const QModelIndex newIndex = q->sourceModel()->index(rowCount - 1, column, parent);
+ 
++    QModelIndex indexAbove = oldIndex;
++
++    if (start > 0) {
++      // If we have something like this:
++      //
++      // - A
++      // - - B
++      // - - C
++      //
++      // and we then insert D as a sibling of A below it, we need to remove the mapping for A,
++      // and the row number used for D must take into account the descendants of A.
++
++      while (q->sourceModel()->hasChildren(indexAbove)) {
++      Q_ASSERT(q->sourceModel()->rowCount(indexAbove) > 0);
++        indexAbove = q->sourceModel()->index(q->sourceModel()->rowCount(indexAbove) - 1,  column, indexAbove);
++      }
++      Q_ASSERT(q->sourceModel()->rowCount(indexAbove) == 0);
++    }
++
++    Q_ASSERT(m_mapping.leftContains(indexAbove));
++
++    const int newProxyRow = m_mapping.leftToRight(indexAbove) + difference;
++
++    // oldIndex is E in the source. proxyRow is 4.
++    m_mapping.removeLeft(oldIndex);
++
+     // newIndex is J. (proxyRow + difference) is 5.
+-    m_mapping.insert(newIndex, proxyRow + difference);
++    m_mapping.insert(newIndex, newProxyRow);
+   }
+ 
+   for (int row = start; row <= end; ++row)
 
 Zmiany atrybutów dla: .
 ___________________________________________________________________
