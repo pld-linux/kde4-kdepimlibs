@@ -1,453 +1,962 @@
-Index: cmake/modules/FindLibical.cmake
+Index: kmime/kmime_content.h
 ===================================================================
---- cmake/modules/FindLibical.cmake	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
-+++ cmake/modules/FindLibical.cmake	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
-@@ -70,6 +70,9 @@
-       set(LIBICAL_INCLUDE_DIRS "")
-       set(LIBICAL_LIBRARIES "")
-     endif(NOT LIBICAL_VERSION_OK)
-+    if((LIBICAL_VERSION VERSION_EQUAL 0.46) OR (LIBICAL_VERSION VERSION_GREATER 0.46))
-+      set(USE_ICAL_0_46 TRUE)
-+    endif()
-   else(COMPILE_RESULT AND RUN_RESULT EQUAL 1)
-     message(FATAL_ERROR "Unable to compile or run the libical version detection program.")
-   endif(COMPILE_RESULT AND RUN_RESULT EQUAL 1)
-Index: kimap/sessionthread.cpp
-===================================================================
---- kimap/sessionthread.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
-+++ kimap/sessionthread.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
-@@ -49,7 +49,10 @@
+--- kmime/kmime_content.h	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ kmime/kmime_content.h	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -770,8 +770,7 @@
+ 
+ template <typename T> T *Content::header( bool create )
  {
-   // don't call quit() directly, this will deadlock in wait() if exec() hasn't run yet
-   QMetaObject::invokeMethod( this, "quit" );
--  wait();
-+  if ( !wait( 10 * 1000 ) ) {
-+    kWarning() << "Session thread refuses to die, killing harder...";
-+    terminate();
-+  }
+-  T dummy;
+-  Headers::Base *h = headerByType( dummy.type() );
++  Headers::Base *h = headerByType( T::staticType() );
+   if( h ) {
+     // Make sure the header is actually of the right type.
+     Q_ASSERT( dynamic_cast<T*>( h ) );
+Index: kmime/kmime_parsers.cpp
+===================================================================
+--- kmime/kmime_parsers.cpp	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ kmime/kmime_parsers.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -22,7 +22,6 @@
+ */
+ #include "kmime_parsers.h"
+ 
+-#include <QtCore/QRegExp>
+ #include <QtCore/QByteArray>
+ 
+ using namespace KMime::Parser;
+@@ -164,7 +163,7 @@
+ //==============================================================================
+ 
+ UUEncoded::UUEncoded( const QByteArray &src, const QByteArray &subject ) :
+-  NonMimeParser( src ), s_ubject( subject )
++  NonMimeParser( src ), s_ubject( subject ), m_beginRegExp( "begin [0-9][0-9][0-9]" ), m_numberRegExp( "[0-9]+/[0-9]+" )
+ {}
+ 
+ bool UUEncoded::parse()
+@@ -178,7 +177,7 @@
+     QByteArray tmp, fileName;
+ 
+     if ( ( beginPos = QString( s_rc ).
+-           indexOf( QRegExp( "begin [0-9][0-9][0-9]" ), currentPos ) ) > -1 &&
++           indexOf( m_beginRegExp, currentPos ) ) > -1 &&
+          ( beginPos == 0 || s_rc.at( beginPos - 1 ) == '\n') ) {
+       containsBegin = true;
+       uuStart = s_rc.indexOf( '\n', beginPos );
+@@ -223,9 +222,8 @@
+ 
+       if ( ( !containsBegin || !containsEnd ) && !s_ubject.isNull() ) {
+         // message may be split up => parse subject
+-        QRegExp rx("[0-9]+/[0-9]+");
+-        pos = rx.indexIn( QString( s_ubject ), 0 );
+-        len = rx.matchedLength();
++        pos = m_numberRegExp.indexIn( QString( s_ubject ), 0 );
++        len = m_numberRegExp.matchedLength();
+         if ( pos != -1 ) {
+           tmp = s_ubject.mid( pos, len );
+           pos = tmp.indexOf( '/' );
+Index: kmime/kmime_message.cpp
+===================================================================
+--- kmime/kmime_message.cpp	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ kmime/kmime_message.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -103,8 +103,9 @@
+   KMime::Content *c = this;
+   while ( c ) {
+     // not a multipart message
+-    if ( !c->contentType()->isMultipart() ) {
+-      if ( c->contentType()->mimeType() == type || type.isEmpty() ) {
++    const KMime::Headers::ContentType * const contentType = c->contentType();
++    if ( !contentType->isMultipart() ) {
++      if ( contentType->mimeType() == type || type.isEmpty() ) {
+         return c;
+       }
+       return 0;
+@@ -116,7 +117,7 @@
+     }
+ 
+     // multipart/alternative
+-    if ( c->contentType()->subType() == "alternative" ) {
++    if ( contentType->subType() == "alternative" ) {
+       if ( type.isEmpty() ) {
+         return c->contents().first();
+       }
+Index: kmime/kmime_headers.h
+===================================================================
+--- kmime/kmime_headers.h	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ kmime/kmime_headers.h	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -109,7 +109,8 @@
+ 
+ #define kmime_mk_trivial_ctor_with_name( subclass )     \
+   kmime_mk_trivial_ctor( subclass )                     \
+-    const char *type() const;
++    const char *type() const;                           \
++    static const char *staticType();
+ //@endcond
+ 
+ //
+Index: kmime/kmime_parsers.h
+===================================================================
+--- kmime/kmime_parsers.h	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ kmime/kmime_parsers.h	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -23,8 +23,9 @@
+ #ifndef __KMIME_PARSERS__
+ #define __KMIME_PARSERS__
+ 
+-#include<QByteArray>
+-#include<QList>
++#include<QtCore/QByteArray>
++#include<QtCore/QList>
++#include<QtCore/QRegExp>
+ 
+ namespace KMime {
+ 
+@@ -103,6 +104,10 @@
+ 
+   protected:
+     QByteArray s_ubject;
++
++  private:
++    QRegExp m_beginRegExp;
++    QRegExp m_numberRegExp;
+ };
+ 
+ /** Helper-class: tries to extract the data from a possibly
+Index: kmime/kmime_headers.cpp
+===================================================================
+--- kmime/kmime_headers.cpp	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ kmime/kmime_headers.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -124,12 +124,14 @@
+                                                                       \
+ const char *subclass::type() const                                    \
+ {                                                                     \
+-  return #name;                                                       \
+-}
++  return staticType();                                                \
++}                                                                     \
++const char *subclass::staticType() { return #name; }
+ 
+ #define kmime_mk_trivial_ctor_with_name_and_dptr( subclass, baseclass, name ) \
+ kmime_mk_trivial_ctor_with_dptr( subclass, baseclass ) \
+-const char *subclass::type() const { return #name; }
++const char *subclass::type() const { return staticType(); } \
++const char *subclass::staticType() { return #name; }
+ 
+ #define kmime_mk_dptr_ctor( subclass, baseclass ) \
+ subclass::subclass( subclass##Private *d, KMime::Content *parent ) : baseclass( d, parent ) {}
+@@ -1715,7 +1717,13 @@
+ 
+ QByteArray ContentType::mimeType() const
+ {
+-  return d_func()->mimeType + '/' + d_func()->mimeSubType;
++  Q_D(const ContentType);
++  QByteArray mt;
++  mt.reserve( d->mimeType.size() + d->mimeSubType.size() + 1 );
++  mt.append( d->mimeType );
++  mt.append( '/' );
++  mt.append( d->mimeSubType );
++  return mt;
  }
  
- void SessionThread::sendData( const QByteArray &payload )
-Index: kmime/kmime_content.cpp
+ QByteArray ContentType::mediaType() const
+Index: kcal/localdir.desktop
 ===================================================================
---- kmime/kmime_content.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
-+++ kmime/kmime_content.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
-@@ -513,7 +513,6 @@
-         // Add to new content.
-         main->setHeader( *it );
-         // Remove from this content.
--        delete (*it);
-         it = h_eaders.erase( it );
-       } else {
-         ++it;
-@@ -576,7 +575,6 @@
-     foreach( Headers::Base *h, main->h_eaders ) {
-       setHeader( h ); // Will remove the old one if present.
-     }
--    qDeleteAll( main->h_eaders );
-     main->h_eaders.clear();
- 
-     // Move the body.
-Index: doc/kcontrol/kresources/index.docbook
+--- kcal/localdir.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ kcal/localdir.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -57,7 +57,7 @@
+ Comment[es]=Provee acceso a elementos de un calendario, cada uno almacenado en un archivo diferente, dentro de un directorio determinado
+ Comment[et]=Võimaldab kasutada eraldi failidesse salvestatud kalendrielemente määratud kataloogis
+ Comment[fi]=Tarjoaa pääsyn annetun kansion erillisiin tiedostoihin tallennettuihin kalenteritietueisiin
+-Comment[fr]=Fourni l'accès à des entrées d'agenda, chaque élément étant représenté par un fichier dans le dossier indiqué
++Comment[fr]=Fournit l'accès à des entrées d'agenda, chaque élément étant représenté par un fichier dans le dossier indiqué
+ Comment[ga]=Soláthraíonn sé seo rochtain ar mhíreanna féilire, gach ceann stóráilte i gcomhad aonair, i gcomhadlann sonraithe
+ Comment[gl]=Dá acceso aos obxectos do calendario, cada un gardado nun ficheiro nun cartafol dado
+ Comment[hu]=Helyi mappában tárolt naptérbejegyzések elérését biztosítja. Minden bejegyzés külön fájlban található.
+Index: kcal/local.desktop
 ===================================================================
---- doc/kcontrol/kresources/index.docbook	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
-+++ doc/kcontrol/kresources/index.docbook	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
-@@ -6,6 +6,7 @@
- ]>
- 	
- <article lang="&language;">
-+<title>&kde; Resources</title>
- <articleinfo>
- 
- <authorgroup>
-@@ -26,8 +27,6 @@
- <keyword>notes</keyword>
- </keywordset>
- </articleinfo>
--<sect1 id="kde-resources">
--<title>&kde; Resources</title>
- 
- <para>This module is a configuration tool for managing the resources used by different &kde; applications.
- It allows you to add, deleted or modify the resources for <guilabel>Alarms</guilabel>, 
-@@ -90,6 +89,4 @@
- will not be able to select it.
- </para>
- 
--</sect1>
--
- </article>
-Index: kcal/icalformat_p.cpp
+--- kcal/local.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ kcal/local.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -57,7 +57,7 @@
+ Comment[es]=Provee acceso a un calendario almacenado en un único archivo local
+ Comment[et]=Võimaldab kasutada kohalikku faili salvestatud kalendrit
+ Comment[fi]=Tarjoaa pääsyn yksittäiseen paikalliseen tiedostoon tallennettuun kalenteriin
+-Comment[fr]=Fourni l'accès à un agenda stocké dans un fichier local
++Comment[fr]=Fournit l'accès à un agenda stocké dans un fichier local
+ Comment[ga]=Soláthraíonn sé seo rochtain ar fhéilire stóráilte i gcomhad logánta amháin
+ Comment[gl]=Dá acceso a un calendario gardado nun único ficheiro local
+ Comment[hu]=Helyi fájlban tárolt naptár elérését biztosítja.
+Index: kcal/scheduler.cpp
 ===================================================================
---- kcal/icalformat_p.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
-+++ kcal/icalformat_p.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
-@@ -784,7 +784,11 @@
-   if ( att->isUri() ) {
-     attach = icalattach_new_from_url( att->uri().toUtf8().data() );
-   } else {
-+#ifdef USE_ICAL_0_46
-+    attach = icalattach_new_from_data ( ( const char * )att->data(), 0, 0 );
-+#else
-     attach = icalattach_new_from_data ( ( unsigned char * )att->data(), 0, 0 );
-+#endif
-   }
-   icalproperty *p = icalproperty_new_attach( attach );
- 
-Index: kcal/CMakeLists.txt
-===================================================================
---- kcal/CMakeLists.txt	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
-+++ kcal/CMakeLists.txt	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
-@@ -9,6 +9,11 @@
- add_definitions(-DWANT_DEPRECATED_KABC_API)
- add_definitions(-DWANT_DEPRECATED_KRESOURCE_API)
- 
-+# Workaround a SIC change in libical 0.46
-+if(USE_ICAL_0_46)
-+  add_definitions(-DUSE_ICAL_0_46)
-+endif()
-+
- include (ConfigureChecks.cmake)
- 
- if(KDE4_BUILD_TESTS)
-Index: kholidays/parsers/plan2/holidayparserdriverplan_p.h
-===================================================================
---- kholidays/parsers/plan2/holidayparserdriverplan_p.h	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
-+++ kholidays/parsers/plan2/holidayparserdriverplan_p.h	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
-@@ -25,6 +25,7 @@
- #include <fstream>
- 
- #include <QByteArray>
-+#include <QStringList>
- 
- #include "../holidayparserdriver_p.h"
- 
-@@ -141,12 +142,15 @@
- 
-     QByteArray          m_scanData;                 // Holiday file stored as a string
- 
-+    QStringList         m_fileCalendarTypes;        // List of all Calendar Systems used in file
-+
-     bool                m_traceParsing;             // Bison C++ skeleton enable tracing in Bison parser class
-     HolidayParserPlan  *m_parser;                   // Bison C++ skeleton Bison parser class implementation
- 
-     bool                m_traceScanning;            // Flex C++ enable tracing in Flex scanner class
-     HolidayScannerPlan *m_scanner;                  // Flex C++ scanner class implementation
- 
-+    bool                m_parseMetadataOnly;        // Only parse file for metadata
-     QDate               m_parseYearStart;           // First day of year being parsed
-     QDate               m_parseYearEaster;          // Easter in the parse year, Gregorian only
-     QDate               m_parseYearPascha;          // Orthodox Easter in the parse year, Gregorian only
-Index: kholidays/parsers/plan2/holidayparserdriverplan.cpp
-===================================================================
---- kholidays/parsers/plan2/holidayparserdriverplan.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
-+++ kholidays/parsers/plan2/holidayparserdriverplan.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
-@@ -52,7 +52,8 @@
- HolidayParserDriverPlan::HolidayParserDriverPlan( const QString &planFilePath )
-                         :HolidayParserDriver( planFilePath ),
-                         m_traceParsing( false ),
--                        m_traceScanning( false )
-+                        m_traceScanning( false ),
-+                        m_parseMetadataOnly( false )
- {
-     QFile holidayFile( filePath() );
-     if ( holidayFile.open( QIODevice::ReadOnly ) ) {
-@@ -89,10 +90,8 @@
- 
- void HolidayParserDriverPlan::parse()
- {
--    // Parse the file using every available calendar system, even if not defined in file
--    // TODO this will not scale as more systems are added over time, either move to AST model
--    //      or have this driven via pre-scan or file metadata to determine requied calendar systems
--    foreach( QString calendar, KCalendarSystem::calendarSystems() ) {
-+    // Parse the file using every calendar system in the file
-+    foreach( QString calendar, m_fileCalendarTypes ) {
- 
-         // Cater for events defined in other Calendar Systems where request year could cover 2 or 3 event years
-         // Perhaps also parse year before and year after to allow events to span years or shift to other year?
-@@ -117,10 +116,13 @@
- 
- void HolidayParserDriverPlan::parseMetadata()
- {
-+    m_parseMetadataOnly = true;
-     m_fileCountryCode.clear();
-     m_fileLanguageCode.clear();
-     m_fileName.clear();
-     m_fileDescription.clear();
-+    m_fileCalendarTypes.clear();
-+    m_fileCalendarTypes.append( "gregorian" );
- 
-     // Default to files internal metadata
-     setParseCalendar( "gregorian" );
-@@ -155,7 +157,7 @@
+--- kcal/scheduler.cpp	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ kcal/scheduler.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -256,8 +256,8 @@
+           if ( !visitor.assign( calInc, newInc ) ) {
+             kError() << "assigning different incidence types";
+           } else {
++            calInc->setSchedulingID( newInc->uid() );
+             calInc->setUid( oldUid );
+-            calInc->setSchedulingID( newInc->uid() );
+             res = true;
+           }
          }
-     }
- 
--
-+    m_parseMetadataOnly = false;
- }
- 
- QString HolidayParserDriverPlan::filePath()
-@@ -404,7 +406,10 @@
- 
- void  HolidayParserDriverPlan::setEventCalendarType( const QString &calendarType )
- {
--  m_eventCalendarType = calendarType;
-+    m_eventCalendarType = calendarType;
-+    if ( m_parseMetadataOnly && !m_fileCalendarTypes.contains( calendarType ) ) {
-+        m_fileCalendarTypes.append( calendarType );
+@@ -345,8 +345,8 @@
+           kError() << "assigning different incidence types";
+           res = false;
+         } else {
++          i->setSchedulingID( inc->uid() );
+           i->setUid( oldUid );
+-          i->setSchedulingID( inc->uid() );
+         }
+         deleteTransaction( incidence );
+         return res;
+Index: kabc/plugins/file/file.desktop
+===================================================================
+--- kabc/plugins/file/file.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ kabc/plugins/file/file.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -59,7 +59,7 @@
+ Comment[es]=Provee acceso a los contactos almacenados en un único archivo local. Soporta archivos VCard estándar y otros formatos dependiendo de la disponibilidad de los componentes.
+ Comment[et]=Võimaldab kasutada kohalikku faili salvestatud kontakte. Toetab standardseid VCard-faile ja teisi vorminguid sõltuvalt pluginate olemasolust.
+ Comment[fi]=Tarjoaa pääsyn yksittäiseen paikalliseen tiedostoon tallennettuihin yhteystietoihin. Tukee vakiomuotoisia vCard-tiedostoja sekä muita tiedostomuotoja liitännäisistä riippuen.
+-Comment[fr]=Fourni l'accès aux contacts stockés dans un seul fichier local. Le format VCard et d'autres formats sont pris en charge en fonction des modules externes disponibles.
++Comment[fr]=Fournit l'accès aux contacts stockés dans un seul fichier local. Le format VCard et d'autres formats sont pris en charge en fonction des modules externes disponibles.
+ Comment[ga]=Soláthraíonn sé seo rochtain ar theagmhálacha, stóráilte i gcomhad aonair. Tacaítear le comhaid v-Chárta agus formáidí eile, ag brath ar na breiseáin atá ar fáil.
+ Comment[gl]=Dá acceso a contactos gardados nun único ficheiro local. Admite ficheiros vCard estándar e outros formatos en función das extensións dispoñíbeis.
+ Comment[hu]=Névjegyek elérését biztosítja. Minden névjegy egy közös helyi fájlban található. Támogatja a standard vCard formátumot, és bővítmények segítségével más formátumok is kezelhetők.
+Index: kabc/plugins/ldapkio/ldapkio.desktop
+===================================================================
+--- kabc/plugins/ldapkio/ldapkio.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ kabc/plugins/ldapkio/ldapkio.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -59,7 +59,7 @@
+ Comment[es]=Provee acceso a los contactos almacenados en un servidor de directorios LDAP
+ Comment[et]=Võimaldab kasutada LDAP kataloogiserverisse salvestatud kontakte
+ Comment[fi]=Tarjoaa pääsyn LDAP-hakemistopalvelimelle tallennettuihin yhteystietoihin
+-Comment[fr]=Fourni l'accès aux contacts stockés dans un annuaire LDAP
++Comment[fr]=Fournit l'accès aux contacts stockés dans un annuaire LDAP
+ Comment[ga]=Soláthraíonn sé seo rochtain ar theagmhálacha atá stóráilte in eolaire LDAP
+ Comment[gl]=Dá acceso a contactos gardados nun servidor de directorio LDAP
+ Comment[hu]=LDAP címtárkiszolgálókon tárolt névjegyek elérését biztosítja.
+Index: kabc/plugins/net/net.desktop
+===================================================================
+--- kabc/plugins/net/net.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ kabc/plugins/net/net.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -59,7 +59,7 @@
+ Comment[es]=Provee acceso a los contactos en un archivo remoto utilizando la infraestructura de red KIO de KDE. Soporta archivos VCard estándar y otros formatos dependiendo en la disponibilidad de los complementos.
+ Comment[et]=Võimaldab kasutada võrgufaile KDE võrguraamistiku KIO abil. Toetab standardseid VCard-faile ja teisi vorminguid sõltuvalt pluginate olemasolust.
+ Comment[fi]=Tarjoaa pääsyn etätiedostoissa oleviin yhteystietoihin KDE:n verkkokehyksen KIOn välityksellä. Tukee vakiomuotoisia vCard-tiedostoja sekä muita tiedostomuotoja liitännäisistä riippuen.
+-Comment[fr]=Fourni l'accès aux contacts stockés dans des fichiers distants en utilisant le mécanisme réseau KIO de KDE. Le format VCard et d'autres formats sont pris en charge en fonction des modules externes disponibles.
++Comment[fr]=Fournit l'accès aux contacts stockés dans des fichiers distants en utilisant le mécanisme réseau KIO de KDE. Le format VCard et d'autres formats sont pris en charge en fonction des modules externes disponibles.
+ Comment[ga]=Soláthraíonn sé seo rochtain ar theagmhálacha i gcianchomhaid tríd an gcreatlach líonra KIO atá cuid de KDE. Tacaítear le comhaid v-Chárta agus formáidí eile, ag brath ar na breiseáin atá ar fáil.
+ Comment[gl]=Dá acceso a contactos gardados en ficheiros remotos mediante a infraestrutura de rede KIO, de KDE. Admite ficheiros vCard estándar e outros formatos en función das extensións dispoñíbeis.
+ Comment[hu]=Távoli fájlokban található névjegyek elérését biztosítja a KDE KIO keretrendszeren keresztül. Támogatja a standard vCard formátumot, és bővítmények segítségével más formátumok is kezelhetők.
+Index: kabc/plugins/dir/dir.desktop
+===================================================================
+--- kabc/plugins/dir/dir.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ kabc/plugins/dir/dir.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -53,7 +53,7 @@
+ Comment[es]=Provee acceso a los contactos, cada uno almacenado en un archivo diferente, dentro de un directorio determinado. Soporta archivos VCard estándar y otros formatos dependiendo de la disponibilidad de los complementos.
+ Comment[et]=Võimaldab kasutada eraldi failidesse salvestatud kontakte määratud kataloogis. Toetab standardseid VCard-faile ja teisi vorminguid sõltuvalt pluginate olemasolust.
+ Comment[fi]=Tarjoaa pääsyn annetun kansion yksittäisiin tiedostoihin tallennettuihin yhteystietoihin. Tukee vakiomuotoista vCard-tiedostoa sekä muita tiedostomuotoja liitännäisistä riippuen.
+-Comment[fr]=Fourni l'accès aux contacts stockés chacun dans un fichier dans le dossier indiqué. Le format VCard et d'autres formats sont pris en charge en fonction des modules externes disponibles
++Comment[fr]=Fournit l'accès aux contacts stockés chacun dans un fichier dans le dossier indiqué. Le format VCard et d'autres formats sont pris en charge en fonction des modules externes disponibles
+ Comment[ga]=Soláthraíonn sé seo rochtain ar theagmhálacha, gach ceann stóráilte i gcomhad aonair, i bhfillteán sonraithe. Tacaítear le comhaid v-Chárta agus le formáidí eile, ag brath ar na breiseáin atá ar fáil.
+ Comment[gl]=Dá acceso aos contactos, cada un gardado nun ficheiro nun cartafol dado. Admite ficheiros vCard estándar e outros formatos, en función da dispoñibilidade de extensións.
+ Comment[hu]=Névjegyek elérését biztosítja. Minden névjegy külön fájlban található, egy adott mappában. Támogatja a standard vCard formátumot, és bővítmények segítségével más formátumok is kezelhetők.
+Index: akonadi/sharedvaluepool_p.h
+===================================================================
+--- akonadi/sharedvaluepool_p.h	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 0)
++++ akonadi/sharedvaluepool_p.h	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -0,0 +1,78 @@
++/*
++    Copyright (c) 2010 Volker Krause <vkrause@kde.org>
++
++    This library is free software; you can redistribute it and/or modify it
++    under the terms of the GNU Library General Public License as published by
++    the Free Software Foundation; either version 2 of the License, or (at your
++    option) any later version.
++
++    This library is distributed in the hope that it will be useful, but WITHOUT
++    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
++    License for more details.
++
++    You should have received a copy of the GNU Library General Public License
++    along with this library; see the file COPYING.LIB.  If not, write to the
++    Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++    02110-1301, USA.
++*/
++
++#ifndef AKONADI_SHAREDVALUEPOOL_P_H
++#define AKONADI_SHAREDVALUEPOOL_P_H
++
++#include <boost/utility/enable_if.hpp>
++#include <algorithm>
++
++namespace Akonadi {
++namespace Internal {
++
++/*template <typename T> class container_traits
++{
++  private:
++    typedef char sizeOne;
++    typedef struct { char a[2]; } sizeTwo;
++    template <typename C> static sizeOne testForKeyType( typename C::key_type const* );
++    template <typename C> static sizeTwo testForKeyType( ... );
++  public:
++    enum { isAssociative = sizeof( container_traits<T>::testForKeyType<T>( 0 ) ) == 1 };
++};*/
++
++/**
++ * Pool of implicitly shared values, use for optimizing memory use
++ * when having a large amount of copies from a small set of different values.
++ */
++template <typename T, template <typename> class Container>
++class SharedValuePool
++{
++  public:
++    /** Returns the shared value equal to @p value .*/
++    /*template <typename C> 
++    typename boost::enable_if_c<container_traits<Container<C> >::isAssociative, C>::type sharedValue( const C &value, const int* = 0 )
++    {
++      typename Container<T>::const_iterator it = m_pool.constFind( value );
++      if ( it != m_pool.constEnd() )
++        return *it;
++      m_pool.insert( value );
++      return value;
 +    }
++
++    template <typename C>
++    typename boost::disable_if_c<container_traits<Container<C> >::isAssociative, C>::type sharedValue( const C &value )*/
++    T sharedValue( const T &value )
++    {
++      // for small pool sizes this is actually faster than using lower_bound and a sorted vector
++      typename Container<T>::const_iterator it = std::find( m_pool.constBegin(), m_pool.constEnd(), value );
++      if ( it != m_pool.constEnd() )
++        return *it;
++      m_pool.push_back( value );
++      return value;
++    }
++
++  private:
++    Container<T> m_pool;
++};
++
++}
++}
++
++#endif
+Index: akonadi/itemfetchjob.cpp
+===================================================================
+--- akonadi/itemfetchjob.cpp	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/itemfetchjob.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -40,11 +40,17 @@
+ {
+   public:
+     ItemFetchJobPrivate( ItemFetchJob *parent )
+-      : JobPrivate( parent )
++      : JobPrivate( parent ),
++	mValuePool( 0 )
+     {
+       mCollection = Collection::root();
+     }
+ 
++    ~ItemFetchJobPrivate()
++    {
++      delete mValuePool;
++    }
++
+     void init()
+     {
+       Q_Q( ItemFetchJob );
+@@ -78,6 +84,7 @@
+     ItemFetchScope mFetchScope;
+     Item::List mPendingItems; // items pending for emitting itemsReceived()
+     QTimer* mEmitTimer;
++    ProtocolHelperValuePool *mValuePool;
+ };
+ 
+ void ItemFetchJobPrivate::startFetchJob()
+@@ -116,6 +123,7 @@
+ 
+   d->init();
+   d->mCollection = collection;
++  d->mValuePool = new ProtocolHelperValuePool; // only worth it for lots of results
  }
  
- void  HolidayParserDriverPlan::setEventDate( int eventYear, int eventMonth, int eventDay )
-@@ -431,8 +436,8 @@
+ ItemFetchJob::ItemFetchJob( const Item & item, QObject * parent)
+@@ -171,7 +179,7 @@
+       ImapParser::parseParenthesizedList( data, fetchResponse, begin + 6 );
  
- void HolidayParserDriverPlan::setFromWeekdayInMonth( int occurrence, int weekday, int month, int offset, int duration )
- {
--    // Don't set if calendar for event rule is not the current parse calendar
--    if ( m_eventCalendarType != m_parseCalendar->calendarType() ) {
-+    // Don't set if only parsing metadata or calendar for event rule is not the current parse calendar
-+    if ( m_parseMetadataOnly || m_eventCalendarType != m_parseCalendar->calendarType() ) {
+       Item item;
+-      ProtocolHelper::parseItemFetchResult( fetchResponse, item );
++      ProtocolHelper::parseItemFetchResult( fetchResponse, item, d->mValuePool );
+       if ( !item.isValid() )
          return;
-     }
  
-@@ -484,8 +489,8 @@
- 
- void HolidayParserDriverPlan::setFromRelativeWeekday( int occurrence, int weekday, int offset, int duration )
- {
--    // Don't set if calendar for event rule is not the current parse calendar
--    if ( m_eventCalendarType != m_parseCalendar->calendarType() ) {
-+    // Don't set if only parsing metadata or calendar for event rule is not the current parse calendar
-+    if ( m_parseMetadataOnly || m_eventCalendarType != m_parseCalendar->calendarType() ) {
-         return;
-     }
- 
-@@ -572,8 +577,8 @@
- 
- void HolidayParserDriverPlan::setFromDate( int offset, int condition, int duration )
- {
--    // Don't set if calendar for event rule is not the current parse calendar
--    if ( m_eventCalendarType != m_parseCalendar->calendarType() ) {
-+    // Don't set if only parsing metadata or calendar for event rule is not the current parse calendar
-+    if ( m_parseMetadataOnly || m_eventCalendarType != m_parseCalendar->calendarType() ) {
-         return;
-     }
- 
-@@ -632,8 +637,8 @@
- 
- void HolidayParserDriverPlan::setFromEaster( int offset, int duration )
- {
--    // Don't set if calendar for event rule is not the current parse calendar
--    if ( m_eventCalendarType != m_parseCalendar->calendarType() ) {
-+    // Don't set if only parsing metadata or calendar for event rule is not the current parse calendar
-+    if ( m_parseMetadataOnly || m_eventCalendarType != m_parseCalendar->calendarType() ) {
-         return;
-     }
- 
-@@ -652,8 +657,8 @@
- 
- void HolidayParserDriverPlan::setFromPascha( int offset, int duration )
- {
--    // Don't set if calendar for event rule is not the current parse calendar
--    if ( m_eventCalendarType != m_parseCalendar->calendarType() ) {
-+    // Don't set if only parsing metadata or calendar for event rule is not the current parse calendar
-+    if ( m_parseMetadataOnly || m_eventCalendarType != m_parseCalendar->calendarType() ) {
-         return;
-     }
- 
-@@ -667,8 +672,8 @@
- // Set the event if it falls inside the requested date range
- void HolidayParserDriverPlan::setEvent( int jd, int observeOffset, int duration )
- {
--    // Don't set if calendar for event rule is not the current parse calendar
--    if ( m_eventCalendarType != m_parseCalendar->calendarType() ) {
-+    // Don't set if only parsing metadata or calendar for event rule is not the current parse calendar
-+    if ( m_parseMetadataOnly || m_eventCalendarType != m_parseCalendar->calendarType() ) {
-         return;
-     }
- 
-Index: kholidays/holidays/plan2/holiday_hr_hr
+Index: akonadi/item_p.h
 ===================================================================
---- kholidays/holidays/plan2/holiday_hr_hr	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 0)
-+++ kholidays/holidays/plan2/holiday_hr_hr	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
-@@ -0,0 +1,86 @@
-+::
-+:: Country:  Croatia
-+::
-+:: Language: Croatian
-+::
-+:: Author:   Marko Dimjašević <marko@dimjasevic.net>
-+::
-+:: Updated:  2010-09-13
-+::
-+:: Source:   Hrvatski sabor: Zakon o blagdanima, spomendanima i neradnim danima
-+::           u Republici Hrvatskoj
-+::           http://narodne-novine.nn.hr/clanci/sluzbeni/309949.html
-+::           Hrvatski sabor: Zakon o izmjenama i dopunama zakona o blagdanima,
-+::           spomendanima i neradnim danima u Republici Hrvatskoj
-+::           http://narodne-novine.nn.hr/clanci/sluzbeni/339400.html
-+::
-+
-+:: Metadata
-+country     "HR"
-+language    "hr"
-+:name        "optional - defaults to country name"
-+:description "Datoteka s blagdanima, spomendanima i neradnim danima u Hrvatskoj"
-+
-+:: Public Holidays
-+"Nova godina"                                                      weekend on january 1
-+"Sveta tri kralja"                                                 weekend on january 6
-+"Uskrsni ponedjeljak"                                              weekend on easter plus 1 day
-+"Tijelovo"                                                         weekend on easter plus 60 days
-+"Praznik rada"                                                     weekend on may 1
-+"Dan antifašističke borbe"                                         weekend on june 22
-+"Dan državnosti"                                                   weekend on june 25
-+"Dan pobjede i domovinske zahvalnosti i Dan hrvatskih branitelja"  weekend on august 5
-+"Velika Gospa"                                                     weekend on august 15
-+"Dan neovisnosti"                                                  weekend on october 8
-+"Svi sveti"                                                        weekend on november 1
-+"Božić"                                                            weekend on december 25
-+"Sveti Stjepan"                                                    weekend on december 26
-+
-+:: Religious Holidays
-+"Uskrs"                                                            on easter
-+"Pepelnica"                                                        on easter minus 46 days
-+"Veliki četvrtak"                                                  on easter minus 3 days
-+"Veliki petak"                                                     on easter minus 2 days
-+"Velika subota"                                                    on easter minus 1 day
-+"Duhovi"                                                           on easter plus 49 days
-+"Presveto Trojstvo"                                                on easter plus 56 days
-+
-+:: Financial
-+
-+:: Cultural
-+"Valentinovo"                                                      on february 14
-+"Međunarodni dan žena"                                             on march 8
-+"Svjetski dan kazališta"                                           on march 27
-+"Dan slobode dokumenata"                                           on last wednesday in march
-+"Prvotravanjska šala"                                              on april 1
-+"Svjetski dan smijeha"                                             on first sunday in may
-+"Majčin dan"                                                       on second sunday in may
-+"Dan očeva"                                                        on third sunday in june
-+"Međunarodni dan mladih"                                           on august 12
-+"Dan slobodnog softvera"                                           on third saturday in september
-+"Dan sjećanja na Vukovar"                                          on november 18
-+"Dan hrvatskog kazališta"                                          on november 24
-+"Međunarodni dan volontera"                                        on december 5
-+"Sveti Nikola"                                                     on december 6
-+
-+:: School
-+"Početak školske godine"                                           on september 1
-+"Međunarodni dan pismenosti (UNESCO)"                              on september 8
-+"Europski dan jezika"                                              on september 26
-+"Međunarodni dan učitelja"                                         on october 5
-+"Međunarodni dan školskih knjižnica"                               on october 24
-+
-+:: Daylight Saving
-+"Ljetno računanje vremena"                                         on last sunday in march
-+"Zimsko računanje vremena"                                         on last sunday in october
-+
-+:: Seasons
-+"Proljetna ravnodnevica (ekvinocij)"                               on march 20
-+"Ljetna dugodnevica (solsticij)"                                   on june 21
-+"Jesenska ravnodnevica (ekvinocij)"                                on september 22
-+"Zimska kratkodnevica (solsticij)"                                 on december 21
-+
-+:: Name Days
-+
-+:: To be sorted
-+"Dan Hrvatskoga sabora"                                            on may 30
-Index: mailtransport/transport.cpp
-===================================================================
---- mailtransport/transport.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
-+++ mailtransport/transport.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
-@@ -79,8 +79,7 @@
- {
-   if ( !d->passwordLoaded && requiresAuthentication() && storePassword() &&
-        d->password.isEmpty() ) {
--    TransportManager::self()->loadPasswords();
--    d->password = TransportManager::self()->transportById( id(), false )->password();
-+    readPassword();
-   }
-   return d->password;
+--- akonadi/item_p.h	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/item_p.h	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -94,9 +94,9 @@
+     QString mMimeType;
+     Item::Flags mAddedFlags;
+     Item::Flags mDeletedFlags;
+-    bool mFlagsOverwritten;
+-    bool mSizeChanged;
+-    bool mClearPayload;
++    bool mFlagsOverwritten : 1;
++    bool mSizeChanged : 1;
++    bool mClearPayload : 1;
+ };
+ 
  }
-Index: mailtransport/addtransportdialog.cpp
+Index: akonadi/protocolhelper_p.h
 ===================================================================
---- mailtransport/addtransportdialog.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
-+++ mailtransport/addtransportdialog.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
-@@ -131,7 +131,7 @@
-     }
-     transport->setHost( cjob->instance().identifier() );
-   }
--  transport->setName( d->ui.name->text() );
-+  transport->setName( d->ui.name->text().trimmed() );
-   transport->forceUniqueName();
-   if( TransportManager::self()->configureTransport( transport, this ) ) {
-     // The user clicked OK and the transport settings were saved.
-Index: mailtransport/transportmanager.cpp
-===================================================================
---- mailtransport/transportmanager.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
-+++ mailtransport/transportmanager.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
-@@ -628,10 +628,11 @@
-   }
+--- akonadi/protocolhelper_p.h	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/protocolhelper_p.h	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -25,6 +25,7 @@
+ #include <akonadi/collectionutils_p.h>
+ #include <akonadi/item.h>
+ #include <akonadi/itemfetchscope.h>
++#include <akonadi/sharedvaluepool_p.h>
  
-   // flush the wallet queue
--  foreach ( TransportJob *job, d->walletQueue ) {
-+  const QList<TransportJob*> copy = d->walletQueue;
-+  d->walletQueue.clear();
-+  foreach ( TransportJob *job, copy ) {
-     job->start();
-   }
--  d->walletQueue.clear();
+ #include <akonadi/private/imapparser_p.h>
+ #include <akonadi/private/protocol_p.h>
+@@ -34,6 +35,16 @@
  
-   emit passwordsChanged();
+ namespace Akonadi {
+ 
++struct ProtocolHelperValuePool
++{
++  typedef Internal::SharedValuePool<QByteArray, QVector> FlagPool;
++  typedef Internal::SharedValuePool<QString, QVector> MimeTypePool;
++
++  FlagPool flagPool;
++  MimeTypePool mimeTypePool;
++  QHash<Collection::Id, Collection> ancestorCollections;
++};
++  
+ /**
+   @internal
+   Helper methods for converting between libakonadi objects and their protocol
+@@ -72,6 +83,14 @@
+     static void parseAncestors( const QByteArray &data, Entity *entity, int start = 0 );
+ 
+     /**
++      Convert a ancestor chain from its protocol representation into an Entity object.
++
++      This method allows to pass a @p valuePool which acts as cache, so ancestor paths for the
++      same @p parentCollection don't have to be parsed twice.
++    */
++    static void parseAncestorsCached( const QByteArray &data, Entity *entity, Collection::Id parentCollection, ProtocolHelperValuePool *valuePool = 0, int start = 0 );
++
++    /**
+       Parse a collection description.
+       @param data The input data.
+       @param collection The parsed collection.
+@@ -195,7 +214,7 @@
+     /**
+       Parses a single line from an item fetch job result into an Item object.
+      */
+-    static void parseItemFetchResult( const QList<QByteArray> &lineTokens, Item &item );
++    static void parseItemFetchResult( const QList<QByteArray> &lineTokens, Item &item, ProtocolHelperValuePool *valuePool = 0 );
+ };
+ 
  }
-Index: akonadi/kdescendantsproxymodel.cpp
+Index: akonadi/tests/CMakeLists.txt
 ===================================================================
---- akonadi/kdescendantsproxymodel.cpp	(.../tags/KDE/4.5.1/kdepimlibs)	(wersja 1179155)
-+++ akonadi/kdescendantsproxymodel.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1179155)
-@@ -640,12 +640,36 @@
-     const QModelIndex oldIndex = q->sourceModel()->index(rowCount - 1 - difference, column, parent);
-     Q_ASSERT(m_mapping.leftContains(oldIndex));
+--- akonadi/tests/CMakeLists.txt	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/tests/CMakeLists.txt	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -137,6 +137,7 @@
+ add_akonadi_test(collectionutilstest.cpp)
+ add_akonadi_test(entitydisplayattributetest.cpp)
+ add_akonadi_test(proxymodelstest.cpp)
++add_akonadi_test(sharedvaluepooltest.cpp)
  
--    // oldIndex is E in the source. proxyRow is 4.
--    const int proxyRow = m_mapping.takeLeft(oldIndex);
-     const QModelIndex newIndex = q->sourceModel()->index(rowCount - 1, column, parent);
- 
-+    QModelIndex indexAbove = oldIndex;
+ # qtestlib tests that need non-exported stuff from akonadi-kde
+ kde4_add_unit_test(resourceschedulertest TESTNAME akonadi-resourceschedulertest resourceschedulertest.cpp ../resourcescheduler.cpp)
+Index: akonadi/tests/sharedvaluepooltest.cpp
+===================================================================
+--- akonadi/tests/sharedvaluepooltest.cpp	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 0)
++++ akonadi/tests/sharedvaluepooltest.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -0,0 +1,89 @@
++/*
++    Copyright (c) 2010 Volker Krause <vkrause@kde.org>
 +
-+    if (start > 0) {
-+      // If we have something like this:
-+      //
-+      // - A
-+      // - - B
-+      // - - C
-+      //
-+      // and we then insert D as a sibling of A below it, we need to remove the mapping for A,
-+      // and the row number used for D must take into account the descendants of A.
++    This library is free software; you can redistribute it and/or modify it
++    under the terms of the GNU Library General Public License as published by
++    the Free Software Foundation; either version 2 of the License, or (at your
++    option) any later version.
 +
-+      while (q->sourceModel()->hasChildren(indexAbove)) {
-+      Q_ASSERT(q->sourceModel()->rowCount(indexAbove) > 0);
-+        indexAbove = q->sourceModel()->index(q->sourceModel()->rowCount(indexAbove) - 1,  column, indexAbove);
++    This library is distributed in the hope that it will be useful, but WITHOUT
++    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
++    License for more details.
++
++    You should have received a copy of the GNU Library General Public License
++    along with this library; see the file COPYING.LIB.  If not, write to the
++    Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++    02110-1301, USA.
++*/
++
++#include "../sharedvaluepool_p.h"
++#include <qtest_kde.h>
++
++#include <QVector>
++#include <QSet>
++#include <set>
++#include <vector>
++
++using namespace Akonadi;
++
++class SharedValuePoolTest : public QObject
++{
++  Q_OBJECT
++  private slots:
++    void testQVector_data()
++    {
++      QTest::addColumn<int>( "size" );
++      QTest::newRow( "10" ) << 10;
++      QTest::newRow( "100" ) << 100;
++    }
++
++    void testQVector()
++    {
++      QFETCH( int, size );
++      QVector<QByteArray> data;
++      Internal::SharedValuePool<QByteArray, QVector> pool;
++
++      for ( int i = 0; i < size; ++i ) {
++        QByteArray b( 10, (char)i );
++        data.push_back( b );
++        QCOMPARE( pool.sharedValue( b ), b );
++        QCOMPARE( pool.sharedValue( b ), b );
 +      }
-+      Q_ASSERT(q->sourceModel()->rowCount(indexAbove) == 0);
++
++      QBENCHMARK {
++        foreach ( const QByteArray &b, data )
++          pool.sharedValue( b );
++      }
 +    }
 +
-+    Q_ASSERT(m_mapping.leftContains(indexAbove));
++    /*void testQSet_data()
++    {
++      QTest::addColumn<int>( "size" );
++      QTest::newRow( "10" ) << 10;
++      QTest::newRow( "100" ) << 100;
++    }
 +
-+    const int newProxyRow = m_mapping.leftToRight(indexAbove) + difference;
++    void testQSet()
++    {
++      QFETCH( int, size );
++      QVector<QByteArray> data;
++      Internal::SharedValuePool<QByteArray, QSet> pool;
 +
-+    // oldIndex is E in the source. proxyRow is 4.
-+    m_mapping.removeLeft(oldIndex);
++      for ( int i = 0; i < size; ++i ) {
++        QByteArray b( 10, (char)i );
++        data.push_back( b );
++        QCOMPARE( pool.sharedValue( b ), b );
++        QCOMPARE( pool.sharedValue( b ), b );
++      }
 +
-     // newIndex is J. (proxyRow + difference) is 5.
--    m_mapping.insert(newIndex, proxyRow + difference);
-+    m_mapping.insert(newIndex, newProxyRow);
++      QBENCHMARK {
++        foreach ( const QByteArray &b, data )
++          pool.sharedValue( b );
++      }
++    }*/
++};
++
++QTEST_KDEMAIN( SharedValuePoolTest, NoGUI )
++
++#include "sharedvaluepooltest.moc"
+Index: akonadi/collectionstatisticsdelegate.cpp
+===================================================================
+--- akonadi/collectionstatisticsdelegate.cpp	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/collectionstatisticsdelegate.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -74,7 +74,8 @@
+ 
+       if ( index.model()->hasChildren( index ) )
+       {
+-        for ( int row = 0; row < index.model()->rowCount( index ); row++ )
++        const int rowCount = index.model()->rowCount( index );
++        for ( int row = 0; row < rowCount; row++ )
+         {
+           static const int column = 0;
+           count += getCountRecursive<countType>( index.model()->index( row, column, index ) );
+@@ -287,7 +288,7 @@
+       sumText = QString::number( expanded ? unreadCount : unreadRecursiveCount );
+     } else {
+ 
+-      qint64 totalCount = statistics.unreadCount();
++      qint64 totalCount = statistics.count();
+       qint64 totalRecursiveCount = d->getCountRecursive<TotalCount>( index.sibling( index.row(), 0 ) );
+       if (index.column() == 2 && ( ( !expanded && totalRecursiveCount > 0 ) || ( expanded && totalCount > 0 ) ) ) {
+         sumText = QString::number( expanded ? totalCount : totalRecursiveCount );
+Index: akonadi/protocolhelper.cpp
+===================================================================
+--- akonadi/protocolhelper.cpp	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/protocolhelper.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -79,26 +79,49 @@
+   return rv;
+ }
+ 
++void ProtocolHelper::parseAncestorsCached( const QByteArray &data, Entity *entity, Collection::Id parentCollection,
++                                           ProtocolHelperValuePool *pool, int start )
++{
++  if ( !pool || parentCollection == -1 ) {
++    // if no pool or parent collection id is provided we can't cache anything, so continue as usual
++    parseAncestors( data, entity, start );
++    return;
++  }
++
++  if ( pool->ancestorCollections.contains( parentCollection ) ) {
++    // ancestor chain is cached already, so use the cached value
++    entity->setParentCollection( pool->ancestorCollections.value( parentCollection ) );
++  } else {
++    // not cached yet, parse the chain
++    parseAncestors( data, entity, start );
++    pool->ancestorCollections.insert( parentCollection, entity->parentCollection() );
++  }
++}
++
+ void ProtocolHelper::parseAncestors( const QByteArray &data, Entity *entity, int start )
+ {
+   Q_UNUSED( start );
+ 
+-  QList<QByteArray> ancestors;
++  static const Collection::Id rootCollectionId = Collection::root().id();
++  QVarLengthArray<QByteArray, 16> ancestors;
++  QVarLengthArray<QByteArray, 16> parentIds;
++
+   ImapParser::parseParenthesizedList( data, ancestors );
+   Entity* current = entity;
+-  foreach ( const QByteArray &uidRidPair, ancestors ) {
+-    QList<QByteArray> parentIds;
+-    ImapParser::parseParenthesizedList( uidRidPair, parentIds );
++  for ( int i = 0; i < ancestors.count(); ++i ) {
++    parentIds.clear();
++    ImapParser::parseParenthesizedList( ancestors[ i ], parentIds );
+     if ( parentIds.size() != 2 )
+       break;
+-    const Collection::Id uid = parentIds.at( 0 ).toLongLong();
+-    const QString rid = QString::fromUtf8( parentIds.at( 1 ) );
+-    if ( uid == Collection::root().id() ) {
++
++    const Collection::Id uid = parentIds[ 0 ].toLongLong();
++    if ( uid == rootCollectionId ) {
+       current->setParentCollection( Collection::root() );
+       break;
+     }
++
+     current->parentCollection().setId( uid );
+-    current->parentCollection().setRemoteId( rid );
++    current->parentCollection().setRemoteId( QString::fromUtf8( parentIds[ 1 ] ) );
+     current = &current->parentCollection();
+   }
+ }
+@@ -270,7 +293,7 @@
+   return command;
+ }
+ 
+-void ProtocolHelper::parseItemFetchResult( const QList<QByteArray> &lineTokens, Item &item )
++void ProtocolHelper::parseItemFetchResult( const QList<QByteArray> &lineTokens, Item &item, ProtocolHelperValuePool *valuePool )
+ {
+   // create a new item object
+   Item::Id uid = -1;
+@@ -298,7 +321,10 @@
+     } else if ( key == "COLLECTIONID" ) {
+       cid = value.toInt();
+     } else if ( key == "MIMETYPE" ) {
+-      mimeType = QString::fromLatin1( value );
++      if ( valuePool )
++        mimeType = valuePool->mimeTypePool.sharedValue( QString::fromLatin1( value ) );
++      else
++        mimeType = QString::fromLatin1( value );
+     }
    }
  
-   for (int row = start; row <= end; ++row)
+@@ -327,8 +353,16 @@
+     if ( key == "FLAGS" ) {
+       QList<QByteArray> flags;
+       ImapParser::parseParenthesizedList( lineTokens[i + 1], flags );
+-      foreach ( const QByteArray &flag, flags ) {
+-        item.setFlag( flag );
++      if ( !flags.isEmpty() ) {
++        Item::Flags convertedFlags;
++        convertedFlags.reserve( flags.size() );
++        foreach ( const QByteArray &flag, flags ) {
++          if ( valuePool )
++            convertedFlags.insert( valuePool->flagPool.sharedValue( flag ) );
++          else
++            convertedFlags.insert( flag );
++        }
++        item.setFlags( convertedFlags );
+       }
+     } else if ( key == "SIZE" ) {
+       const quint64 size = lineTokens[i + 1].toLongLong();
+@@ -338,7 +372,7 @@
+       ImapParser::parseDateTime( lineTokens[i + 1], datetime );
+       item.setModificationTime( datetime );
+     } else if ( key == "ANCESTORS" ) {
+-      ProtocolHelper::parseAncestors( lineTokens[i + 1], &item );
++      ProtocolHelper::parseAncestorsCached( lineTokens[i + 1], &item, cid, valuePool );
+     } else {
+       int version = 0;
+       QByteArray plainKey( key );
+Index: akonadi/contact/contactsfilterproxymodel.cpp
+===================================================================
+--- akonadi/contact/contactsfilterproxymodel.cpp	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/contact/contactsfilterproxymodel.cpp	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -155,6 +155,13 @@
+       return true;
+   }
+ 
++  const QStringList categories = contact.categories();
++  count = categories.count();
++  for ( int i = 0; i < count; ++i ) {
++    if ( categories.at( i ).contains( filterString, Qt::CaseInsensitive ) )
++      return true;
++  }
++
+   if ( contact.mailer().contains( filterString, Qt::CaseInsensitive ) )
+     return true;
+ 
+Index: akonadi/contact/editor/im/protocols/jabberprotocol.desktop
+===================================================================
+--- akonadi/contact/editor/im/protocols/jabberprotocol.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/contact/editor/im/protocols/jabberprotocol.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -30,6 +30,7 @@
+ Comment[sr@latin]=Protokol Jabber
+ Comment[sv]=Jabber-protokoll
+ Comment[th]=โพรโทคอล Jabber
++Comment[tr]=Jabber Protokolü
+ Comment[uk]=Протокол Jabber
+ Comment[wa]=Protocole Jabber
+ Comment[x-test]=xxJabber Protocolxx
+@@ -62,6 +63,7 @@
+ Name[sr@latin]=Jabber
+ Name[sv]=Jabber
+ Name[th]=Jabber
++Name[tr]=Jabber
+ Name[uk]=Jabber
+ Name[wa]=Jabber
+ Name[x-test]=xxJabberxx
+Index: akonadi/contact/editor/im/protocols/aimprotocol.desktop
+===================================================================
+--- akonadi/contact/editor/im/protocols/aimprotocol.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/contact/editor/im/protocols/aimprotocol.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -30,6 +30,7 @@
+ Comment[sr@latin]=Protokol AIM
+ Comment[sv]=AIM-protokoll
+ Comment[th]=โพรโทคอล AIM
++Comment[tr]=AIM Protokolü
+ Comment[uk]=Протокол AIM
+ Comment[wa]=Protocole AIM
+ Comment[x-test]=xxAIM Protocolxx
+@@ -62,6 +63,7 @@
+ Name[sr@latin]=AIM
+ Name[sv]=AIM
+ Name[th]=AIM
++Name[tr]=AIM
+ Name[uk]=AIM
+ Name[wa]=AIM
+ Name[x-test]=xxAIMxx
+Index: akonadi/contact/editor/im/protocols/meanwhileprotocol.desktop
+===================================================================
+--- akonadi/contact/editor/im/protocols/meanwhileprotocol.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/contact/editor/im/protocols/meanwhileprotocol.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -29,6 +29,7 @@
+ Comment[sr@latin]=Protokol Meanwhile
+ Comment[sv]=Meanwhile-protokoll
+ Comment[th]=โพรโทคอล Meanwhile
++Comment[tr]=Aynı Zamanlı Protokol
+ Comment[uk]=Протокол Meanwhile
+ Comment[wa]=Protocole Meanwhile
+ Comment[x-test]=xxMeanwhile Protocolxx
+@@ -60,6 +61,7 @@
+ Name[sr@latin]=Meanwhile
+ Name[sv]=Meanwhile
+ Name[th]=Meanwhile
++Name[tr]=Aynı Zamanlı
+ Name[uk]=Meanwhile
+ Name[wa]=Meanwhile
+ Name[x-test]=xxMeanwhilexx
+Index: akonadi/contact/editor/im/protocols/skypeprotocol.desktop
+===================================================================
+--- akonadi/contact/editor/im/protocols/skypeprotocol.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/contact/editor/im/protocols/skypeprotocol.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -28,6 +28,7 @@
+ Comment[sr@ijekavianlatin]=Skype, internet telefonija
+ Comment[sr@latin]=Skype, internet telefonija
+ Comment[sv]=Skype Internettelefoni
++Comment[tr]=Skype İnternet Telefonu
+ Comment[uk]=Інтернет-телефонія Skype
+ Comment[wa]=Telefoneye sol Daegntoele Skype
+ Comment[x-test]=xxSkype Internet Telephonyxx
+@@ -59,6 +60,7 @@
+ Name[sr@latin]=Skype
+ Name[sv]=Skype
+ Name[th]=Skype
++Name[tr]=Skype
+ Name[uk]=Skype
+ Name[wa]=Skype
+ Name[x-test]=xxSkypexx
+Index: akonadi/contact/editor/im/protocols/icqprotocol.desktop
+===================================================================
+--- akonadi/contact/editor/im/protocols/icqprotocol.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/contact/editor/im/protocols/icqprotocol.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -30,6 +30,7 @@
+ Comment[sr@latin]=Protokol ICQ
+ Comment[sv]=ICQ-protokoll
+ Comment[th]=โพรโทคอล ICQ
++Comment[tr]=ICQ Protokolü
+ Comment[uk]=Протокол ICQ
+ Comment[wa]=Protocole ICQ
+ Comment[x-test]=xxICQ Protocolxx
+@@ -62,6 +63,7 @@
+ Name[sr@latin]=ICQ
+ Name[sv]=ICQ
+ Name[th]=ICQ
++Name[tr]=ICQ
+ Name[uk]=ICQ
+ Name[wa]=ICQ
+ Name[x-test]=xxICQxx
+Index: akonadi/contact/editor/im/protocols/ircprotocol.desktop
+===================================================================
+--- akonadi/contact/editor/im/protocols/ircprotocol.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/contact/editor/im/protocols/ircprotocol.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -28,6 +28,7 @@
+ Comment[sr@ijekavianlatin]=Ćaskanje putem Interneta
+ Comment[sr@latin]=Ćaskanje putem Interneta
+ Comment[sv]=Internet Relay Chat
++Comment[tr]=Internet Relay Chat
+ Comment[uk]=Internet Relay Chat
+ Comment[wa]=Internet Relay Chat
+ Comment[x-test]=xxInternet Relay Chatxx
+@@ -60,6 +61,7 @@
+ Name[sr@latin]=IRC
+ Name[sv]=IRC
+ Name[th]=IRC
++Name[tr]=IRC
+ Name[uk]=IRC
+ Name[wa]=IRC
+ Name[x-test]=xxIRCxx
+Index: akonadi/contact/editor/im/protocols/msnprotocol.desktop
+===================================================================
+--- akonadi/contact/editor/im/protocols/msnprotocol.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/contact/editor/im/protocols/msnprotocol.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -28,6 +28,7 @@
+ Comment[sr@ijekavianlatin]=MSN Messenger
+ Comment[sr@latin]=MSN Messenger
+ Comment[sv]=MSN Messenger
++Comment[tr]=MSN Messenger
+ Comment[uk]=MSN Messenger
+ Comment[wa]=MSN Messenger
+ Comment[x-test]=xxMSN Messengerxx
+@@ -58,6 +59,7 @@
+ Name[sr@ijekavianlatin]=MSN Messenger
+ Name[sr@latin]=MSN Messenger
+ Name[sv]=MSN Messenger
++Name[tr]=MSN Messenger
+ Name[uk]=MSN Messenger
+ Name[wa]=MSN Messenger
+ Name[x-test]=xxMSN Messengerxx
+Index: akonadi/contact/editor/im/protocols/yahooprotocol.desktop
+===================================================================
+--- akonadi/contact/editor/im/protocols/yahooprotocol.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/contact/editor/im/protocols/yahooprotocol.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -29,6 +29,7 @@
+ Comment[sr@latin]=Protokol Yahooa
+ Comment[sv]=Yahoo-protokoll
+ Comment[th]=โพรโทคอล Yahoo
++Comment[tr]=Yahoo Protokolü
+ Comment[uk]=Протокол Yahoo
+ Comment[wa]=Protocole Yahoo
+ Comment[x-test]=xxYahoo Protocolxx
+@@ -60,6 +61,7 @@
+ Name[sr@latin]=Yahoo
+ Name[sv]=Yahoo
+ Name[th]=Yahoo
++Name[tr]=Yahoo
+ Name[uk]=Yahoo
+ Name[wa]=Yahoo
+ Name[x-test]=xxYahooxx
+Index: akonadi/contact/editor/im/protocols/gaduprotocol.desktop
+===================================================================
+--- akonadi/contact/editor/im/protocols/gaduprotocol.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/contact/editor/im/protocols/gaduprotocol.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -30,6 +30,7 @@
+ Comment[sr@latin]=Protokol Gadu‑Gadu
+ Comment[sv]=Gadu-Gadu protokoll
+ Comment[th]=โพรโทคอล Gadu-Gadu
++Comment[tr]=Gadu-Gadu Protokolü
+ Comment[uk]=Протокол Gadu-Gadu
+ Comment[wa]=Protocole Gadu-gadu
+ Comment[x-test]=xxGadu-Gadu Protocolxx
+@@ -62,6 +63,7 @@
+ Name[sr@latin]=Gadu‑Gadu
+ Name[sv]=Gadu-Gadu
+ Name[th]=Gadu-Gadu
++Name[tr]=Gadu-Gadu
+ Name[uk]=Gadu-Gadu
+ Name[wa]=Gadu-Gadu
+ Name[x-test]=xxGadu-Gaduxx
+Index: akonadi/contact/editor/im/protocols/smsprotocol.desktop
+===================================================================
+--- akonadi/contact/editor/im/protocols/smsprotocol.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/contact/editor/im/protocols/smsprotocol.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -29,6 +29,7 @@
+ Comment[sr@latin]=Protokol SMS
+ Comment[sv]=SMS-protokoll
+ Comment[th]=โพรโทคอล SMS
++Comment[tr]=SMS Protokolü
+ Comment[uk]=Протокол SMS
+ Comment[wa]=Protocole SMS
+ Comment[x-test]=xxSMS Protocolxx
+@@ -60,6 +61,7 @@
+ Name[sr@latin]=SMS
+ Name[sv]=SMS
+ Name[th]=SMS
++Name[tr]=SMS
+ Name[uk]=SMS
+ Name[wa]=SMS
+ Name[x-test]=xxSMSxx
+Index: akonadi/contact/editor/im/protocols/groupwiseprotocol.desktop
+===================================================================
+--- akonadi/contact/editor/im/protocols/groupwiseprotocol.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/contact/editor/im/protocols/groupwiseprotocol.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -29,6 +29,7 @@
+ Comment[sr@latin]=Novellov GroupWise Messenger
+ Comment[sv]=Novell GroupWise-meddelandeklient
+ Comment[th]=ข้อความด่วนทันใจ GroupWise ของโนเวลล์
++Comment[tr]=Novell GroupWise Messenger
+ Comment[uk]=Програма обміну повідомленнями Novell GroupWise
+ Comment[wa]=Messaedjî Novell GroupWise
+ Comment[x-test]=xxNovell GroupWise Messengerxx
+@@ -60,6 +61,7 @@
+ Name[sr@latin]=GroupWise
+ Name[sv]=GroupWise
+ Name[th]=GroupWise
++Name[tr]=GroupWise
+ Name[uk]=GroupWise
+ Name[wa]=GroupWise
+ Name[x-test]=xxGroupWisexx
+Index: akonadi/contact/editor/im/kaddressbookimprotocol.desktop
+===================================================================
+--- akonadi/contact/editor/im/kaddressbookimprotocol.desktop	(.../tags/KDE/4.5.2/kdepimlibs)	(wersja 1188163)
++++ akonadi/contact/editor/im/kaddressbookimprotocol.desktop	(.../branches/KDE/4.5/kdepimlibs)	(wersja 1188163)
+@@ -28,6 +28,7 @@
+ Name[sr@latin]=Brzoglasnički protokol K‑adresra
+ Name[sv]=Addressbokens direktmeddelandeprotokoll
+ Name[th]=โพรโทคอลข้อความด่วนทันใจของสมุดที่อยู่-K
++Name[tr]=KAddressbook Anlık Mesajlaşma Protokolü
+ Name[uk]=Протокол миттєвого обміну повідомленнями KAddressbook
+ Name[wa]=Protocole di messaedjreye sol moumint di KAddressbook
+ Name[x-test]=xxKAddressbook Instant Messaging Protocolxx
 
 Zmiany atrybutów dla: .
 ___________________________________________________________________
+Zmienione: svnmerge-blocked
+   - /branches/work/akonadi-ports/kdepimlibs:986699,987563,994695,994809,994821,995233,995397,995405,995799,997745,1006187,1006194-1006195,1007212,1007214,1007218,1007232,1010099,1012994 /branches/kdepim/enterprise4/kdepimlibs:813580,813599,837972,837974-837978,841098-841099,841101,841105,841107,848594,851389,851404-851407,851410-851414,851417-851418,851420,853107,855293-855296,858273,858798,860269,860271-860273,867009-867013,870452-870453,877142-877144,883945,883948,883950-883953,890924,890926-890928,894902,896730-896734,896736,896738-896743,896745-896746,896772-896779,899986-899988,904971-904972,904974,914186-914187,914190,914217-914221,914224-914225,914228,918272,918274,918276-918278,918281-918283,921737-921738,925433,926078,928300-928305,931551,931554-931557,931561,931571,931583,935838-935843,935847,935850,935853,935961,938267,938272,938279-938280,940824,940828-940832,940834-940835,944436,944440,944443,945301-945302,953635,953641-953642,953644,953650,953653,957747,957749,958310-958311,958313,960525,961674-961675,961677-961678,961681,964290-964291,964293,967500,967502,967505,967519-967520,970682-970683,977004,977081-977083,979666,980928,982948,982951-982952,982955,983183,983187,990098,990227,996683,997257,997261-997262,997264,997266,997268,997272,997274,997499,997542,1000910,1000916,1000919,1000921,1004974,1007424,1008457,1010908-1010909,1010914-1010915,1013415,1013931,1015922,1015925,1015927-1015928,1017872,1019403,1019453,1019804,1021574-1021575,1021577-1021578,1022771,1023329,1023334,1024417,1024888,1027238-1027239,1027241,1031249,1031745,1031748,1031751-1031752,1031754,1031888,1031909,1031921,1031924,1031942,1031946,1031949,1032284,1033321,1033323,1039547,1041177,1041180,1041182,1041185,1045938-1045939,1048556,1048559,1048574,1054305,1054308,1056622,1057946,1060306,1066388,1071819
+   + /branches/kdepim/enterprise4/kdepimlibs:813580,813599,837972,837974-837978,841098-841099,841101,841105,841107,848594,851389,851404-851407,851410-851414,851417-851418,851420,853107,855293-855296,858273,858798,860269,860271-860273,867009-867013,870452-870453,877142-877144,883945,883948,883950-883953,890924,890926-890928,894902,896730-896734,896736,896738-896743,896745-896746,896772-896779,899986-899988,904971-904972,904974,914186-914187,914190,914217-914221,914224-914225,914228,918272,918274,918276-918278,918281-918283,921737-921738,925433,926078,928300-928305,931551,931554-931557,931561,931571,931583,935838-935843,935847,935850,935853,935961,938267,938272,938279-938280,940824,940828-940832,940834-940835,944436,944440,944443,945301-945302,953635,953641-953642,953644,953650,953653,957747,957749,958310-958311,958313,960525,961674-961675,961677-961678,961681,964290-964291,964293,967500,967502,967505,967519-967520,970682-970683,977004,977081-977083,979666,980928,982948,982951-982952,982955,983183,983187,990098,990227,996683,997257,997261-997262,997264,997266,997268,997272,997274,997499,997542,1000910,1000916,1000919,1000921,1004974,1007424,1008457,1010908-1010909,1010914-1010915,1013415,1013931,1015922,1015925,1015927-1015928,1017872,1019403,1019453,1019804,1021574-1021575,1021577-1021578,1022771,1023329,1023334,1024417,1024888,1027238-1027239,1027241,1031249,1031745,1031748,1031751-1031752,1031754,1031888,1031909,1031921,1031924,1031942,1031946,1031949,1032284,1033321,1033323,1039547,1041177,1041180,1041182,1041185,1045938-1045939,1048556,1048559,1048574,1054305,1054308,1056622,1057946,1060306,1066388,1071819 /branches/work/akonadi-ports/kdepimlibs:986699,987563,994695,994809,994821,995233,995397,995405,995799,997745,1006187,1006194-1006195,1007212,1007214,1007218,1007232,1010099,1012994
 Zmienione: svnmerge-integrated
-   - /branches/kdepim/enterprise4/kdepimlibs:1-809779,809854-813579,813581-813598,813600-821927,822131,823512,823589,824206,824213,824895,831358,834955-835617,837809,843671,844028,844044,850305,852197,853294,853770,854349,854627,856353,856699,856996,859216,861651,861668,863904-863910,874469,875493,877777,881490,883237,883308,883317,883319,883322,883324,883327,900447,915152-915164,918707,921740,931414,931427,937851,937906-938266,938268-938271,938273-938278,938281-940157,941295,944957,947276,948737,950530,951162,961006-961007,961567,962326,962328,965363,967747,969620,970460-970465,970468,974183,977548-979665,979667-980927,980929-982939,982941-982947,982949-982950,982953-982954,982956-983182,983184-983186,983188-986158,986160-989638,989925-990097,990099-990113,992544,993922,994464,994512,999727,999889,1001119,1001354,1001591,1001919,1003652,1003683,1004162,1004200-1004627,1006338,1006407,1006811,1007376,1008464,1009689,1009786,1010097,1010408,1010804,1010837,1012351,1012416,1012629,1013745-1013757,1015161,1015463,1020958,1022132,1022145,1022367,1023349,1023454,1023981,1026836,1029015,1038909-1038911,1040719,1040870,1041824,1042271,1042721,1042766,1047215,1055387,1057460,1058343,1058473,1060332,1062466,1063997,1065143,1066072-1066387,1066389-1067091,1067813,1067894,1067916,1071151,1071166,1072577,1073312,1090463,1090554,1090577,1102530-1102531 /branches/work/akonadi-ports/kdepimlibs:1-982692,983264,983691-986698,986700-987562,987564-994694,994696-994808,994810-994820,994822-995232,995234-995396,995398-995404,995406-995798,995800-997744,997746-1006186,1006188-1006193,1006196-1007211,1007213,1007215-1007217,1007219-1007231,1007233-1010098,1010100-1012993,1012995-1013019,1013021-1023684,1029746-1029748,1030617-1030629,1031955-1073464,1073635-1073636,1074770 /trunk/KDE/kdepimlibs:1-1143426,1149395,1154892,1161656,1163117
-   + /branches/kdepim/enterprise4/kdepimlibs:1-809779,809854-813579,813581-813598,813600-821927,822131,823512,823589,824206,824213,824895,831358,834955-835617,837809,843671,844028,844044,850305,852197,853294,853770,854349,854627,856353,856699,856996,859216,861651,861668,863904-863910,874469,875493,877777,881490,883237,883308,883317,883319,883322,883324,883327,900447,915152-915164,918707,921740,931414,931427,937851,937906-938266,938268-938271,938273-938278,938281-940157,941295,944957,947276,948737,950530,951162,961006-961007,961567,962326,962328,965363,967747,969620,970460-970465,970468,974183,977548-979665,979667-980927,980929-982939,982941-982947,982949-982950,982953-982954,982956-983182,983184-983186,983188-986158,986160-989638,989925-990097,990099-990113,992544,993922,994464,994512,999727,999889,1001119,1001354,1001591,1001919,1003652,1003683,1004162,1004200-1004627,1006338,1006407,1006811,1007376,1008464,1009689,1009786,1010097,1010408,1010804,1010837,1012351,1012416,1012629,1013745-1013757,1015161,1015463,1020958,1022132,1022145,1022367,1023349,1023454,1023981,1026836,1029015,1038909-1038911,1040719,1040870,1041824,1042271,1042721,1042766,1047215,1055387,1057460,1058343,1058473,1060332,1062466,1063997,1065143,1066072-1066387,1066389-1067091,1067813,1067894,1067916,1071151,1071166,1072577,1073312,1090463,1090554,1090577,1102530-1102531 /branches/work/akonadi-ports/kdepimlibs:1-982692,983264,983691-986698,986700-987562,987564-994694,994696-994808,994810-994820,994822-995232,995234-995396,995398-995404,995406-995798,995800-997744,997746-1006186,1006188-1006193,1006196-1007211,1007213,1007215-1007217,1007219-1007231,1007233-1010098,1010100-1012993,1012995-1013019,1013021-1023684,1029746-1029748,1030617-1030629,1031955-1073464,1073635-1073636,1074770 /trunk/KDE/kdepimlibs:1-1143426,1149395,1154892,1161656,1163117,1166311,1168823
+   - /branches/work/akonadi-ports/kdepimlibs:1-982692,983264,983691-986698,986700-987562,987564-994694,994696-994808,994810-994820,994822-995232,995234-995396,995398-995404,995406-995798,995800-997744,997746-1006186,1006188-1006193,1006196-1007211,1007213,1007215-1007217,1007219-1007231,1007233-1010098,1010100-1012993,1012995-1013019,1013021-1023684,1029746-1029748,1030617-1030629,1031955-1073464,1073635-1073636,1074770 /branches/kdepim/enterprise4/kdepimlibs:1-809779,809854-813579,813581-813598,813600-821927,822131,823512,823589,824206,824213,824895,831358,834955-835617,837809,843671,844028,844044,850305,852197,853294,853770,854349,854627,856353,856699,856996,859216,861651,861668,863904-863910,874469,875493,877777,881490,883237,883308,883317,883319,883322,883324,883327,900447,915152-915164,918707,921740,931414,931427,937851,937906-938266,938268-938271,938273-938278,938281-940157,941295,944957,947276,948737,950530,951162,961006-961007,961567,962326,962328,965363,967747,969620,970460-970465,970468,974183,977548-979665,979667-980927,980929-982939,982941-982947,982949-982950,982953-982954,982956-983182,983184-983186,983188-986158,986160-989638,989925-990097,990099-990113,992544,993922,994464,994512,999727,999889,1001119,1001354,1001591,1001919,1003652,1003683,1004162,1004200-1004627,1006338,1006407,1006811,1007376,1008464,1009689,1009786,1010097,1010408,1010804,1010837,1012351,1012416,1012629,1013745-1013757,1015161,1015463,1020958,1022132,1022145,1022367,1023349,1023454,1023981,1026836,1029015,1038909-1038911,1040719,1040870,1041824,1042271,1042721,1042766,1047215,1055387,1057460,1058343,1058473,1060332,1062466,1063997,1065143,1066072-1066387,1066389-1067091,1067813,1067894,1067916,1071151,1071166,1072577,1073312,1090463,1090554,1090577,1102530-1102531 /trunk/KDE/kdepimlibs:1-1143426,1149395,1154892,1161656,1163117,1164320,1166311,1168823,1172043,1179520-1179533
+   + /branches/kdepim/enterprise4/kdepimlibs:1-809779,809854-813579,813581-813598,813600-821927,822131,823512,823589,824206,824213,824895,831358,834955-835617,837809,843671,844028,844044,850305,852197,853294,853770,854349,854627,856353,856699,856996,859216,861651,861668,863904-863910,874469,875493,877777,881490,883237,883308,883317,883319,883322,883324,883327,900447,915152-915164,918707,921740,931414,931427,937851,937906-938266,938268-938271,938273-938278,938281-940157,941295,944957,947276,948737,950530,951162,961006-961007,961567,962326,962328,965363,967747,969620,970460-970465,970468,974183,977548-979665,979667-980927,980929-982939,982941-982947,982949-982950,982953-982954,982956-983182,983184-983186,983188-986158,986160-989638,989925-990097,990099-990113,992544,993922,994464,994512,999727,999889,1001119,1001354,1001591,1001919,1003652,1003683,1004162,1004200-1004627,1006338,1006407,1006811,1007376,1008464,1009689,1009786,1010097,1010408,1010804,1010837,1012351,1012416,1012629,1013745-1013757,1015161,1015463,1020958,1022132,1022145,1022367,1023349,1023454,1023981,1026836,1029015,1038909-1038911,1040719,1040870,1041824,1042271,1042721,1042766,1047215,1055387,1057460,1058343,1058473,1060332,1062466,1063997,1065143,1066072-1066387,1066389-1067091,1067813,1067894,1067916,1071151,1071166,1072577,1073312,1090463,1090554,1090577,1102530-1102531 /branches/work/akonadi-ports/kdepimlibs:1-982692,983264,983691-986698,986700-987562,987564-994694,994696-994808,994810-994820,994822-995232,995234-995396,995398-995404,995406-995798,995800-997744,997746-1006186,1006188-1006193,1006196-1007211,1007213,1007215-1007217,1007219-1007231,1007233-1010098,1010100-1012993,1012995-1013019,1013021-1023684,1029746-1029748,1030617-1030629,1031955-1073464,1073635-1073636,1074770 /trunk/KDE/kdepimlibs:1-1143426,1149395,1154892,1161656,1163117,1164320,1166311,1168823,1172043,1179520-1179533,1181945-1182122,1182124-1182136,1182138-1182205
 
