@@ -1,7 +1,7 @@
 #
 # Conditional build:
 #
-%define		qtver		4.7.0
+%define		qtver		4.7.1
 %define		_state		stable
 %define		orgname		kdepimlibs
 
@@ -35,7 +35,7 @@ BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
-BuildRequires:	rpmbuild(macros) >= 1.293
+BuildRequires:	rpmbuild(macros) >= 1.600
 BuildRequires:	zlib-devel
 BuildConflicts:	indexlib
 BuildConflicts:	kdepim-kontact-libs
@@ -78,13 +78,6 @@ opartych na kdepimlibs.
 install -d build
 cd build
 %cmake \
-	-DCMAKE_INSTALL_PREFIX=%{_prefix} \
-	-DLIB_INSTALL_DIR=%{_libdir} \
-	-DSYSCONF_INSTALL_DIR=%{_sysconfdir} \
-	-DCMAKE_BUILD_TYPE=%{!?debug:Release}%{?debug:Debug} \
-%if "%{_lib}" == "lib64"
-	-DLIB_SUFFIX=64 \
-%endif
 	../
 
 %{__make}
