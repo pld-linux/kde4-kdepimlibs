@@ -4,6 +4,7 @@
 %define		qtver		4.7.1
 %define		_state		stable
 %define		orgname		kdepimlibs
+%define		akonadiver	1.4.95
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
@@ -22,7 +23,7 @@ BuildRequires:	QtGui-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
 BuildRequires:	QtTest-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
-BuildRequires:	akonadi-devel >= 1.4.81
+BuildRequires:	akonadi-devel >= %{akonadiver}
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	boost-devel >= 1.35.0
 BuildRequires:	cmake >= 2.8.0
@@ -42,6 +43,7 @@ BuildConflicts:	kdepim-kontact-libs
 BuildConflicts:	kdepim-libkmailprivate
 Requires(post,postun):	/sbin/ldconfig
 Requires:	%{name} = %{version}-%{release}
+Requires:	akonadi-libs >= %{akonadiver}
 Requires:	gpgme >= 1:1.2.0
 Obsoletes:	kdepimlibs4
 Conflicts:	kdelibs
