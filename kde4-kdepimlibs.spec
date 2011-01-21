@@ -8,12 +8,12 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.5.5
+Version:	4.6.0
 Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	4ad7d01c3231e418cda80ec81d31846e
+# Source0-md5:	bfcc74fff5c6d0803d43cf13033660ab
 Patch100:	%{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -22,7 +22,7 @@ BuildRequires:	QtGui-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
 BuildRequires:	QtTest-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
-BuildRequires:	akonadi-devel >= 1.4.0
+BuildRequires:	akonadi-devel >= 1.4.81
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	boost-devel >= 1.35.0
 BuildRequires:	cmake >= 2.8.0
@@ -97,6 +97,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libakonadi-calendar.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libakonadi-calendar.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-kcal.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kcal.so.4
 %attr(755,root,root) %{_libdir}/libkabc.so.4.*.*
@@ -105,10 +107,16 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libkabc_file_core.so.4
 %attr(755,root,root) %{_libdir}/libkcal.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkcal.so.4
+%attr(755,root,root) %{_libdir}/libkcalcore.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkcalcore.so.4
+%attr(755,root,root) %{_libdir}/libkcalutils.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkcalutils.so.4
 %attr(755,root,root) %{_libdir}/libkldap.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkldap.so.4
 %attr(755,root,root) %{_libdir}/libkontactinterface.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkontactinterface.so.4
+%attr(755,root,root) %{_libdir}/libkmbox.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkmbox.so.4
 %attr(755,root,root) %{_libdir}/libkresources.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkresources.so.4
 %attr(755,root,root) %{_libdir}/libktnef.so.4.*.*
@@ -185,6 +193,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %{_datadir}/config.kcfg/mailtransport.kcfg
 %{_datadir}/config.kcfg/recentcontactscollections.kcfg
+%{_datadir}/config.kcfg/resourcebase.kcfg
 %{_datadir}/config.kcfg/specialmailcollections.kcfg
 
 %{_datadir}/dbus-1/interfaces/org.kde.KResourcesManager.xml
@@ -254,6 +263,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KABC
 %{_includedir}/KDE/KBlog
 %{_includedir}/KDE/KCal
+%{_includedir}/KDE/KCalCore
+%{_includedir}/KDE/KCalUtils
 %{_includedir}/KDE/KHolidays
 %{_includedir}/KDE/KIMAP
 %{_includedir}/KDE/KontactInterface
@@ -269,9 +280,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/akonadi
 %{_includedir}/kabc
 %{_includedir}/kcal
+%{_includedir}/kcalcore
+%{_includedir}/kcalutils
 %{_includedir}/kholidays
 %{_includedir}/kontactinterface
 %{_includedir}/kldap
+%{_includedir}/kmbox
 %{_includedir}/kresources
 %{_includedir}/ktnef
 %{_includedir}/syndication
