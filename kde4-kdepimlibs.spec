@@ -9,12 +9,12 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.6.3
-Release:	2
+Version:	4.6.4
+Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	0b0fc8d9fea0a6f26e705460a2865e18
+# Source0-md5:	3252cd3453a9bd8a629f6a18b868cff2
 Patch100:	%{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -142,8 +142,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libmailtransport.so.4
 %attr(755,root,root) %{_libdir}/libqgpgme.so.1.*.*
 %attr(755,root,root) %ghost %{_libdir}/libqgpgme.so.1
-%attr(755,root,root) %{_libdir}/libgpgme++-pth.so.2.*.*
-%attr(755,root,root) %ghost %{_libdir}/libgpgme++-pth.so.2
 %attr(755,root,root) %ghost %{_libdir}/libsyndication.so.4
 %attr(755,root,root) %{_libdir}/libsyndication.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-contact.so.4
