@@ -4,17 +4,17 @@
 %define		qtver		4.7.3
 %define		_state		stable
 %define		orgname		kdepimlibs
-%define		akonadiver	1.5.1
+%define		akonadiver	1.6.0
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.6.5
+Version:	4.7.0
 Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	c2e1daedb1d10a28179718395a9af86d
+# Source0-md5:	b97c45aae52945224094b20b4ab356d9
 Patch100:	%{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -34,6 +34,7 @@ BuildRequires:	libical-devel >= 0.43
 BuildRequires:	openldap-devel
 BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
+BuildRequires:	prison-devel
 BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.600
@@ -222,7 +223,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/kde4/services/kresources/kabc/net.desktop
 %{_datadir}/kde4/services/kresources/kabc_manager.desktop
 %dir %{_datadir}/kde4/services/kresources/kcal
-%{_datadir}/kde4/services/kresources/kcal/local.desktop
 %{_datadir}/kde4/services/kresources/kcal/localdir.desktop
 %{_datadir}/kde4/services/kresources/kcal_manager.desktop
 
