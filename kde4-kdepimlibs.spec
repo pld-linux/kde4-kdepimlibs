@@ -1,7 +1,7 @@
 #
 # Conditional build:
 #
-%define		qtver		4.7.4
+%define		qtver		4.8.0
 %define		_state		stable
 %define		orgname		kdepimlibs
 %define		akonadiver	1.6.0
@@ -9,12 +9,12 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.7.4
+Version:	4.8.0
 Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	ccc9d9ec4173e5627623d93207fdf318
+# Source0-md5:	9ebb57b689a874c7853b7dfa83af4c9d
 Patch100:	%{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -104,10 +104,14 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-calendar.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-kcal.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kcal.so.4
+%attr(755,root,root) %{_libdir}/libakonadi-notes.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libakonadi-notes.so.4
 %attr(755,root,root) %{_libdir}/libkabc.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkabc.so.4
 %attr(755,root,root) %{_libdir}/libkabc_file_core.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkabc_file_core.so.4
+%attr(755,root,root) %{_libdir}/libkalarmcal.so.2.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkalarmcal.so.2
 %attr(755,root,root) %{_libdir}/libkcal.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkcal.so.4
 %attr(755,root,root) %{_libdir}/libkcalcore.so.4.*.*
@@ -263,6 +267,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/*.so
 %{_includedir}/KDE/Akonadi
 %{_includedir}/KDE/KABC
+%{_includedir}/KDE/KAlarmCal
 %{_includedir}/KDE/KBlog
 %{_includedir}/KDE/KCal
 %{_includedir}/KDE/KCalCore
@@ -281,6 +286,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/Syndication
 %{_includedir}/akonadi
 %{_includedir}/kabc
+%{_includedir}/kalarmcal
 %{_includedir}/kcal
 %{_includedir}/kcalcore
 %{_includedir}/kcalutils
