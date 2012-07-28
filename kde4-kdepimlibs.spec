@@ -4,17 +4,17 @@
 %define		qtver		4.8.1
 %define		_state		stable
 %define		orgname		kdepimlibs
-%define		akonadiver	1.7.0
+%define		akonadiver	1.8.0
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.8.4
+Version:	4.9.0
 Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	117caac53dbb97c6291b94763a3274a9
+# Source0-md5:	08d0b45665b80d23530d0555d2cf67bd
 Patch100:	%{name}-branch.diff
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
@@ -206,7 +206,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/dbus-1/interfaces/org.kde.KResourcesManager.xml
 %{_datadir}/dbus-1/interfaces/org.kde.pim.IdentityManager.xml
 
-%{_datadir}/kde4/services/imap4.protocol
+%{_datadir}/kde4/services/imap.protocol
 %{_datadir}/kde4/services/imaps.protocol
 %{_datadir}/kde4/services/ldap.protocol
 %{_datadir}/kde4/services/ldaps.protocol
