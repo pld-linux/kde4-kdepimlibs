@@ -1,0 +1,39 @@
+From: Montel Laurent <montel@kde.org>
+Date: Wed, 19 Sep 2012 12:59:54 +0000
+Subject: Fix potential error when identity path is a string (bad conversion).
+X-Git-Tag: v4.9.2
+X-Git-Url: http://quickgit.kde.org/?p=kdepimlibs.git&a=commitdiff&h=33acd1d6cc5a48974fc1093700d70caf04ae9644
+---
+Fix potential error when identity path is a string (bad conversion).
+
+in kde5 we will modify to akonadi::id
+---
+
+
+--- a/kpimidentities/identity.cpp
++++ b/kpimidentities/identity.cpp
+@@ -428,17 +428,20 @@
+ 
+ QString Identity::templates() const
+ {
+-  return property( QLatin1String( s_templates ) ).toString();
++  const QString str = property( QLatin1String( s_templates ) ).toString();
++  return verifyAkonadiId(str);
+ }
+ 
+ QString Identity::drafts() const
+ {
+-  return property( QLatin1String( s_drafts ) ).toString();
++  const QString str = property( QLatin1String( s_drafts ) ).toString();
++  return verifyAkonadiId(str);
+ }
+ 
+ QString Identity::fcc() const
+ {
+-  return property( QLatin1String( s_fcc ) ).toString();
++  const QString str = property( QLatin1String( s_fcc ) ).toString();
++  return verifyAkonadiId(str);
+ }
+ 
+ QString Identity::transport() const
+

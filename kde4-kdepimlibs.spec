@@ -1,5 +1,6 @@
 #
 # Conditional build:
+%bcond_with	kdepim44
 #
 %define		qtver		4.8.1
 %define		_state		stable
@@ -16,6 +17,7 @@ Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
 # Source0-md5:	e9a04d6d033f9d9cafc8448fb22d36cd
 Patch100:	%{name}-branch.diff
+Patch101:	kdepimlibs-strict-parsing.patch
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
 BuildRequires:	QtDBus-devel >= %{qtver}
@@ -49,6 +51,9 @@ Requires:	akonadi-libs >= %{akonadiver}
 Requires:	gpgme >= 1:1.2.0
 Obsoletes:	kdepimlibs4
 Conflicts:	kdepimlibs4
+%if %{without kdepim44}
+Conflicts:	kde4-kdepim < 4.5
+%endif
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -76,6 +81,9 @@ opartych na kdepimlibs.
 %prep
 %setup -q -n %{orgname}-%{version}
 #%%patch100 -p0
+%if %{with kdepim44}
+%patch101 -p1 -R
+%endif
 
 %build
 install -d build
