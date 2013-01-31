@@ -10,12 +10,12 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.9.5
+Version:	4.10.0
 Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	0ee906b58e3a8e8acd6f03482ea8a9bb
+# Source0-md5:	0880da45ac5c354dca7b039f8f2cbbc9
 Patch100:	%{name}-branch.diff
 Patch101:	kdepimlibs-strict-parsing.patch
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -108,12 +108,16 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
+%attr(755,root,root) %{_bindir}/akonadi_benchmarker
+%attr(755,root,root) %{_bindir}/akonaditest
 %attr(755,root,root) %{_libdir}/libakonadi-calendar.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-calendar.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-kcal.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kcal.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-notes.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-notes.so.4
+%attr(755,root,root) %{_libdir}/libakonadi-socialutils.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libakonadi-socialutils.so.4
 %attr(755,root,root) %{_libdir}/libkabc.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkabc.so.4
 %attr(755,root,root) %{_libdir}/libkabc_file_core.so.4.*.*
@@ -175,6 +179,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libmicroblog.so.4
 %attr(755,root,root) %{_libdir}/libmicroblog.so.4.*.*
 
+%attr(755,root,root) %{_libdir}/kde4/akonadi_serializer_socialfeeditem.so
 %attr(755,root,root) %{_libdir}/kde4/kabc_directory.so
 %attr(755,root,root) %{_libdir}/kde4/kabc_file.so
 %attr(755,root,root) %{_libdir}/kde4/kabc_ldapkio.so
@@ -193,12 +198,18 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/kde4/kio_sieve.so
 %attr(755,root,root) %{_libdir}/kde4/kio_smtp.so
 
+%attr(755,root,root) %{_libdir}/kde4/plugins/designer/kholidayswidgets.so
+
 %dir %{_datadir}/apps/kabc
 %{_datadir}/apps/kabc/*countrytransl.map
 %dir %{_datadir}/apps/kabc/formats
 %{_datadir}/apps/kabc/formats/*binary.desktop
 %dir %{_datadir}/apps/akonadi
 %{_datadir}/apps/akonadi/contact
+%dir %{_datadir}/apps/akonadi/plugins
+%dir %{_datadir}/apps/akonadi/plugins/serializer
+%{_datadir}/apps/akonadi/plugins/serializer/akonadi_serializer_socialfeeditem.desktop
+
 %dir %{_datadir}/apps/akonadi-kde
 %{_datadir}/apps/akonadi-kde/kcfg2dbus.xsl
 
@@ -245,6 +256,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/kde4/services/akonadi/contact
 %{_datadir}/kde4/services/akonadi/contact/aimprotocol.desktop
 %{_datadir}/kde4/services/akonadi/contact/gaduprotocol.desktop
+%{_datadir}/kde4/services/akonadi/contact/googletalkprotocol.desktop
 %{_datadir}/kde4/services/akonadi/contact/groupwiseprotocol.desktop
 %{_datadir}/kde4/services/akonadi/contact/icqprotocol.desktop
 %{_datadir}/kde4/services/akonadi/contact/ircprotocol.desktop
@@ -269,6 +281,7 @@ rm -rf $RPM_BUILD_ROOT
 %lang(en) %{_kdedocdir}/en/kioslave/sieve
 
 %{_datadir}/mime/packages/kdepimlibs-mime.xml
+%{_datadir}/mime/packages/x-vnd.akonadi.socialfeeditem.xml
 
 %files devel
 %defattr(644,root,root,755)
@@ -299,6 +312,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/kcalcore
 %{_includedir}/kcalutils
 %{_includedir}/kholidays
+%{_includedir}/kimaptest
 %{_includedir}/kontactinterface
 %{_includedir}/kldap
 %{_includedir}/kmbox
