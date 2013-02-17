@@ -69,6 +69,7 @@ Summary(pl.UTF-8):	Pliki nagłówkowe bibliotek KDE PIM
 Group:		X11/Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 Requires:	kde4-kdelibs-devel >= %{version}
+Requires:	kde4-nepomuk-core-devel >= %{version}
 
 %description devel
 This package contains header files needed if you wish to build
