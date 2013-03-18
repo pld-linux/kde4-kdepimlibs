@@ -145,8 +145,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libkxmlrpcclient.so.4
 %attr(755,root,root) %{_libdir}/libgpgme++-pthread.so.2.*.*
 %attr(755,root,root) %ghost %{_libdir}/libgpgme++-pthread.so.2
-%attr(755,root,root) %{_libdir}/libgpgme++-pth.so.2.*.*
-%attr(755,root,root) %ghost %{_libdir}/libgpgme++-pth.so.2
 %attr(755,root,root) %{_libdir}/libgpgme++.so.2.*.*
 %attr(755,root,root) %ghost %{_libdir}/libgpgme++.so.2
 %attr(755,root,root) %{_libdir}/libkblog.so.4.*.*
