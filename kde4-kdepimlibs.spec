@@ -10,12 +10,12 @@
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.10.1
-Release:	4
+Version:	4.10.2
+Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	8de5cb639df2156146815a5d7aba75fc
+# Source0-md5:	77b9c67cf9c906181a28de118f8854d1
 Patch100:	%{name}-branch.diff
 Patch101:	kdepimlibs-strict-parsing.patch
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -145,6 +145,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libkxmlrpcclient.so.4
 %attr(755,root,root) %{_libdir}/libgpgme++-pthread.so.2.*.*
 %attr(755,root,root) %ghost %{_libdir}/libgpgme++-pthread.so.2
+%attr(755,root,root) %{_libdir}/libgpgme++-pth.so.2.*.*
+%attr(755,root,root) %ghost %{_libdir}/libgpgme++-pth.so.2
 %attr(755,root,root) %{_libdir}/libgpgme++.so.2.*.*
 %attr(755,root,root) %ghost %{_libdir}/libgpgme++.so.2
 %attr(755,root,root) %{_libdir}/libkblog.so.4.*.*
