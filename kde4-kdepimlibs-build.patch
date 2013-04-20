@@ -1,0 +1,159 @@
+--- kdepimlibs-4.9.1/gpgme++/CMakeLists.txt~	2012-08-13 10:47:04.000000000 +0200
++++ kdepimlibs-4.9.1/gpgme++/CMakeLists.txt	2013-04-20 08:18:16.089973135 +0200
+@@ -118,7 +118,6 @@
+ endif()
+ 
+ 
+-include( CMakeExportBuildSettings )
+ # this writes way too much, but do we care?
+ EXPORT_LIBRARY_DEPENDENCIES( ${CMAKE_CURRENT_BINARY_DIR}/GpgmeppLibraryDepends.cmake )
+ 
+commit 14ec9116e0c2059c424751ca25a1ae88de972281
+Author: Andras Mantia <amantia@kde.org>
+Date:   Sun Sep 30 13:58:35 2012 +0300
+
+    Add a new requestItemDeliveryV2 that returns the error message. It needed some refactoring in how the error is sent through dbus.
+    Mark some strings to be translated that were not marked before.
+    
+    REVIEW: 106629
+
+diff --git a/akonadi/resourcebase.cpp b/akonadi/resourcebase.cpp
+index 4a79b74..f1b28f3 100644
+--- a/akonadi/resourcebase.cpp
++++ b/akonadi/resourcebase.cpp
+@@ -466,7 +466,7 @@ void ResourceBase::itemRetrieved( const Item &item )
+   Q_D( ResourceBase );
+   Q_ASSERT( d->scheduler->currentTask().type == ResourceScheduler::FetchItem );
+   if ( !item.isValid() ) {
+-    d->scheduler->currentTask().sendDBusReplies( false );
++    d->scheduler->currentTask().sendDBusReplies( i18nc( "@info", "Invalid item retrieved" ) );
+     d->scheduler->taskDone();
+     return;
+   }
+@@ -490,9 +490,9 @@ void ResourceBasePrivate::slotDeliveryDone(KJob * job)
+   Q_Q( ResourceBase );
+   Q_ASSERT( scheduler->currentTask().type == ResourceScheduler::FetchItem );
+   if ( job->error() ) {
+-    emit q->error( QLatin1String( "Error while creating item: " ) + job->errorString() );
++    emit q->error( i18nc( "@info", "Error while creating item: %1" ).arg( job->errorString() ) );
+   }
+-  scheduler->currentTask().sendDBusReplies( !job->error() );
++  scheduler->currentTask().sendDBusReplies( job->error() ? job->errorString() : QString() );
+   scheduler->taskDone();
+ }
+ 
+@@ -515,7 +515,7 @@ void ResourceBasePrivate::slotCollectionAttributesSyncDone(KJob * job)
+   Q_Q( ResourceBase );
+   Q_ASSERT( scheduler->currentTask().type == ResourceScheduler::SyncCollectionAttributes );
+   if ( job->error() ) {
+-    emit q->error( QLatin1String( "Error while updating collection: " ) + job->errorString() );
++    emit q->error( i18nc( "@info", "Error while updating collection: %1" ).arg( job->errorString() ) );
+   }
+   emit q->attributesSynchronized( scheduler->currentTask().collection.id() );
+   scheduler->taskDone();
+@@ -591,13 +591,19 @@ void ResourceBasePrivate::changeCommittedResult( KJob *job )
+   changeProcessed();
+ }
+ 
+-bool ResourceBase::requestItemDelivery( qint64 uid, const QString & remoteId,
+-                                        const QString &mimeType, const QStringList &_parts )
++bool ResourceBase::requestItemDelivery( qint64 uid, const QString &remoteId,
++                                        const QString &mimeType, const QStringList &parts )
++{
++  return requestItemDeliveryV2( uid, remoteId, mimeType, parts ).isEmpty();
++}
++
++QString ResourceBase::requestItemDeliveryV2(qint64 uid, const QString &remoteId, const QString &mimeType, const QStringList &_parts)
+ {
+   Q_D( ResourceBase );
+   if ( !isOnline() ) {
+-    emit error( i18nc( "@info", "Cannot fetch item in offline mode." ) );
+-    return false;
++    const QString errorMsg = i18nc( "@info", "Cannot fetch item in offline mode." );
++    emit error( errorMsg );
++    return errorMsg;
+   }
+ 
+   setDelayedReply( true );
+@@ -610,9 +616,10 @@ bool ResourceBase::requestItemDelivery( qint64 uid, const QString & remoteId,
+   Q_FOREACH( const QString &str, _parts )
+     parts.insert( str.toLatin1() );
+ 
+-  d->scheduler->scheduleItemFetch( item, parts, message().createReply() );
++  d->scheduler->scheduleItemFetch( item, parts, message() );
++
++  return QString();
+ 
+-  return true;
+ }
+ 
+ void ResourceBase::collectionsRetrieved( const Collection::List & collections )
+diff --git a/akonadi/resourcebase.h b/akonadi/resourcebase.h
+index d453d6c..2e112b5 100644
+--- a/akonadi/resourcebase.h
++++ b/akonadi/resourcebase.h
+@@ -627,6 +627,8 @@ class AKONADI_EXPORT ResourceBase : public AgentBase
+ 
+     bool requestItemDelivery( qint64 uid, const QString &remoteId, const QString &mimeType, const QStringList &parts );
+ 
++    QString requestItemDeliveryV2( qint64 uid, const QString &remoteId, const QString &mimeType, const QStringList &parts );
++
+   private:
+     Q_DECLARE_PRIVATE( ResourceBase )
+ 
+diff --git a/akonadi/resourcescheduler.cpp b/akonadi/resourcescheduler.cpp
+index 875ed9f..b79a4e8 100644
+--- a/akonadi/resourcescheduler.cpp
++++ b/akonadi/resourcescheduler.cpp
+@@ -386,12 +386,12 @@ void ResourceScheduler::setOnline(bool state)
+     TaskList& itemFetchQueue = queueForTaskType( FetchItem );
+     for ( QList< Task >::iterator it = itemFetchQueue.begin(); it != itemFetchQueue.end(); ) {
+       if ( (*it).type == FetchItem ) {
+-        (*it).sendDBusReplies( false );
++        (*it).sendDBusReplies( i18nc( "@info", "Job canceled." ) );
+         it = itemFetchQueue.erase( it );
+         if ( s_resourcetracker ) {
+           QList<QVariant> argumentList;
+           argumentList << QString::number( mCurrentTask.serial )
+-                       << QLatin1String( "Job canceled." );
++                       << i18nc( "@info", "Job canceled." );
+           s_resourcetracker->asyncCallWithArgumentList( QLatin1String( "jobEnded" ), argumentList );
+         }
+       } else {
+@@ -435,11 +435,20 @@ void ResourceScheduler::collectionRemoved( const Akonadi::Collection &collection
+   }
+ }
+ 
+-void ResourceScheduler::Task::sendDBusReplies( bool success )
++void ResourceScheduler::Task::sendDBusReplies( const QString &errorMsg )
+ {
+   Q_FOREACH( const QDBusMessage &msg, dbusMsgs ) {
+-    QDBusMessage reply( msg );
+-    reply << success;
++    QDBusMessage reply( msg.createReply() );
++    const QString methodName = msg.member();
++    if (methodName == QLatin1String("requestItemDelivery")) {
++      reply << errorMsg.isEmpty();
++    } else if (methodName == QLatin1String("requestItemDeliveryV2")) {
++      reply << errorMsg;
++    } else if (methodName.isEmpty()) {
++      continue; // unittest calls scheduleItemFetch with empty QDBusMessage
++    } else {
++      kFatal() << "Got unexpected member:" << methodName;
++    }
+     DBusConnectionPool::threadConnection().send( reply );
+   }
+ }
+diff --git a/akonadi/resourcescheduler_p.h b/akonadi/resourcescheduler_p.h
+index aadd930..16ec454 100644
+--- a/akonadi/resourcescheduler_p.h
++++ b/akonadi/resourcescheduler_p.h
+@@ -79,7 +79,7 @@ class ResourceScheduler : public QObject
+         QByteArray methodName;
+         QVariant argument;
+ 
+-        void sendDBusReplies( bool success );
++        void sendDBusReplies( const QString &errorMsg );
+ 
+         bool operator==( const Task &other ) const
+         {
