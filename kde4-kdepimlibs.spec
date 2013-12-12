@@ -5,17 +5,17 @@
 %define		qtver		4.8.1
 %define		_state		stable
 %define		orgname		kdepimlibs
-%define		akonadiver	1.9.0
+%define		akonadiver	1.11.0
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
-Version:	4.11.3
+Version:	4.12.0
 Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	4c93ed3b646c60aedcb4ce4134d61077
+# Source0-md5:	995b01bb49a2453087f9a8930809a44b
 Patch100:	%{name}-branch.diff
 Patch101:	kdepimlibs-strict-parsing.patch
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -110,6 +110,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/akonadi_benchmarker
+%attr(755,root,root) %{_bindir}/akonadi2xml
 %attr(755,root,root) %{_bindir}/akonaditest
 %attr(755,root,root) %{_libdir}/libakonadi-calendar.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-calendar.so.4
@@ -171,6 +172,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libakonadi-kmime.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libakonadi-kabc.so.4
 %attr(755,root,root) %{_libdir}/libakonadi-kabc.so.4.*.*
+%attr(755,root,root) %ghost %{_libdir}/libakonadi-xml.so.4
+%attr(755,root,root) %{_libdir}/libakonadi-xml.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkholidays.so.4
 %attr(755,root,root) %{_libdir}/libkholidays.so.4.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkpimtextedit.so.4
@@ -179,6 +182,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libmicroblog.so.4.*.*
 
 %attr(755,root,root) %{_libdir}/kde4/akonadi_serializer_socialfeeditem.so
+%attr(755,root,root) %{_libdir}/kde4/akonadi_knut_resource.so
 %attr(755,root,root) %{_libdir}/kde4/kabc_directory.so
 %attr(755,root,root) %{_libdir}/kde4/kabc_file.so
 %attr(755,root,root) %{_libdir}/kde4/kabc_ldapkio.so
@@ -199,11 +203,16 @@ rm -rf $RPM_BUILD_ROOT
 
 %attr(755,root,root) %{_libdir}/kde4/plugins/designer/kholidayswidgets.so
 
+%dir %{_datadir}/akonadi
+%dir %{_datadir}/akonadi/agents
+%{_datadir}/akonadi/agents/knutresource.desktop
 %dir %{_datadir}/apps/kabc
 %{_datadir}/apps/kabc/*countrytransl.map
 %dir %{_datadir}/apps/kabc/formats
 %{_datadir}/apps/kabc/formats/*binary.desktop
 %dir %{_datadir}/apps/akonadi
+%{_datadir}/apps/akonadi/akonadi-xml.xsd
+%{_datadir}/apps/akonadi_knut_resource
 %{_datadir}/apps/akonadi/contact
 %dir %{_datadir}/apps/akonadi/plugins
 %dir %{_datadir}/apps/akonadi/plugins/serializer
