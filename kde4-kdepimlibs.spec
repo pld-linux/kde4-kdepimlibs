@@ -15,7 +15,7 @@ Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	995b01bb49a2453087f9a8930809a44b
+# Source0-md5:	656f5b820c9dec4cd32819e417177480
 Patch100:	%{name}-branch.diff
 Patch101:	kdepimlibs-strict-parsing.patch
 BuildRequires:	Qt3Support-devel >= %{qtver}
