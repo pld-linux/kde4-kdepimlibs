@@ -14,7 +14,7 @@ Version:	4.14.0
 Release:	1
 License:	GPL
 Group:		X11/Applications
-Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
+Source0:	http://download.kde.org/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
 # Source0-md5:	3fd8eb05fc2dd592659f5fc0109bcf1f
 Patch100:	%{name}-branch.diff
 Patch101:	kdepimlibs-strict-parsing.patch
