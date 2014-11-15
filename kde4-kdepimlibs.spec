@@ -11,7 +11,7 @@ Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
 Version:	4.14.3
-Release:	1
+Release:	2
 License:	GPL
 Group:		X11/Applications
 Source0:	http://download.kde.org/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
@@ -200,6 +200,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/kde4/kio_sieve.so
 %attr(755,root,root) %{_libdir}/kde4/kio_smtp.so
 
+%attr(755,root,root) %{_libdir}/kde4/plugins/designer/akonadiwidgets.so
 %attr(755,root,root) %{_libdir}/kde4/plugins/designer/kholidayswidgets.so
 
 %dir %{_datadir}/akonadi
