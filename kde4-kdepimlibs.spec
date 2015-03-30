@@ -11,7 +11,7 @@ Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
 Name:		kde4-kdepimlibs
 Version:	4.14.3
-Release:	2
+Release:	3
 License:	GPL
 Group:		X11/Applications
 Source0:	http://download.kde.org/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
@@ -38,6 +38,7 @@ BuildRequires:	openssl-devel
 BuildRequires:	pcre-devel
 BuildRequires:	prison-devel
 BuildRequires:	pth-devel
+BuildRequires:	qjson-devel
 BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.600
