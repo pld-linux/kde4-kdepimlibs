@@ -6,6 +6,7 @@
 %define		_state		stable
 %define		orgname		kdepimlibs
 %define		akonadiver	1.12.1
+%define		kdever		4.14
 
 Summary:	Personal Information Management (PIM) libraries for KDE
 Summary(pl.UTF-8):	Biblioteki zarządzania informacjami osobistymi (PIM) dla KDE
@@ -31,7 +32,7 @@ BuildRequires:	boost-devel >= 1.35.0
 BuildRequires:	cmake >= 2.8.0
 BuildRequires:	cyrus-sasl-devel
 BuildRequires:	gpgme-devel >= 1:1.2.0
-BuildRequires:	kde4-kdelibs-devel >= %{version}
+BuildRequires:	kde4-kdelibs-devel >= %{kdever}
 BuildRequires:	libical-devel >= 0.43
 BuildRequires:	openldap-devel
 BuildRequires:	openssl-devel
@@ -69,7 +70,7 @@ Summary:	Development files for KDE PIM libraries
 Summary(pl.UTF-8):	Pliki nagłówkowe bibliotek KDE PIM
 Group:		X11/Development/Libraries
 Requires:	%{name} = %{version}-%{release}
-Requires:	kde4-kdelibs-devel >= %{version}
+Requires:	kde4-kdelibs-devel >= %{kdever}
 
 %description devel
 This package contains header files needed if you wish to build
