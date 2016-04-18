@@ -34,6 +34,7 @@ BuildRequires:	cyrus-sasl-devel
 BuildRequires:	gpgme-devel >= 1:1.2.0
 BuildRequires:	kde4-kdelibs-devel >= %{kdever}
 BuildRequires:	libical-devel >= 0.43
+BuildRequires:	libxslt-devel
 BuildRequires:	libxslt-progs
 BuildRequires:	openldap-devel
 BuildRequires:	openssl-devel
