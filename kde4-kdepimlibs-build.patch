@@ -1,0 +1,21 @@
+--- kdepimlibs-4.14.10/akonadi/tests/CMakeLists.txt.hack	2017-09-29 23:54:38.673252098 +0200
++++ kdepimlibs-4.14.10/akonadi/tests/CMakeLists.txt	2017-09-29 23:55:06.178018357 +0200
+@@ -22,6 +22,7 @@ include_directories(
+   ${QJSON_INCLUDE_DIR}
+   ${CMAKE_SOURCE_DIR}/akonadi
+   ${CMAKE_BINARY_DIR}/akonadi
++  ${CMAKE_BINARY_DIR}/akonadi/akonadi-kde_autogen/include
+   ${CMAKE_BINARY_DIR}/akonadi/kmime
+   ${CMAKE_BINARY_DIR}/kmime
+ )
+--- kdepimlibs-4.14.10/kmime/tests/auto/contenttest.cpp.hackfix	2017-10-01 10:30:09.685591897 +0200
++++ kdepimlibs-4.14.10/kmime/tests/auto/contenttest.cpp	2017-10-01 10:30:16.752624161 +0200
+@@ -320,7 +320,7 @@ void ContentTest::testEncodedContent()
+ void ContentTest::testDecodedContent()
+ {
+   Content *c = new Content();
+-  c->setBody( '\0' );
++  c->setBody( "\0" );
+   QVERIFY( c->decodedContent() == QByteArray() );
+   c->setBody( QByteArray() );
+   QVERIFY( c->decodedContent() == QByteArray() );
