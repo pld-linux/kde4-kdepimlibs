@@ -157,3 +157,177 @@ index aadd930..16ec454 100644
  
          bool operator==( const Task &other ) const
          {
+diff -urN kdepimlibs-4.9.1.org/gpgme++/gpgsignkeyeditinteractor.cpp kdepimlibs-4.9.1/gpgme++/gpgsignkeyeditinteractor.cpp
+--- kdepimlibs-4.9.1.org/gpgme++/gpgsignkeyeditinteractor.cpp	2012-08-13 10:50:52.000000000 +0200
++++ kdepimlibs-4.9.1/gpgme++/gpgsignkeyeditinteractor.cpp	2017-10-05 08:23:52.005488763 +0200
+@@ -26,9 +26,6 @@
+ 
+ #include <gpgme.h>
+ 
+-#include <boost/tuple/tuple.hpp>
+-#include <boost/tuple/tuple_comparison.hpp>
+-
+ #include <map>
+ #include <string>
+ #include <sstream>
+@@ -49,7 +46,6 @@
+ #define snprintf _snprintf
+ #endif
+ 
+-using namespace boost;
+ using namespace GpgME;
+ 
+ class GpgSignKeyEditInteractor::Private {
+@@ -144,7 +140,7 @@
+     ERROR = EditInteractor::ErrorState
+ };
+ 
+-typedef std::map<tuple<SignKeyState, unsigned int, std::string>, SignKeyState> TransitionMap;
++typedef std::map<std::tuple<SignKeyState, unsigned int, std::string>, SignKeyState> TransitionMap;
+ 
+ }
+ 
+@@ -157,7 +153,7 @@
+     TransitionMap tab;
+     const unsigned int GET_BOOL = GPGME_STATUS_GET_BOOL;
+     const unsigned int GET_LINE = GPGME_STATUS_GET_LINE;
+-#define addEntry( s1, status, str, s2 ) tab[make_tuple( s1, status, str)] = s2
++#define addEntry( s1, status, str, s2 ) tab[std::make_tuple( s1, status, str)] = s2
+     addEntry( START, GET_LINE, "keyedit.prompt", COMMAND );
+     addEntry( COMMAND, GET_BOOL, "keyedit.sign_all.okay", UIDS_ANSWER_SIGN_ALL );
+     addEntry( COMMAND, GET_BOOL, "sign_uid.okay", CONFIRM );
+@@ -244,7 +240,7 @@
+     using namespace GpgSignKeyEditInteractor_Private;
+ 
+     //lookup transition in map
+-    const TransitionMap::const_iterator it = table.find( make_tuple( static_cast<SignKeyState>( state() ), status, std::string( args ) ) );
++    const TransitionMap::const_iterator it = table.find( std::make_tuple( static_cast<SignKeyState>( state() ), status, std::string( args ) ) );
+     if ( it != table.end() )
+         return it->second;
+ 
+--- kdepimlibs-4.9.1/kcalcore/tests/testfilestorage.cpp.org	2012-08-13 10:50:37.000000000 +0200
++++ kdepimlibs-4.9.1/kcalcore/tests/testfilestorage.cpp	2017-10-05 08:45:57.380986950 +0200
+@@ -124,9 +124,9 @@ void FileStorageTest::testSpecialChars()
+   event->setDtStart( KDateTime( currentDate ) );
+   event->setDtEnd( KDateTime( currentDate.addDays( 1 ) ) );
+ 
+-  const char latin1_umlaut[] = { 0xFC, '\0' };
++  const QChar latin1_umlaut[] = { 0xFC, QLatin1Char('\0') };
+ 
+-  event->setSummary( QLatin1String( latin1_umlaut ) );
++  event->setSummary( QString( latin1_umlaut ) );
+ 
+   // Save to file:
+   MemoryCalendar::Ptr cal( new MemoryCalendar( QLatin1String( "UTC" ) ) );
+@@ -151,17 +151,17 @@ void FileStorageTest::testSpecialChars()
+   // Make sure the retrieved incidence is equal to the original one
+   QVERIFY( otherEvent->summary() == event->summary() );
+   QVERIFY( otherEvent->summary().toLatin1().count() == 1 &&
+-           strcmp( otherEvent->summary().toLatin1().constData(), latin1_umlaut ) == 0 );
++           strcmp( otherEvent->summary().toLatin1().constData(), QString(latin1_umlaut).toLatin1().constData() ) == 0 );
+ 
+   // Make sure bart.ics is in UTF-8
+   QFile file( QLatin1String( "bart.ics" ) );
+   QVERIFY( file.open( QIODevice::ReadOnly | QIODevice::Text ) );
+ 
+   const QByteArray bytesFromFile = file.readAll();
+-  const char utf_umlaut[] = { 0xC3, 0XBC, '\0' };
++  const QChar utf_umlaut[] = { 0xC3, 0XBC, QLatin1Char('\0') };
+ 
+-  QVERIFY( bytesFromFile.contains( utf_umlaut ) );
+-  QVERIFY( !bytesFromFile.contains( latin1_umlaut ) );
++  QVERIFY( bytesFromFile.contains( QString(utf_umlaut).toLatin1().constData() ) );
++  QVERIFY( !bytesFromFile.contains( QString(latin1_umlaut).toLatin1().constData() ) );
+ 
+   file.close();
+ 
+--- kdepimlibs-4.9.1/kcalcore/tests/testicalformat.cpp.org	2017-10-05 08:47:36.937010844 +0200
++++ kdepimlibs-4.9.1/kcalcore/tests/testicalformat.cpp	2017-10-05 08:51:16.639617197 +0200
+@@ -47,16 +47,16 @@ void ICalFormatTest::testCharsets()
+   event->setDtEnd( KDateTime( currentDate.addDays( 1 ) ) );
+ 
+   // ü
+-  const char latin1_umlaut[] = { 0xFC, '\0' };
+-  event->setSummary( latin1_umlaut );
++  const QChar latin1_umlaut[] = { 0xFC, QLatin1Char('\0')  };
++  event->setSummary( QString(latin1_umlaut) );
+ 
+   // Test if toString( Incidence ) didn't mess charsets
+   const QString serialized = format.toString( event.staticCast<Incidence>() );
+-  const char utf_umlaut[] = { 0xC3, 0XBC, '\0' };
+-  QVERIFY( serialized.toUtf8().contains( utf_umlaut ) );
+-  QVERIFY( !serialized.toUtf8().contains( latin1_umlaut ) );
+-  QVERIFY( serialized.toLatin1().contains( latin1_umlaut ) );
+-  QVERIFY( !serialized.toLatin1().contains( utf_umlaut ) );
++  const QChar utf_umlaut[] = { 0xC3, 0XBC, QLatin1Char('\0') };
++  QVERIFY( serialized.toUtf8().contains( QString(utf_umlaut).toLatin1().constData() ) );
++  QVERIFY( !serialized.toUtf8().contains( QString(latin1_umlaut).toLatin1().constData() ) );
++  QVERIFY( serialized.toLatin1().contains( QString(latin1_umlaut).toLatin1().constData() ) );
++  QVERIFY( !serialized.toLatin1().contains( QString(utf_umlaut).toLatin1().constData()) );
+ 
+   // test fromString( QString )
+   const QString serializedCalendar = "BEGIN:VCALENDAR\nPRODID:-//K Desktop Environment//NONSGML libkcal 3.2//EN\nVERSION:2.0\n"
+@@ -64,7 +64,7 @@ void ICalFormatTest::testCharsets()
+ 
+   Incidence::Ptr event2 = format.fromString( serializedCalendar );
+   QVERIFY( event->summary() == event2->summary() );
+-  QVERIFY( event2->summary().toUtf8() == QByteArray( utf_umlaut ) );
++  QVERIFY( event2->summary().toUtf8() == QByteArray( QString(utf_umlaut).toLatin1().constData() ) );
+ 
+   // test save()
+   MemoryCalendar::Ptr calendar( new MemoryCalendar( "UTC" ) );
+@@ -76,8 +76,8 @@ void ICalFormatTest::testCharsets()
+   QVERIFY( file.open( QIODevice::ReadOnly | QIODevice::Text ) );
+ 
+   const QByteArray bytesFromFile = file.readAll();
+-  QVERIFY( bytesFromFile.contains( utf_umlaut ) );
+-  QVERIFY( !bytesFromFile.contains( latin1_umlaut ) );
++  QVERIFY( bytesFromFile.contains( QString(utf_umlaut).toLatin1().constData() ) );
++  QVERIFY( !bytesFromFile.contains( QString(latin1_umlaut).toLatin1().constData() ) );
+   file.close();
+ 
+   // Test load:
+@@ -89,7 +89,7 @@ void ICalFormatTest::testCharsets()
+   // kDebug() << format.toString( calendar2->incidences().first() );
+ 
+   Event::Ptr loadedEvent = calendar2->incidences().first().staticCast<Event>();
+-  QVERIFY( loadedEvent->summary().toUtf8() == QByteArray( utf_umlaut ) );
++  QVERIFY( loadedEvent->summary().toUtf8() == QByteArray( QString(utf_umlaut).toLatin1().constData() ) );
+   QVERIFY( *loadedEvent == *event );
+ 
+ 
+--- kdepimlibs-4.9.1/akonadi/tests/itemhydratest.cpp~	2012-08-13 10:47:03.000000000 +0200
++++ kdepimlibs-4.9.1/akonadi/tests/itemhydratest.cpp	2017-10-05 08:54:43.671963119 +0200
+@@ -316,8 +316,8 @@ void ItemHydra::testSharedPointerConvers
+     QVERIFY(  a.hasPayload<VolkerPtr>() );
+     QVERIFY(  a.hasPayload<RudiPtr>() );
+     QVERIFY( !a.hasPayload<GerdPtr>() );
+-    QVERIFY(  a.payload<RudiPtr>() );
+-    QVERIFY(  a.payload<VolkerPtr>() );
++    QVERIFY(  a.payload<RudiPtr>().get() );
++    QVERIFY(  a.payload<VolkerPtr>().get() );
+     bool thrown = false, thrownCorrectly = true;
+     try {
+         QVERIFY( !a.payload<GerdPtr>() );
+--- kdepimlibs-4.9.1/kmime/tests/auto/contenttest.cpp.org	2017-10-05 09:01:36.680571386 +0200
++++ kdepimlibs-4.9.1/kmime/tests/auto/contenttest.cpp	2017-10-05 09:02:25.575393299 +0200
+@@ -320,7 +320,7 @@ void ContentTest::testEncodedContent()
+ void ContentTest::testDecodedContent()
+ {
+   Content *c = new Content();
+-  c->setBody( '\0' );
++  c->setBody( (const char*)'\0' );
+   QVERIFY( c->decodedContent() == QByteArray() );
+   c->setBody( QByteArray() );
+   QVERIFY( c->decodedContent() == QByteArray() );
+--- kdepimlibs-4.9.1/kmime/tests/auto/messagetest.cpp.org	2017-10-05 09:06:06.088488409 +0200
++++ kdepimlibs-4.9.1/kmime/tests/auto/messagetest.cpp	2017-10-05 09:06:00.871669191 +0200
+@@ -504,7 +504,7 @@ void MessageTest::testEncapsulatedMessag
+   QVERIFY( messageContent->body().isEmpty() );
+   QCOMPARE( messageContent->contents().count(), 1 );
+   QVERIFY( messageContent->bodyIsMessage() );
+-  QVERIFY( messageContent->bodyAsMessage() );
++  QVERIFY( messageContent->bodyAsMessage().get() );
+   QVERIFY( !messageContent->isTopLevel() );
+   QCOMPARE( messageContent->index().toString().toAscii().data(), "2" );
+ 
