@@ -86,12 +86,12 @@ opartych na kdepimlibs.
 
 %prep
 %setup -q -n %{orgname}-%{version}
-%patch0 -p1
+%patch -P0 -p1
 #%%patch100 -p0
 %if %{with kdepim44}
-%patch101 -p1 -R
+%patch -P101 -p1 -R
 %endif
-%patch102 -p1
+%patch -P102 -p1
 
 %build
 install -d build
